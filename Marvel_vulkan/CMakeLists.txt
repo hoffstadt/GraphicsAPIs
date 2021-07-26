@@ -13,13 +13,6 @@ target_sources(marvel_vulkan
 		"core/mvWindow.cpp"
 
 		"renderer/mvGraphics.cpp"
-		"renderer/mvPipeline.cpp"
-		"renderer/mvCommandPool.cpp"
-		"renderer/mvDevice.cpp"
-		"renderer/mvSwapChain.cpp"
-		"renderer/mvRenderPass.cpp"
-		"renderer/mvSurface.cpp"
-		"renderer/mvVertexBuffer.cpp"
 )
 
 target_include_directories(marvel_vulkan

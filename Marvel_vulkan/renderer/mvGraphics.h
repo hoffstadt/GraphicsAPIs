@@ -2,107 +2,97 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <vector>
-#include <array>
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <algorithm>
-#include <cstring>
-#include <cstdlib>
-#include <cstdint>
-#include <set>
-
-#include "mvDevice.h"
-#include "mvSwapChain.h"
-#include "mvRenderPass.h"
-#include "mvPipeline.h"
-#include "mvCommandPool.h"
-#include "mvSurface.h"
-#include "mvVertexBuffer.h"
+#include <optional>
 
 namespace Marvel {
 
 	class mvGraphics
 	{
 
-	public:
+		struct QueueFamilyIndices {
 
-		static bool                            CheckValidationLayerSupport();
-		static const std::vector<const char*>& GetValidationLayers        ();
-		static bool                            UseValidationLayers        () { return true; }
-		static constexpr int                   GetMaxFramesInFlight       () { return 2; }
+			std::optional<uint32_t> graphicsFamily;
+			std::optional<uint32_t> presentFamily;
+
+			bool isComplete()
+			{
+				return graphicsFamily.has_value() && presentFamily.has_value();
+			}
+		};
+
+		struct SwapChainSupportDetails {
+			VkSurfaceCapabilitiesKHR capabilities;
+			std::vector<VkSurfaceFormatKHR> formats;
+			std::vector<VkPresentModeKHR> presentModes;
+		};
 
 	public:
 
 		mvGraphics(GLFWwindow* window);
+		~mvGraphics();
 
-		void drawFrame();
-		void cleanup();
-
-		GLFWwindow*    getWindow     () { return m_window; }
-		VkInstance     getInstance   () { return m_instance; }
-		mvDevice&      getDevice     () { return m_device; }
-		mvSurface      getSurface    () { return m_surface; }
-		mvSwapChain&   getSwapChain  () { return m_swapChain; }
-		mvRenderPass&  getRenderPass () { return m_renderPass; }
-		mvPipeline&    getPipeline   () { return m_pipeline; }
-		mvCommandPool& getCommandPool() { return m_commandPool; }
+		void present();
 
 	private:
 
-		GLFWwindow*              m_window;
-		VkInstance               m_instance;
-		VkDebugUtilsMessengerEXT m_debugMessenger;
-		mvDevice                 m_device;
-		mvSwapChain              m_swapChain;
-		mvRenderPass             m_renderPass;
-		mvPipeline               m_pipeline;
-		mvCommandPool            m_commandPool;
-		mvSurface                m_surface;
+		void createVulkanInstance();
+		void setupDebugMessenger();
+		void createSurface(GLFWwindow* window);
+		void pickPhysicalDevice();
+		void createLogicalDevice();
+		void createSwapChain(GLFWwindow* window);
+		void createImageViews();
+		void createRenderPass();
+		void createGraphicsPipeline();
+		void createFrameBuffers();
+		void createCommandPool();
+		void createCommandBuffers();
+		void createSyncObjects();
 
-		// temp
-		mvVertexBuffer           m_vertexBuffer;
+		// helpers
+		bool                    checkValidationLayerSupport();
+		bool                    isDeviceSuitable(VkPhysicalDevice device);
+		QueueFamilyIndices      findQueueFamilies(VkPhysicalDevice device);
+		bool                    checkDeviceExtensionSupport(VkPhysicalDevice device);
+		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+		VkShaderModule          createShaderModule(const std::vector<char>& code);
 
-		std::vector<VkSemaphore> m_imageAvailableSemaphores;
-		std::vector<VkSemaphore> m_renderFinishedSemaphores;
-		std::vector<VkFence>     m_inFlightFences;
-		std::vector<VkFence>     m_imagesInFlight;
+	private:
 
-	};
+		// options
+		bool _enableValidationLayers = true;
 
-	struct Vertex 
-	{
+		VkInstance                   _instance;
+		VkDebugUtilsMessengerEXT     _debugMessenger;
+		VkSurfaceKHR                 _surface;
+		VkPhysicalDevice             _physicalDevice = VK_NULL_HANDLE;
+		VkDevice                     _device;
+		VkQueue                      _graphicsQueue;
+		VkQueue                      _presentQueue;
+		VkSwapchainKHR               _swapChain;
+		std::vector<VkImage>         _swapChainImages;
+		std::vector<VkImageView>     _swapChainImageViews;
+		VkFormat                     _swapChainImageFormat;
+		VkExtent2D                   _swapChainExtent;
+		VkRenderPass                 _renderPass;
+		VkShaderModule               _vertShaderModule;
+		VkShaderModule               _fragShaderModule;
+		VkPipelineLayout             _pipelineLayout;
+		VkPipeline                   _graphicsPipeline;
+		std::vector<VkFramebuffer>   _swapChainFramebuffers;
+		VkCommandPool                _commandPool;
+		std::vector<VkCommandBuffer> _commandBuffers;
+		std::vector<VkSemaphore>     _imageAvailableSemaphores;
+		std::vector<VkSemaphore>     _renderFinishedSemaphores;
+		std::vector<VkFence>         _inFlightFences;
+		std::vector<VkFence>         _imagesInFlight;
 
-		glm::vec2 pos;
-		glm::vec3 color;
+		size_t                       _currentFrame = 0;
 
-		static VkVertexInputBindingDescription getBindingDescription()
-		{
-			VkVertexInputBindingDescription bindingDescription{};
-			bindingDescription.binding = 0;
-			bindingDescription.stride = sizeof(Vertex);
-			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-			return bindingDescription;
-		}
-
-		static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions()
-		{
-			std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-
-			attributeDescriptions[0].binding = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-			return attributeDescriptions;
-		}
+		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation"};
+		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+		const int                      _max_frames_in_flight = 2;
 	};
 
 }
