@@ -87,6 +87,7 @@ namespace Marvel {
 
 	private:
 
+		mvVertexLayout              _vertexLayout;
 		mvVertexBuffer*             _vertexBuffer = nullptr;
 		mvIndexBuffer*              _indexBuffer = nullptr;
 		std::vector<VkBuffer>       _uniformBuffers;

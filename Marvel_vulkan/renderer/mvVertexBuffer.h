@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vector>
+#include "mvVertexLayout.h"
 
 
 namespace Marvel {
@@ -14,22 +15,20 @@ namespace Marvel {
 
 	public:
 
-		mvVertexBuffer(mvGraphics& graphics, const std::vector<float>& vbuf);
+		mvVertexBuffer(mvGraphics& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf);
 		~mvVertexBuffer();
 
 		void bind(VkCommandBuffer commandBuffer);
-
-		VkVertexInputBindingDescription getBindingDescription();
-		std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
+		const mvVertexLayout& GetLayout() const;
 
 	private:
 
-		std::vector<float> _vertices;
-
-		VkDevice _device;
-		VkBuffer _vertexBuffer;
+		std::vector<float>   _vertices;
+		mvVertexLayout       _layout;
+		VkDevice             _device;
+		VkBuffer             _vertexBuffer;
 		VkMemoryRequirements _memRequirements;
-		VkDeviceMemory _vertexBufferMemory;
+		VkDeviceMemory       _vertexBufferMemory;
 
 	};
 

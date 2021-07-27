@@ -54,6 +54,10 @@ namespace Marvel
 
 	mvGraphics::mvGraphics(GLFWwindow* window)
 	{
+
+        _vertexLayout.append(ElementType::Position2D);
+        _vertexLayout.append(ElementType::Color);
+
         createVulkanInstance();
         setupDebugMessenger();
         createSurface(window);
@@ -66,13 +70,20 @@ namespace Marvel
         createGraphicsPipeline();
         createFrameBuffers();
         createCommandPool();
-        _indexBuffer = new mvIndexBuffer(*this, { 0u, 1u, 2u, 2u, 3u, 0u});
-        _vertexBuffer = new mvVertexBuffer(*this, {
+
+
+        _indexBuffer = new mvIndexBuffer(*this, { 0u, 1u, 2u, 2u, 3u, 0u });
+
+
+
+        _vertexBuffer = new mvVertexBuffer(*this, _vertexLayout, {
             -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
              0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
              0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
             -0.5f,  0.5f, 1.0f, 1.0f, 1.0f
             });
+
+
         createUniformBuffers();
         createDescriptorPool();
         createDescriptorSets();
@@ -499,8 +510,7 @@ namespace Marvel
         auto vertShaderCode = readFile("../../Marvel_vulkan/shaders/vert.spv");
         auto fragShaderCode = readFile("../../Marvel_vulkan/shaders/frag.spv");
 
-        auto bindingDescription = _vertexBuffer->getBindingDescription();
-        auto attributeDescriptions = _vertexBuffer->getAttributeDescriptions();
+        auto attributeDescriptions = _vertexLayout.getAttributeDescriptions();
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);;
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -523,7 +533,7 @@ namespace Marvel
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputInfo.vertexBindingDescriptionCount = 1;
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.pVertexBindingDescriptions = &_vertexLayout.getBindingDescription();
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};

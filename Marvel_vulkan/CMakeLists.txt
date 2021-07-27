@@ -15,6 +15,7 @@ target_sources(marvel_vulkan
 		"renderer/mvGraphics.cpp"
 		"renderer/mvVertexBuffer.cpp"
 		"renderer/mvIndexBuffer.cpp"
+		"renderer/mvVertexLayout.cpp"
 )
 
 target_include_directories(marvel_vulkan

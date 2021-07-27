@@ -4,10 +4,11 @@
 
 namespace Marvel {
 
-    mvVertexBuffer::mvVertexBuffer(mvGraphics& graphics, const std::vector<float>& vbuf)
+    mvVertexBuffer::mvVertexBuffer(mvGraphics& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf)
 	{
         _device = graphics.getDevice();
         _vertices = vbuf;
+        _layout = layout;
 
         VkDeviceSize bufferSize = sizeof(float) * _vertices.size();
 
@@ -38,36 +39,15 @@ namespace Marvel {
         vkFreeMemory(_device, _vertexBufferMemory, nullptr);
     }
 
+    const mvVertexLayout& mvVertexBuffer::GetLayout() const
+    {
+        return _layout;
+    }
+
     void mvVertexBuffer::bind(VkCommandBuffer commandBuffer)
     {
         VkBuffer vertexBuffers[] = { _vertexBuffer };
         VkDeviceSize offsets[] = { 0 };
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-    }
-
-    VkVertexInputBindingDescription mvVertexBuffer::getBindingDescription()
-    {
-        VkVertexInputBindingDescription bindingDescription{};
-        bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(float)*5;
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-        return bindingDescription;
-    }
-
-    std::array<VkVertexInputAttributeDescription, 2> mvVertexBuffer::getAttributeDescriptions()
-    {
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-
-        attributeDescriptions[0].binding = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[0].offset = 0;
-
-        attributeDescriptions[1].binding = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = sizeof(float) * 2;
-
-        return attributeDescriptions;
     }
 }
