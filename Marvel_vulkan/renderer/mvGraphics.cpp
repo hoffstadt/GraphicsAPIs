@@ -64,6 +64,13 @@ namespace Marvel
         createGraphicsPipeline();
         createFrameBuffers();
         createCommandPool();
+        _indexBuffer = new mvIndexBuffer(*this, { 0u, 1u, 2u, 2u, 3u, 0u});
+        _vertexBuffer = new mvVertexBuffer(*this, {
+            -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+             0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+             0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+            -0.5f,  0.5f, 1.0f, 1.0f, 1.0f
+            });
         createCommandBuffers();
         createSyncObjects();
 	}
@@ -92,6 +99,8 @@ namespace Marvel
             vkDestroyImageView(_device, imageView, nullptr);
 
         vkDestroySwapchainKHR(_device, _swapChain, nullptr);
+        delete _vertexBuffer;
+        delete _indexBuffer;
         vkDestroyDevice(_device, nullptr);
 
         if (_enableValidationLayers)
@@ -457,6 +466,9 @@ namespace Marvel
         auto vertShaderCode = readFile("../../Marvel_vulkan/shaders/vert.spv");
         auto fragShaderCode = readFile("../../Marvel_vulkan/shaders/frag.spv");
 
+        auto bindingDescription = _vertexBuffer->getBindingDescription();
+        auto attributeDescriptions = _vertexBuffer->getAttributeDescriptions();
+
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);;
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
@@ -476,8 +488,10 @@ namespace Marvel
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -635,7 +649,10 @@ namespace Marvel
 
             vkCmdBindPipeline(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 
-            vkCmdDraw(_commandBuffers[i], 3, 1, 0, 0);
+            _indexBuffer->bind(_commandBuffers[i]);
+            _vertexBuffer->bind(_commandBuffers[i]);
+
+            vkCmdDrawIndexed(_commandBuffers[i], _indexBuffer->getVertexCount(), 1, 0, 0, 0);
 
             vkCmdEndRenderPass(_commandBuffers[i]);
 
@@ -794,5 +811,87 @@ namespace Marvel
             throw std::runtime_error("failed to create shader module!");
 
         return shaderModule;
+    }
+
+    std::uint32_t mvGraphics::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    {
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProperties);
+
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+
+        throw std::runtime_error("failed to find suitable memory type!");
+    }
+
+    VkDevice mvGraphics::getDevice()
+    {
+        return _device;
+    }
+
+    void mvGraphics::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+    {
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(_device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create buffer!");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(_device, buffer, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+        if (vkAllocateMemory(_device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate buffer memory!");
+        }
+
+        vkBindBufferMemory(_device, buffer, bufferMemory, 0);
+    }
+
+    void mvGraphics::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+    {
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool = _commandPool;
+        allocInfo.commandBufferCount = 1;
+
+        VkCommandBuffer commandBuffer;
+        vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
+
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+        VkBufferCopy copyRegion{};
+        copyRegion.srcOffset = 0; // Optional
+        copyRegion.dstOffset = 0; // Optional
+        copyRegion.size = size;
+        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+        vkEndCommandBuffer(commandBuffer);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+
+        vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(_graphicsQueue);
+
+        vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
     }
 }

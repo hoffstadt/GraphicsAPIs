@@ -3,7 +3,11 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vector>
+#include <array>
 #include <optional>
+#include <glm/glm.hpp>
+#include "mvVertexBuffer.h"
+#include "mvIndexBuffer.h"
 
 namespace Marvel {
 
@@ -34,6 +38,12 @@ namespace Marvel {
 
 		void present();
 
+		VkDevice      getDevice();
+		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+
 	private:
 
 		void createVulkanInstance();
@@ -59,6 +69,9 @@ namespace Marvel {
 		VkShaderModule          createShaderModule(const std::vector<char>& code);
 
 	private:
+
+		mvVertexBuffer* _vertexBuffer = nullptr;
+		mvIndexBuffer* _indexBuffer = nullptr;
 
 		// options
 		bool _enableValidationLayers = true;
