@@ -1,15 +1,27 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <vector>
 #include <array>
 #include <optional>
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "mvVertexBuffer.h"
 #include "mvIndexBuffer.h"
 
 namespace Marvel {
+
+	struct UniformBufferObject 
+	{
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 proj;
+	};
 
 	class mvGraphics
 	{
@@ -54,9 +66,14 @@ namespace Marvel {
 		void createSwapChain(GLFWwindow* window);
 		void createImageViews();
 		void createRenderPass();
+		void createDescriptorSetLayout();
 		void createGraphicsPipeline();
 		void createFrameBuffers();
 		void createCommandPool();
+		void createUniformBuffers();
+		void updateUniformBuffer(uint32_t currentImage);
+		void createDescriptorPool();
+		void createDescriptorSets();
 		void createCommandBuffers();
 		void createSyncObjects();
 
@@ -70,8 +87,10 @@ namespace Marvel {
 
 	private:
 
-		mvVertexBuffer* _vertexBuffer = nullptr;
-		mvIndexBuffer* _indexBuffer = nullptr;
+		mvVertexBuffer*             _vertexBuffer = nullptr;
+		mvIndexBuffer*              _indexBuffer = nullptr;
+		std::vector<VkBuffer>       _uniformBuffers;
+		std::vector<VkDeviceMemory> _uniformBuffersMemory;
 
 		// options
 		bool _enableValidationLayers = true;
@@ -100,6 +119,9 @@ namespace Marvel {
 		std::vector<VkSemaphore>     _renderFinishedSemaphores;
 		std::vector<VkFence>         _inFlightFences;
 		std::vector<VkFence>         _imagesInFlight;
+		VkDescriptorSetLayout        _descriptorSetLayout;
+		VkDescriptorPool             _descriptorPool;
+		std::vector<VkDescriptorSet> _descriptorSets;
 
 		size_t                       _currentFrame = 0;
 
