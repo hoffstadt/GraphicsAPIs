@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "mvDevice.h"
 #include "mvVertexBuffer.h"
 #include "mvIndexBuffer.h"
 
@@ -26,22 +27,7 @@ namespace Marvel {
 	class mvGraphics
 	{
 
-		struct QueueFamilyIndices {
 
-			std::optional<uint32_t> graphicsFamily;
-			std::optional<uint32_t> presentFamily;
-
-			bool isComplete()
-			{
-				return graphicsFamily.has_value() && presentFamily.has_value();
-			}
-		};
-
-		struct SwapChainSupportDetails {
-			VkSurfaceCapabilitiesKHR capabilities;
-			std::vector<VkSurfaceFormatKHR> formats;
-			std::vector<VkPresentModeKHR> presentModes;
-		};
 
 	public:
 
@@ -60,16 +46,11 @@ namespace Marvel {
 
 		void createVulkanInstance();
 		void setupDebugMessenger();
-		void createSurface(GLFWwindow* window);
-		void pickPhysicalDevice();
-		void createLogicalDevice();
-		void createSwapChain(GLFWwindow* window);
 		void createImageViews();
 		void createRenderPass();
 		void createDescriptorSetLayout();
 		void createGraphicsPipeline();
 		void createFrameBuffers();
-		void createCommandPool();
 		void createUniformBuffers();
 		void updateUniformBuffer(uint32_t currentImage);
 		void createDescriptorPool();
@@ -78,14 +59,11 @@ namespace Marvel {
 		void createSyncObjects();
 
 		// helpers
-		bool                    checkValidationLayerSupport();
-		bool                    isDeviceSuitable(VkPhysicalDevice device);
-		QueueFamilyIndices      findQueueFamilies(VkPhysicalDevice device);
-		bool                    checkDeviceExtensionSupport(VkPhysicalDevice device);
-		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 		VkShaderModule          createShaderModule(const std::vector<char>& code);
 
 	private:
+
+		mvDevice _mvdevice;
 
 		mvVertexLayout              _vertexLayout;
 		mvVertexBuffer*             _vertexBuffer = nullptr;
@@ -93,14 +71,8 @@ namespace Marvel {
 		std::vector<VkBuffer>       _uniformBuffers;
 		std::vector<VkDeviceMemory> _uniformBuffersMemory;
 
-		// options
-		bool _enableValidationLayers = true;
-
 		VkInstance                   _instance;
 		VkDebugUtilsMessengerEXT     _debugMessenger;
-		VkSurfaceKHR                 _surface;
-		VkPhysicalDevice             _physicalDevice = VK_NULL_HANDLE;
-		VkDevice                     _device;
 		VkQueue                      _graphicsQueue;
 		VkQueue                      _presentQueue;
 		VkSwapchainKHR               _swapChain;
@@ -126,8 +98,7 @@ namespace Marvel {
 
 		size_t                       _currentFrame = 0;
 
-		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation"};
-		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
 		const int                      _max_frames_in_flight = 2;
 	};
 
