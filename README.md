@@ -2,18 +2,19 @@
 
 [![build status](https://github.com/hoffstadt/Marvel/workflows/Windows%20Builds/badge.svg?branch=master)](https://github.com/hoffstadt/Marvel/actions?workflow=Windows%20Builds)
 
-This repo is the working location of the eventual [Dear PyGui](https://github.com/hoffstadt/DearPyGui) 3D Engine. It also contains several single file examples of creating a triangle with various graphics APIs. These were collected and modified from various sources as a starting point.
+This repo is the working location of the eventual [Dear PyGui](https://github.com/hoffstadt/DearPyGui) 3D Engine. It also contains several single file minimal examples of creating for various graphics APIs. These were collected and modified from various sources as a starting point.
 
 This project is still early and parts of it are being ported over from earlier prototypes.
 
 ### Hello Triangle
 * Demo_Directx11 - D3D11 Hello Triangle
 * Demo_Directx12 - D3D12 Hello Triangle
+* Demo_Metal - Metal Hello Triangle
 * Demo_OpenGL - OpenGL Hello Triangle
 * Demo_Vulkan - Vulkan Hello Triangle
 * Demo_WebGL - WebGL Hello Triangle
 
-### 3D Engine
+### 3D Engines
 * Marvel - Actual Engine (Directx 11 for now)
 * Marvel_vulkan - Vulkan 3D Engine
 * Marvel_opengl - OpenGL 3D Engine
@@ -24,7 +25,7 @@ This project is still early and parts of it are being ported over from earlier p
 |---------|-------|--------|------------|------------|--------|-------|
 | Windows Support | - | ✅ | ✅  | ✅ | ✅ |
 | Linux Support | - | ✅ | - | - | ✅ | - |
-| Apple Support | - | | - | - |
+| Apple Support | - | | - | - | - | ✅ |
 
 
 ## Building
