@@ -10,7 +10,7 @@ target_sources(demo_metal
 
 		"main.mm"
 		"MetalAdder.mm"
-		"../Dependencies/imgui/examples/libs/gl3w/GL/gl3w.c"
+		"../../Dependencies/imgui/examples/libs/gl3w/GL/gl3w.c"
 
 )
 
@@ -18,10 +18,10 @@ target_include_directories(demo_metal
 
 	PRIVATE
 		"."
-		"../Dependencies/imgui/examples/libs/gl3w/"
-		"../Dependencies/glfw/include/"
-		"../Dependencies/glm/"
-		"../Dependencies/stb/"
+		"../../Dependencies/imgui/examples/libs/gl3w/"
+		"../../Dependencies/glfw/include/"
+		"../../Dependencies/glm/"
+		"../../Dependencies/stb/"
 )
 
 target_link_libraries(demo_metal

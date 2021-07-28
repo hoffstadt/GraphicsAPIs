@@ -19,16 +19,10 @@ add_subdirectory ("Marvel_importer")
 
 if(MV_VULKAN)
 	add_subdirectory ("Marvel_vulkan")
-	if(MV_DEMOS)
-		add_subdirectory ("Demo_Vulkan")
-	endif()
 endif()
 
 if(MV_OPENGL)
 	add_subdirectory ("Marvel_opengl")
-	if(MV_DEMOS)
-		add_subdirectory ("Demo_OpenGL")
-	endif()
 endif()
 
 if(WIN32)
@@ -38,20 +32,14 @@ if(WIN32)
 	if(MV_D3D11)
 		add_subdirectory ("Marvel")
 		add_subdirectory ("Sandbox")
-		
-		if(MV_DEMOS)
-			add_subdirectory ("Demo_Directx11")
-		endif()
-
 	endif()
 	
-	if(MV_D3D11)
-		if(MV_DEMOS)
-			add_subdirectory ("Demo_Directx12")
-		endif()
-	endif()
 elseif(APPLE)
-	add_subdirectory("Demo_Metal")
+	
 else() # linux
 	add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
+endif()
+
+if(MV_DEMOS)
+	add_subdirectory("Demos")
 endif()

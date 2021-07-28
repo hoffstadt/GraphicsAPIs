@@ -15,8 +15,8 @@ target_include_directories(demo_vulkan
 
 	PRIVATE
 	    "$ENV{VK_SDK_PATH}/Include"
-		"../Dependencies/glfw/include/"
-		"../Dependencies/glm/"
+		"../../Dependencies/glfw/include/"
+		"../../Dependencies/glm/"
 )
 
 target_link_directories(demo_vulkan
