@@ -53,7 +53,6 @@ namespace Marvel {
 		mvDevice(GLFWwindow* window);
 		~mvDevice();
 
-		void init(GLFWwindow* window);
 		void finish();
 
 		void present(mvGraphicsContext&);
@@ -72,8 +71,8 @@ namespace Marvel {
 		// new uses
 		VkShaderModule createShaderModule(const std::vector<char>& code);
 		void createCommandPool();
+		void allocCommandBuffers();
 		void createCommandBuffers(mvGraphicsContext&);
-
 
 	private:
 

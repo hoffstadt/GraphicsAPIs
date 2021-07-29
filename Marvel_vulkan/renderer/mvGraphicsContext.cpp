@@ -5,7 +5,7 @@ namespace Marvel {
 
 	mvGraphicsContext::mvGraphicsContext(GLFWwindow* window)
 	{
-		_device.init(window);
+		_device = std::make_unique<mvDevice>(window);
 	}
 
 	void mvGraphicsContext::begin()
@@ -40,7 +40,7 @@ namespace Marvel {
 
 	mvDevice& mvGraphicsContext::getDevice()
 	{
-		return _device;
+		return *_device;
 	}
 
 	mvVertexBuffer& mvGraphicsContext::getVertexBuffer()

@@ -37,12 +37,6 @@ namespace Marvel
     mvDevice::mvDevice(GLFWwindow* window)
 	{
 
-        init(window);
-	}
-
-    void mvDevice::init(GLFWwindow* window)
-    {
-
         createVulkanInstance();
         setupDebugMessenger();
         createSurface(window);
@@ -58,7 +52,8 @@ namespace Marvel
         createDescriptorSets();
         createSyncObjects();
         createCommandPool();
-    }
+        allocCommandBuffers();
+	}
 
     void mvDevice::finish()
     {
@@ -84,7 +79,6 @@ namespace Marvel
             vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
         }
 
-
         vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
 
         vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
@@ -100,6 +94,7 @@ namespace Marvel
             vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
             vkDestroyFence(_device, _inFlightFences[i], nullptr);
         }
+        
 
         vkDestroyCommandPool(_device, _commandPool, nullptr); 
         
@@ -187,6 +182,7 @@ namespace Marvel
         vkQueuePresentKHR(_presentQueue, &presentInfo);
 
         _currentFrame = (_currentFrame + 1) % _max_frames_in_flight;
+     
     }
 
 	void mvDevice::createVulkanInstance()
@@ -539,6 +535,7 @@ namespace Marvel
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
         if (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS)
             throw std::runtime_error("failed to create command pool!");
@@ -629,7 +626,7 @@ namespace Marvel
 
     }
 
-    void mvDevice::createCommandBuffers(mvGraphicsContext& graphics)
+    void mvDevice::allocCommandBuffers()
     {
         _commandBuffers.resize(_swapChainFramebuffers.size());
 
@@ -641,43 +638,46 @@ namespace Marvel
 
         if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate command buffers!");
+    }
 
-        for (size_t i = 0; i < _commandBuffers.size(); i++)
-        {
-            VkCommandBufferBeginInfo beginInfo{};
-            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    void mvDevice::createCommandBuffers(mvGraphicsContext& graphics)
+    {
 
-            if (vkBeginCommandBuffer(_commandBuffers[i], &beginInfo) != VK_SUCCESS)
-                throw std::runtime_error("failed to begin recording command buffer!");
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = _renderPass;
-            renderPassInfo.framebuffer = _swapChainFramebuffers[i];
-            renderPassInfo.renderArea.offset = { 0, 0 };
-            renderPassInfo.renderArea.extent = _swapChainExtent;
+        if (vkBeginCommandBuffer(_commandBuffers[_currentFrame], &beginInfo) != VK_SUCCESS)
+            throw std::runtime_error("failed to begin recording command buffer!");
 
-            VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearColor;
+        //vkResetCommandBuffer(_commandBuffers[(_currentFrame + 1) % _max_frames_in_flight], 0);
+        
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = _renderPass;
+        renderPassInfo.framebuffer = _swapChainFramebuffers[_currentFrame];
+        renderPassInfo.renderArea.offset = { 0, 0 };
+        renderPassInfo.renderArea.extent = _swapChainExtent;
 
-            vkCmdBeginRenderPass(_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearColor;
 
-                vkCmdBindPipeline(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
+        vkCmdBeginRenderPass(_commandBuffers[_currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-                graphics.getIndexBuffer().bind(_commandBuffers[i]);
-                graphics.getVertexBuffer().bind(_commandBuffers[i]);
+            vkCmdBindPipeline(_commandBuffers[_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
 
-                vkCmdBindDescriptorSets(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    _pipelineLayout, 0, 1, &_descriptorSets[i], 0, nullptr);
+            graphics.getIndexBuffer().bind(_commandBuffers[_currentFrame]);
+            graphics.getVertexBuffer().bind(_commandBuffers[_currentFrame]);
 
-                vkCmdDrawIndexed(_commandBuffers[i], graphics.getIndexBuffer().getVertexCount(), 1, 0, 0, 0);
+            vkCmdBindDescriptorSets(_commandBuffers[_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                _pipelineLayout, 0, 1, &_descriptorSets[_currentFrame], 0, nullptr);
 
-            vkCmdEndRenderPass(_commandBuffers[i]);
+            vkCmdDrawIndexed(_commandBuffers[_currentFrame], graphics.getIndexBuffer().getVertexCount(), 1, 0, 0, 0);
 
-            if (vkEndCommandBuffer(_commandBuffers[i]) != VK_SUCCESS)
-                throw std::runtime_error("failed to record command buffer!");
-        }
+        vkCmdEndRenderPass(_commandBuffers[_currentFrame]);
+
+        if (vkEndCommandBuffer(_commandBuffers[_currentFrame]) != VK_SUCCESS)
+            throw std::runtime_error("failed to record command buffer!");
     }
 
     void mvDevice::createSyncObjects()
@@ -702,6 +702,7 @@ namespace Marvel
                 vkCreateFence(_device, &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS)
                 throw std::runtime_error("failed to create synchronization objects for a frame!");
         }
+
     }
 
     bool mvDevice::checkValidationLayerSupport()

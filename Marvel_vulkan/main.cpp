@@ -12,8 +12,6 @@ int main()
     auto graphics = mvGraphicsContext(window.getHandle());
     auto pipeline = std::make_shared<mvPipeline>();
 
-    
-
     auto vlayout = mvVertexLayout();
     vlayout.append(ElementType::Position2D);
     vlayout.append(ElementType::Color);
@@ -37,14 +35,14 @@ int main()
     graphics.setIndexBuffer(indexBuffer);
     graphics.setVertexBuffer(vertexBuffer);
     
-    graphics.getDevice().createCommandBuffers(graphics);
-
     //---------------------------------------------------------------------
     // main loop
     //---------------------------------------------------------------------
     while (window.isRunning())
     {
         window.processEvents();
+
+        graphics.getDevice().createCommandBuffers(graphics);
 
         graphics.getDevice().present(graphics);
     }
