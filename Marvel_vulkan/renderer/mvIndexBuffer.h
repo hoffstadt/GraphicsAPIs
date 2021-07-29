@@ -7,14 +7,15 @@
 
 namespace Marvel {
 
-	class mvGraphics;
+	class mvDevice;
+	class mvGraphicsContext;
 
 	class mvIndexBuffer
 	{
 
 	public:
 
-		mvIndexBuffer(mvGraphics& graphics, const std::vector<uint16_t>& ibuf);
+		mvIndexBuffer(mvDevice& device, mvGraphicsContext& graphics, const std::vector<uint16_t>& ibuf);
 		~mvIndexBuffer();
 
 		void bind(VkCommandBuffer commandBuffer);

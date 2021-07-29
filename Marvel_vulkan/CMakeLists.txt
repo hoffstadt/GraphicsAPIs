@@ -12,7 +12,10 @@ target_sources(marvel_vulkan
 
 		"core/mvWindow.cpp"
 
-		"renderer/mvGraphics.cpp"
+		"renderer/mvDevice.cpp"
+		"renderer/mvGraphicsContext.cpp"
+		"renderer/mvPipeline.cpp"
+		"renderer/mvShader.cpp"
 		"renderer/mvVertexBuffer.cpp"
 		"renderer/mvIndexBuffer.cpp"
 		"renderer/mvVertexLayout.cpp"
@@ -23,7 +26,7 @@ target_include_directories(marvel_vulkan
 	PRIVATE
 		"core/"
 		"renderer/"
-	    "$ENV{VK_SDK_PATH}/Include"
+	    "$ENV{VK_SDK_PATH}/Include/"
 		"../Dependencies/glfw/include/"
 		"../Dependencies/glm/"
 )

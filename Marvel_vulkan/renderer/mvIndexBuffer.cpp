@@ -1,19 +1,20 @@
 #include "mvIndexBuffer.h"
 #include <stdexcept>
-#include "mvGraphics.h"
+#include "mvDevice.h"
+#include "mvGraphicsContext.h"
 
 namespace Marvel {
 
-	mvIndexBuffer::mvIndexBuffer(mvGraphics& graphics, const std::vector<uint16_t>& ibuf)
+	mvIndexBuffer::mvIndexBuffer(mvDevice& device, mvGraphicsContext& graphics, const std::vector<uint16_t>& ibuf)
 	{
-        _device = graphics.getDevice();
+        _device = device.getDevice();
         _indices = ibuf;
 
         VkDeviceSize bufferSize = sizeof(_indices[0]) * _indices.size();
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
-        graphics.createBuffer(bufferSize, 
+        device.createBuffer(bufferSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
             stagingBuffer, 
             stagingBufferMemory);
@@ -23,11 +24,11 @@ namespace Marvel {
         memcpy(data, _indices.data(), (size_t)bufferSize);
         vkUnmapMemory(_device, stagingBufferMemory);
 
-        graphics.createBuffer(bufferSize, 
+        device.createBuffer(bufferSize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
             _indexBuffer, _indexBufferMemory);
 
-        graphics.copyBuffer(stagingBuffer, _indexBuffer, bufferSize);
+        device.copyBuffer(graphics, stagingBuffer, _indexBuffer, bufferSize);
 
         vkDestroyBuffer(_device, stagingBuffer, nullptr);
         vkFreeMemory(_device, stagingBufferMemory, nullptr);

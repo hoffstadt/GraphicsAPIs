@@ -13,6 +13,8 @@
 
 #include "mvVertexBuffer.h"
 #include "mvIndexBuffer.h"
+#include "mvPipeline.h"
+#include "mvGraphicsContext.h"
 
 namespace Marvel {
 
@@ -23,7 +25,7 @@ namespace Marvel {
 		glm::mat4 proj;
 	};
 
-	class mvGraphics
+	class mvDevice
 	{
 
 		struct QueueFamilyIndices {
@@ -45,15 +47,21 @@ namespace Marvel {
 
 	public:
 
-		mvGraphics(GLFWwindow* window);
-		~mvGraphics();
+		mvDevice(GLFWwindow* window);
+		~mvDevice();
 
-		void present();
+		void present(mvGraphicsContext&);
 
 		VkDevice      getDevice();
 		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void copyBuffer(mvGraphicsContext&, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+		// new uses
+		VkShaderModule createShaderModule(const std::vector<char>& code);
+		void createPipeline(mvPipeline&);
+		void createCommandPool(mvGraphicsContext&);
+		void createCommandBuffers(mvGraphicsContext&);
 
 
 	private:
@@ -67,14 +75,11 @@ namespace Marvel {
 		void createImageViews();
 		void createRenderPass();
 		void createDescriptorSetLayout();
-		void createGraphicsPipeline();
 		void createFrameBuffers();
-		void createCommandPool();
 		void createUniformBuffers();
 		void updateUniformBuffer(uint32_t currentImage);
 		void createDescriptorPool();
 		void createDescriptorSets();
-		void createCommandBuffers();
 		void createSyncObjects();
 
 		// helpers
@@ -83,13 +88,11 @@ namespace Marvel {
 		QueueFamilyIndices      findQueueFamilies(VkPhysicalDevice device);
 		bool                    checkDeviceExtensionSupport(VkPhysicalDevice device);
 		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-		VkShaderModule          createShaderModule(const std::vector<char>& code);
+		
 
 	private:
 
-		mvVertexLayout              _vertexLayout;
-		mvVertexBuffer*             _vertexBuffer = nullptr;
-		mvIndexBuffer*              _indexBuffer = nullptr;
+
 		std::vector<VkBuffer>       _uniformBuffers;
 		std::vector<VkDeviceMemory> _uniformBuffersMemory;
 
@@ -109,13 +112,7 @@ namespace Marvel {
 		VkFormat                     _swapChainImageFormat;
 		VkExtent2D                   _swapChainExtent;
 		VkRenderPass                 _renderPass;
-		VkShaderModule               _vertShaderModule;
-		VkShaderModule               _fragShaderModule;
-		VkPipelineLayout             _pipelineLayout;
-		VkPipeline                   _graphicsPipeline;
 		std::vector<VkFramebuffer>   _swapChainFramebuffers;
-		VkCommandPool                _commandPool;
-		std::vector<VkCommandBuffer> _commandBuffers;
 		std::vector<VkSemaphore>     _imageAvailableSemaphores;
 		std::vector<VkSemaphore>     _renderFinishedSemaphores;
 		std::vector<VkFence>         _inFlightFences;

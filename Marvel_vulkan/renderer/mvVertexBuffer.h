@@ -8,14 +8,15 @@
 
 namespace Marvel {
 
-	class mvGraphics;
+	class mvDevice;
+	class mvGraphicsContext;
 
 	class mvVertexBuffer
 	{
 
 	public:
 
-		mvVertexBuffer(mvGraphics& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf);
+		mvVertexBuffer(mvDevice& device, mvGraphicsContext& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf);
 		~mvVertexBuffer();
 
 		void bind(VkCommandBuffer commandBuffer);

@@ -1,12 +1,13 @@
 #include "mvVertexBuffer.h"
 #include <stdexcept>
-#include "mvGraphics.h"
+#include "mvDevice.h"
+#include "mvGraphicsContext.h"
 
 namespace Marvel {
 
-    mvVertexBuffer::mvVertexBuffer(mvGraphics& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf)
+    mvVertexBuffer::mvVertexBuffer(mvDevice& device, mvGraphicsContext& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf)
 	{
-        _device = graphics.getDevice();
+        _device = device.getDevice();
         _vertices = vbuf;
         _layout = layout;
 
@@ -14,7 +15,7 @@ namespace Marvel {
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
-        graphics.createBuffer(bufferSize, 
+        device.createBuffer(bufferSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             stagingBuffer, stagingBufferMemory);
 
@@ -23,11 +24,11 @@ namespace Marvel {
         memcpy(data, _vertices.data(), (size_t)bufferSize);
         vkUnmapMemory(_device, stagingBufferMemory);
 
-        graphics.createBuffer(bufferSize, 
+        device.createBuffer(bufferSize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
             _vertexBuffer, _vertexBufferMemory);
 
-        graphics.copyBuffer(stagingBuffer, _vertexBuffer, bufferSize);
+        device.copyBuffer(graphics, stagingBuffer, _vertexBuffer, bufferSize);
 
         vkDestroyBuffer(_device, stagingBuffer, nullptr);
         vkFreeMemory(_device, stagingBufferMemory, nullptr);

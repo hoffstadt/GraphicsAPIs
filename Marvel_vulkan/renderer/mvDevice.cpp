@@ -1,4 +1,4 @@
-#include "mvGraphics.h"
+#include "mvDevice.h"
 #include <stdexcept>
 #include <iostream>
 #include <set>
@@ -52,11 +52,8 @@ static std::vector<char> readFile(const std::string& filename)
 namespace Marvel
 {
 
-	mvGraphics::mvGraphics(GLFWwindow* window)
+    mvDevice::mvDevice(GLFWwindow* window)
 	{
-
-        _vertexLayout.append(ElementType::Position2D);
-        _vertexLayout.append(ElementType::Color);
 
         createVulkanInstance();
         setupDebugMessenger();
@@ -67,31 +64,14 @@ namespace Marvel
         createImageViews();
         createRenderPass();
         createDescriptorSetLayout();
-        createGraphicsPipeline();
         createFrameBuffers();
-        createCommandPool();
-
-
-        _indexBuffer = new mvIndexBuffer(*this, { 0u, 1u, 2u, 2u, 3u, 0u });
-
-
-
-        _vertexBuffer = new mvVertexBuffer(*this, _vertexLayout, {
-            -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-             0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-             0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-            -0.5f,  0.5f, 1.0f, 1.0f, 1.0f
-            });
-
-
         createUniformBuffers();
         createDescriptorPool();
         createDescriptorSets();
-        createCommandBuffers();
         createSyncObjects();
 	}
 
-    mvGraphics::~mvGraphics()
+    mvDevice::~mvDevice()
     {
         vkDeviceWaitIdle(_device);
 
@@ -102,21 +82,17 @@ namespace Marvel
             vkDestroyFence(_device, _inFlightFences[i], nullptr);
         }
 
-        vkDestroyCommandPool(_device, _commandPool, nullptr);
 
         for (auto framebuffer : _swapChainFramebuffers)
             vkDestroyFramebuffer(_device, framebuffer, nullptr);
 
-        vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
         vkDestroyRenderPass(_device, _renderPass, nullptr);
 
         for (auto imageView : _swapChainImageViews)
             vkDestroyImageView(_device, imageView, nullptr);
 
         vkDestroySwapchainKHR(_device, _swapChain, nullptr);
-        delete _vertexBuffer;
-        delete _indexBuffer;
+
         for (size_t i = 0; i < _swapChainImages.size(); i++) 
         {
             vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
@@ -135,7 +111,7 @@ namespace Marvel
         vkDestroyInstance(_instance, nullptr);
     }
 
-    void mvGraphics::present()
+    void mvDevice::present(mvGraphicsContext& graphics)
     {
         vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -159,7 +135,7 @@ namespace Marvel
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &_commandBuffers[imageIndex];
+        submitInfo.pCommandBuffers = &graphics.getCommandBuffers()[imageIndex];
 
         VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
@@ -187,7 +163,7 @@ namespace Marvel
         _currentFrame = (_currentFrame + 1) % _max_frames_in_flight;
     }
 
-	void mvGraphics::createVulkanInstance()
+	void mvDevice::createVulkanInstance()
 	{
 
         if (_enableValidationLayers && !checkValidationLayerSupport())
@@ -227,7 +203,7 @@ namespace Marvel
         else
         {
             createInfo.enabledLayerCount = 0;
-            createInfo.pNext = nullptr;
+            createInfo.pNext = VK_NULL_HANDLE;
         }
 
         // create the instance
@@ -235,7 +211,7 @@ namespace Marvel
             throw std::runtime_error("failed to create instance!");
 	}
 
-    void mvGraphics::setupDebugMessenger()
+    void mvDevice::setupDebugMessenger()
     {
         if (!_enableValidationLayers) 
             return;
@@ -251,13 +227,13 @@ namespace Marvel
             throw std::runtime_error("failed to set up debug messenger!");
     }
 
-    void mvGraphics::createSurface(GLFWwindow* window)
+    void mvDevice::createSurface(GLFWwindow* window)
     {
         if (glfwCreateWindowSurface(_instance, window, nullptr, &_surface) != VK_SUCCESS)
             throw std::runtime_error("failed to create window surface!");
     }
 
-    void mvGraphics::pickPhysicalDevice()
+    void mvDevice::pickPhysicalDevice()
     {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
@@ -280,7 +256,7 @@ namespace Marvel
             throw std::runtime_error("failed to find a suitable GPU!");
     }
 
-    void mvGraphics::createLogicalDevice()
+    void mvDevice::createLogicalDevice()
     {
         QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
 
@@ -327,7 +303,7 @@ namespace Marvel
         vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
     }
 
-    void mvGraphics::createSwapChain(GLFWwindow* window)
+    void mvDevice::createSwapChain(GLFWwindow* window)
     {
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(_physicalDevice);
 
@@ -419,7 +395,7 @@ namespace Marvel
         _swapChainExtent = extent;
     }
 
-    void mvGraphics::createImageViews()
+    void mvDevice::createImageViews()
     {
         _swapChainImageViews.resize(_swapChainImages.size());
 
@@ -445,7 +421,7 @@ namespace Marvel
         }
     }
 
-    void mvGraphics::createRenderPass()
+    void mvDevice::createRenderPass()
     {
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = _swapChainImageFormat;
@@ -487,7 +463,7 @@ namespace Marvel
             throw std::runtime_error("failed to create render pass!");
     }
 
-    void mvGraphics::createDescriptorSetLayout()
+    void mvDevice::createDescriptorSetLayout()
     {
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
         uboLayoutBinding.binding = 0;
@@ -505,7 +481,7 @@ namespace Marvel
             throw std::runtime_error("failed to create descriptor set layout!");
     }
 
-    void mvGraphics::createGraphicsPipeline()
+    void mvDevice::createPipeline(mvPipeline& pipeline)
     {
         
         //---------------------------------------------------------------------
@@ -516,25 +492,22 @@ namespace Marvel
         inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-        auto attributeDescriptions = _vertexLayout.getAttributeDescriptions();
+        auto attributeDescriptions = pipeline.getVertexLayout().getAttributeDescriptions();
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputInfo.vertexBindingDescriptionCount = 1;
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-        vertexInputInfo.pVertexBindingDescriptions = &_vertexLayout.getBindingDescription();
+        vertexInputInfo.pVertexBindingDescriptions = &pipeline.getVertexLayout().getBindingDescription();
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         //---------------------------------------------------------------------
         // vertex shader stage
         //---------------------------------------------------------------------
-        auto vertShaderCode = readFile("../../Marvel_vulkan/shaders/vert.spv");
-        VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertShaderStageInfo.module = vertShaderModule;
+        vertShaderStageInfo.module = pipeline.getVertexShader().getShaderModule();
         vertShaderStageInfo.pName = "main";
 
         //---------------------------------------------------------------------
@@ -581,13 +554,10 @@ namespace Marvel
         //---------------------------------------------------------------------
         // fragment shader stage
         //---------------------------------------------------------------------
-        auto fragShaderCode = readFile("../../Marvel_vulkan/shaders/frag.spv");
-        VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
-
         VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
         fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragShaderStageInfo.module = fragShaderModule;
+        fragShaderStageInfo.module = pipeline.getFragmentShader().getShaderModule();
         fragShaderStageInfo.pName = "main";
 
         //---------------------------------------------------------------------
@@ -623,7 +593,7 @@ namespace Marvel
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pSetLayouts = &_descriptorSetLayout;
 
-        if (vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, pipeline.getPipelineLayout()) != VK_SUCCESS)
             throw std::runtime_error("failed to create pipeline layout!");
 
         //---------------------------------------------------------------------
@@ -642,19 +612,16 @@ namespace Marvel
         pipelineInfo.pRasterizationState = &rasterizer;
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
-        pipelineInfo.layout = _pipelineLayout;
+        pipelineInfo.layout = *pipeline.getPipelineLayout();
         pipelineInfo.renderPass = _renderPass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_graphicsPipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, pipeline.getPipeline()) != VK_SUCCESS)
             throw std::runtime_error("failed to create graphics pipeline!");
-
-        vkDestroyShaderModule(_device, fragShaderModule, nullptr);
-        vkDestroyShaderModule(_device, vertShaderModule, nullptr);
     }
 
-    void mvGraphics::createFrameBuffers()
+    void mvDevice::createFrameBuffers()
     {
         _swapChainFramebuffers.resize(_swapChainImageViews.size());
 
@@ -678,7 +645,7 @@ namespace Marvel
         }
     }
 
-    void mvGraphics::createCommandPool()
+    void mvDevice::createCommandPool(mvGraphicsContext& graphics)
     {
         QueueFamilyIndices queueFamilyIndices = findQueueFamilies(_physicalDevice);
 
@@ -686,11 +653,11 @@ namespace Marvel
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-        if (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS)
+        if (vkCreateCommandPool(_device, &poolInfo, nullptr, graphics.getCommandPool()) != VK_SUCCESS)
             throw std::runtime_error("failed to create command pool!");
     }
 
-    void mvGraphics::createUniformBuffers()
+    void mvDevice::createUniformBuffers()
     {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
@@ -703,7 +670,7 @@ namespace Marvel
                 _uniformBuffers[i], _uniformBuffersMemory[i]);
     }
 
-    void mvGraphics::updateUniformBuffer(uint32_t currentImage)
+    void mvDevice::updateUniformBuffer(uint32_t currentImage)
     {
         static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -722,7 +689,7 @@ namespace Marvel
         vkUnmapMemory(_device, _uniformBuffersMemory[currentImage]);
     }
 
-    void mvGraphics::createDescriptorPool()
+    void mvDevice::createDescriptorPool()
     {
         VkDescriptorPoolSize poolSize{};
         poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -738,7 +705,7 @@ namespace Marvel
             throw std::runtime_error("failed to create descriptor pool!");
     }
 
-    void mvGraphics::createDescriptorSets()
+    void mvDevice::createDescriptorSets()
     {
 
         std::vector<VkDescriptorSetLayout> layouts(_swapChainImages.size(), _descriptorSetLayout);
@@ -775,25 +742,25 @@ namespace Marvel
 
     }
 
-    void mvGraphics::createCommandBuffers()
+    void mvDevice::createCommandBuffers(mvGraphicsContext& graphics)
     {
-        _commandBuffers.resize(_swapChainFramebuffers.size());
+        graphics.getCommandBuffers().resize(_swapChainFramebuffers.size());
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = _commandPool;
+        allocInfo.commandPool = *graphics.getCommandPool();
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)_commandBuffers.size();
+        allocInfo.commandBufferCount = (uint32_t)graphics.getCommandBuffers().size();
 
-        if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
+        if (vkAllocateCommandBuffers(_device, &allocInfo, graphics.getCommandBuffers().data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate command buffers!");
 
-        for (size_t i = 0; i < _commandBuffers.size(); i++)
+        for (size_t i = 0; i < graphics.getCommandBuffers().size(); i++)
         {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-            if (vkBeginCommandBuffer(_commandBuffers[i], &beginInfo) != VK_SUCCESS)
+            if (vkBeginCommandBuffer(graphics.getCommandBuffers()[i], &beginInfo) != VK_SUCCESS)
                 throw std::runtime_error("failed to begin recording command buffer!");
 
             VkRenderPassBeginInfo renderPassInfo{};
@@ -807,25 +774,26 @@ namespace Marvel
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
 
-            vkCmdBeginRenderPass(_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(graphics.getCommandBuffers()[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-            vkCmdBindPipeline(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
+            vkCmdBindPipeline(graphics.getCommandBuffers()[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *graphics.getPipeline().getPipeline());
 
-            _indexBuffer->bind(_commandBuffers[i]);
-            _vertexBuffer->bind(_commandBuffers[i]);
+            graphics.getIndexBuffer().bind(graphics.getCommandBuffers()[i]);
+            graphics.getVertexBuffer().bind(graphics.getCommandBuffers()[i]);
 
-            vkCmdBindDescriptorSets(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[i], 0, nullptr);
+            vkCmdBindDescriptorSets(graphics.getCommandBuffers()[i], VK_PIPELINE_BIND_POINT_GRAPHICS, 
+                *graphics.getPipeline().getPipelineLayout(), 0, 1, &_descriptorSets[i], 0, nullptr);
 
-            vkCmdDrawIndexed(_commandBuffers[i], _indexBuffer->getVertexCount(), 1, 0, 0, 0);
+            vkCmdDrawIndexed(graphics.getCommandBuffers()[i], graphics.getIndexBuffer().getVertexCount(), 1, 0, 0, 0);
 
-            vkCmdEndRenderPass(_commandBuffers[i]);
+            vkCmdEndRenderPass(graphics.getCommandBuffers()[i]);
 
-            if (vkEndCommandBuffer(_commandBuffers[i]) != VK_SUCCESS)
+            if (vkEndCommandBuffer(graphics.getCommandBuffers()[i]) != VK_SUCCESS)
                 throw std::runtime_error("failed to record command buffer!");
         }
     }
 
-    void mvGraphics::createSyncObjects()
+    void mvDevice::createSyncObjects()
     {
 
         _imageAvailableSemaphores.resize(_max_frames_in_flight);
@@ -849,7 +817,7 @@ namespace Marvel
         }
     }
 
-    bool mvGraphics::checkValidationLayerSupport()
+    bool mvDevice::checkValidationLayerSupport()
     {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -875,7 +843,7 @@ namespace Marvel
         return true;
     }
 
-    bool mvGraphics::isDeviceSuitable(VkPhysicalDevice device)
+    bool mvDevice::isDeviceSuitable(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -890,7 +858,7 @@ namespace Marvel
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
-    bool mvGraphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool mvDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -906,7 +874,7 @@ namespace Marvel
         return requiredExtensions.empty();
     }
 
-    mvGraphics::SwapChainSupportDetails mvGraphics::querySwapChainSupport(VkPhysicalDevice device)
+    mvDevice::SwapChainSupportDetails mvDevice::querySwapChainSupport(VkPhysicalDevice device)
     {
         SwapChainSupportDetails details;
 
@@ -931,7 +899,7 @@ namespace Marvel
         return details;
     }
 
-    mvGraphics::QueueFamilyIndices mvGraphics::findQueueFamilies(VkPhysicalDevice device)
+    mvDevice::QueueFamilyIndices mvDevice::findQueueFamilies(VkPhysicalDevice device)
     {
 
         QueueFamilyIndices indices;
@@ -963,7 +931,7 @@ namespace Marvel
         return indices;
     }
 
-    VkShaderModule mvGraphics::createShaderModule(const std::vector<char>& code)
+    VkShaderModule mvDevice::createShaderModule(const std::vector<char>& code)
     {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -977,7 +945,7 @@ namespace Marvel
         return shaderModule;
     }
 
-    std::uint32_t mvGraphics::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    std::uint32_t mvDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
     {
         VkPhysicalDeviceMemoryProperties memProperties;
         vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProperties);
@@ -991,12 +959,12 @@ namespace Marvel
         throw std::runtime_error("failed to find suitable memory type!");
     }
 
-    VkDevice mvGraphics::getDevice()
+    VkDevice mvDevice::getDevice()
     {
         return _device;
     }
 
-    void mvGraphics::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+    void mvDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
     {
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1023,12 +991,12 @@ namespace Marvel
         vkBindBufferMemory(_device, buffer, bufferMemory, 0);
     }
 
-    void mvGraphics::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+    void mvDevice::copyBuffer(mvGraphicsContext& graphics, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = _commandPool;
+        allocInfo.commandPool = *graphics.getCommandPool();
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -1056,6 +1024,6 @@ namespace Marvel
         vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(_graphicsQueue);
 
-        vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(_device, *graphics.getCommandPool(), 1, &commandBuffer);
     }
 }

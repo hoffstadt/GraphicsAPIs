@@ -458,15 +458,15 @@ int main(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, 
         std::wstring wpath = std::wstring(path.begin(), path.end());
 
         std::string vertCompiledPath = path, fragCompiledPath = path;
-        vertCompiledPath += "..\\..\\Demos\\Demo_Directx12\\shaders\\triangle.vert.dxbc";
-        fragCompiledPath += "..\\..\\Demos\\Demo_Directx12\\shaders\\triangle.frag.dxbc";
+        vertCompiledPath += "..\\..\\..\\Demos\\Demo_Directx12\\shaders\\triangle.vert.dxbc";
+        fragCompiledPath += "..\\..\\..\\Demos\\Demo_Directx12\\shaders\\triangle.frag.dxbc";
 
 #define COMPILESHADERS
 #ifdef COMPILESHADERS
         std::wstring vertPath =
-            wpath + L"..\\..\\Demos\\Demo_Directx12\\shaders\\triangle.vert.hlsl";
+            wpath + L"..\\..\\..\\Demos\\Demo_Directx12\\shaders\\triangle.vert.hlsl";
         std::wstring fragPath =
-            wpath + L"..\\..\\Demos\\Demo_Directx12\\shaders\\triangle.frag.hlsl";
+            wpath + L"..\\..\\..\\Demos\\Demo_Directx12\\shaders\\triangle.frag.hlsl";
 
         try
         {
