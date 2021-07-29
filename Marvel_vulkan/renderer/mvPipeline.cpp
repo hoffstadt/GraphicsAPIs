@@ -10,29 +10,14 @@ namespace Marvel {
 		_layout = layout;
 	}
 
-	void mvPipeline::setVertexShader(std::shared_ptr<mvShader> shader)
+	void mvPipeline::setVertexShader(mvGraphicsContext& graphics, const std::string& file)
 	{
-		_vertexShader = shader;
+        _vertexShader = std::make_unique<mvShader>(graphics, file);
 	}
 
-	void mvPipeline::setFragmentShader(std::shared_ptr<mvShader> shader)
+	void mvPipeline::setFragmentShader(mvGraphicsContext& graphics, const std::string& file)
 	{
-		_fragShader = shader;
-	}
-
-	const mvVertexLayout& mvPipeline::getVertexLayout()
-	{
-		return _layout;
-	}
-
-	const mvShader& mvPipeline::getVertexShader()
-	{
-		return *_vertexShader;
-	}
-
-	const mvShader& mvPipeline::getFragmentShader()
-	{
-		return *_fragShader;
+		_fragShader = std::make_unique<mvShader>(graphics, file);
 	}
 
 	void mvPipeline::create(mvGraphicsContext& graphics)
@@ -173,6 +158,12 @@ namespace Marvel {
 
         if (vkCreateGraphicsPipelines(graphics.getDevice().getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, graphics.getDevice().getPipeline()) != VK_SUCCESS)
             throw std::runtime_error("failed to create graphics pipeline!");
+
+        // no longer need this
+        vkDestroyShaderModule(graphics.getDevice().getDevice(), _vertexShader->getShaderModule(), nullptr);
+        vkDestroyShaderModule(graphics.getDevice().getDevice(), _fragShader->getShaderModule(), nullptr);
+        _vertexShader = nullptr;
+        _fragShader = nullptr;
 	}
 
 }

@@ -71,7 +71,7 @@ namespace Marvel {
 
 		// new uses
 		VkShaderModule createShaderModule(const std::vector<char>& code);
-		void createCommandPool(mvGraphicsContext&);
+		void createCommandPool();
 		void createCommandBuffers(mvGraphicsContext&);
 
 

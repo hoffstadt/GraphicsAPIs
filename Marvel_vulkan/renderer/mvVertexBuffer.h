@@ -19,7 +19,7 @@ namespace Marvel {
 
 		void finish(mvGraphicsContext& graphics);
 		void bind(VkCommandBuffer commandBuffer);
-		const mvVertexLayout& GetLayout() const;
+		//const mvVertexLayout& GetLayout() const;
 
 	private:
 

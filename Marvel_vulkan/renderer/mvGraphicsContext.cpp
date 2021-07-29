@@ -26,7 +26,6 @@ namespace Marvel {
 	void mvGraphicsContext::setVertexBuffer(std::shared_ptr<mvVertexBuffer> buffer)
 	{
 		_vertexBuffer = buffer;
-		_vertexLayout = buffer->GetLayout();
 	}
 
 	void mvGraphicsContext::setIndexBuffer(std::shared_ptr<mvIndexBuffer> buffer)

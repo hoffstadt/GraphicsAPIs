@@ -57,6 +57,7 @@ namespace Marvel
         createDescriptorPool();
         createDescriptorSets();
         createSyncObjects();
+        createCommandPool();
     }
 
     void mvDevice::finish()
@@ -531,7 +532,7 @@ namespace Marvel
         }
     }
 
-    void mvDevice::createCommandPool(mvGraphicsContext& graphics)
+    void mvDevice::createCommandPool()
     {
         QueueFamilyIndices queueFamilyIndices = findQueueFamilies(_physicalDevice);
 

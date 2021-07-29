@@ -39,10 +39,10 @@ namespace Marvel {
         vkFreeMemory(graphics.getDevice().getDevice(), _vertexBufferMemory, nullptr);
     }
 
-    const mvVertexLayout& mvVertexBuffer::GetLayout() const
-    {
-        return _layout;
-    }
+    //const mvVertexLayout& mvVertexBuffer::GetLayout() const
+    //{
+    //    return _layout;
+    //}
 
     void mvVertexBuffer::bind(VkCommandBuffer commandBuffer)
     {

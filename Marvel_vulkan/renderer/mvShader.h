@@ -16,8 +16,6 @@ namespace Marvel {
 
 		mvShader(mvGraphicsContext& graphics, const std::string& file);
 
-		void finish(mvGraphicsContext& graphics);
-
 		VkShaderModule getShaderModule() const;
 
 	private:

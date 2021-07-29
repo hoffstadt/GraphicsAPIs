@@ -29,11 +29,6 @@ namespace Marvel {
         _shaderModule = graphics.getDevice().createShaderModule(shaderCode);
 	}
 
-    void mvShader::finish(mvGraphicsContext& graphics)
-    {
-        vkDestroyShaderModule(graphics.getDevice().getDevice(), _shaderModule, nullptr);
-    }
-
     VkShaderModule mvShader::getShaderModule() const
     {
         return _shaderModule;

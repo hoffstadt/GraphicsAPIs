@@ -38,7 +38,6 @@ namespace Marvel{
 	private:
 
 		mvDevice                        _device;
-		mvVertexLayout                  _vertexLayout;
 		std::shared_ptr<mvVertexBuffer> _vertexBuffer = nullptr;
 		std::shared_ptr<mvIndexBuffer>  _indexBuffer  = nullptr;
 		std::shared_ptr<mvPipeline>     _pipeline     = nullptr;
