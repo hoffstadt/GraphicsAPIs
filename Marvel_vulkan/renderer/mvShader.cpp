@@ -1,7 +1,7 @@
 #include "mvShader.h"
 #include <fstream>
 #include <stdexcept>
-#include "mvDevice.h"
+#include "mvGraphicsContext.h"
 
 static std::vector<char> readFile(const std::string& filename)
 {
@@ -23,16 +23,15 @@ static std::vector<char> readFile(const std::string& filename)
 
 namespace Marvel {
 
-	mvShader::mvShader(mvDevice& device, const std::string& file)
+	mvShader::mvShader(mvGraphicsContext& graphics, const std::string& file)
 	{
         auto shaderCode = readFile(file);
-        _shaderModule = device.createShaderModule(shaderCode);
-        _device = device.getDevice();
+        _shaderModule = graphics.getDevice().createShaderModule(shaderCode);
 	}
 
-    mvShader::~mvShader()
+    void mvShader::finish(mvGraphicsContext& graphics)
     {
-        vkDestroyShaderModule(_device, _shaderModule, nullptr);
+        vkDestroyShaderModule(graphics.getDevice().getDevice(), _shaderModule, nullptr);
     }
 
     VkShaderModule mvShader::getShaderModule() const

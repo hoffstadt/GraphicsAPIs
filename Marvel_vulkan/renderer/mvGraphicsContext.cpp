@@ -3,14 +3,9 @@
 
 namespace Marvel {
 
-	mvGraphicsContext::mvGraphicsContext(mvDevice& device)
+	mvGraphicsContext::mvGraphicsContext(GLFWwindow* window)
 	{
-		_device = device.getDevice();
-	}
-
-	mvGraphicsContext::~mvGraphicsContext()
-	{
-		vkDestroyCommandPool(_device, _commandPool, nullptr);
+		_device.init(window);
 	}
 
 	void mvGraphicsContext::begin()
@@ -39,19 +34,14 @@ namespace Marvel {
 		_indexBuffer = buffer;
 	}
 
-	VkCommandPool* mvGraphicsContext::getCommandPool()
-	{
-		return &_commandPool;
-	}
-
-	std::vector<VkCommandBuffer>& mvGraphicsContext::getCommandBuffers()
-	{
-		return _commandBuffers;
-	}
-
 	mvPipeline& mvGraphicsContext::getPipeline()
 	{
 		return *_pipeline;
+	}
+
+	mvDevice& mvGraphicsContext::getDevice()
+	{
+		return _device;
 	}
 
 	mvVertexBuffer& mvGraphicsContext::getVertexBuffer()

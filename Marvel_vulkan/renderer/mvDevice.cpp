@@ -4,6 +4,7 @@
 #include <set>
 #include <fstream>
 #include <chrono>
+#include "mvGraphicsContext.h"
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -30,30 +31,17 @@ static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMesse
     }
 }
 
-static std::vector<char> readFile(const std::string& filename)
-{
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open()) {
-        throw std::runtime_error("failed to open file!");
-    }
-
-    size_t fileSize = (size_t)file.tellg();
-    std::vector<char> buffer(fileSize);
-
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-
-    file.close();
-
-    return buffer;
-}
-
 namespace Marvel
 {
 
     mvDevice::mvDevice(GLFWwindow* window)
 	{
+
+        init(window);
+	}
+
+    void mvDevice::init(GLFWwindow* window)
+    {
 
         createVulkanInstance();
         setupDebugMessenger();
@@ -69,11 +57,41 @@ namespace Marvel
         createDescriptorPool();
         createDescriptorSets();
         createSyncObjects();
-	}
+    }
+
+    void mvDevice::finish()
+    {
+        vkDeviceWaitIdle(_device);
+
+        for (auto framebuffer : _swapChainFramebuffers)
+            vkDestroyFramebuffer(_device, framebuffer, nullptr);
+
+        vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
+
+        vkDestroyPipeline(_device, _pipeline, nullptr);
+        vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
+        vkDestroyRenderPass(_device, _renderPass, nullptr);
+
+        for (auto imageView : _swapChainImageViews)
+            vkDestroyImageView(_device, imageView, nullptr);
+
+        vkDestroySwapchainKHR(_device, _swapChain, nullptr);
+
+        for (size_t i = 0; i < _swapChainImages.size(); i++)
+        {
+            vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
+            vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
+        }
+
+
+        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
+
+        vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
+    }
 
     mvDevice::~mvDevice()
     {
-        vkDeviceWaitIdle(_device);
+        // vertex/index buffers
 
         for (size_t i = 0; i < _max_frames_in_flight; i++)
         {
@@ -82,33 +100,40 @@ namespace Marvel
             vkDestroyFence(_device, _inFlightFences[i], nullptr);
         }
 
-
-        for (auto framebuffer : _swapChainFramebuffers)
-            vkDestroyFramebuffer(_device, framebuffer, nullptr);
-
-        vkDestroyRenderPass(_device, _renderPass, nullptr);
-
-        for (auto imageView : _swapChainImageViews)
-            vkDestroyImageView(_device, imageView, nullptr);
-
-        vkDestroySwapchainKHR(_device, _swapChain, nullptr);
-
-        for (size_t i = 0; i < _swapChainImages.size(); i++) 
-        {
-            vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
-            vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
-        }
-
-        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
-        vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
+        vkDestroyCommandPool(_device, _commandPool, nullptr); 
+        
         vkDestroyDevice(_device, nullptr);
 
         if (_enableValidationLayers)
             DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
 
-
         vkDestroySurfaceKHR(_instance, _surface, nullptr);
         vkDestroyInstance(_instance, nullptr);
+    }
+
+    VkExtent2D mvDevice::getSwapChainExtent()
+    {
+        return _swapChainExtent;
+    }
+
+    VkDescriptorSetLayout* mvDevice::getDescriptorSetLayout()
+    {
+        return &_descriptorSetLayout;
+    }
+
+    VkRenderPass mvDevice::getRenderPass()
+    {
+        return _renderPass;
+    }
+
+    VkPipelineLayout* mvDevice::getPipelineLayout()
+    {
+        return &_pipelineLayout;
+    }
+
+    VkPipeline* mvDevice::getPipeline()
+    {
+        return &_pipeline;
     }
 
     void mvDevice::present(mvGraphicsContext& graphics)
@@ -135,7 +160,7 @@ namespace Marvel
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &graphics.getCommandBuffers()[imageIndex];
+        submitInfo.pCommandBuffers = &_commandBuffers[imageIndex];
 
         VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
@@ -193,6 +218,7 @@ namespace Marvel
         {
             createInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
             createInfo.ppEnabledLayerNames = _validationLayers.data();
+            createInfo.pNext = VK_NULL_HANDLE;
 
             debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
             debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -221,7 +247,7 @@ namespace Marvel
         createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         createInfo.pfnUserCallback = debugCallback;
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&createInfo;
+        createInfo.pNext = VK_NULL_HANDLE;
 
         if (CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, &_debugMessenger) != VK_SUCCESS)
             throw std::runtime_error("failed to set up debug messenger!");
@@ -481,146 +507,6 @@ namespace Marvel
             throw std::runtime_error("failed to create descriptor set layout!");
     }
 
-    void mvDevice::createPipeline(mvPipeline& pipeline)
-    {
-        
-        //---------------------------------------------------------------------
-        // input assembler stage
-        //---------------------------------------------------------------------
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-        inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-        auto attributeDescriptions = pipeline.getVertexLayout().getAttributeDescriptions();
-
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-        vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 1;
-        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-        vertexInputInfo.pVertexBindingDescriptions = &pipeline.getVertexLayout().getBindingDescription();
-        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-        //---------------------------------------------------------------------
-        // vertex shader stage
-        //---------------------------------------------------------------------
-        VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertShaderStageInfo.module = pipeline.getVertexShader().getShaderModule();
-        vertShaderStageInfo.pName = "main";
-
-        //---------------------------------------------------------------------
-        // tesselation stage
-        //---------------------------------------------------------------------
-
-        //---------------------------------------------------------------------
-        // geometry shader stage
-        //---------------------------------------------------------------------
-
-        //---------------------------------------------------------------------
-        // rasterization stage
-        //---------------------------------------------------------------------
-
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (float)_swapChainExtent.width;
-        viewport.height = (float)_swapChainExtent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-
-        VkRect2D scissor{};
-        scissor.offset = { 0, 0 };
-        scissor.extent = _swapChainExtent;
-
-        VkPipelineViewportStateCreateInfo viewportState{};
-        viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewportState.viewportCount = 1;
-        viewportState.pViewports = &viewport;
-        viewportState.scissorCount = 1;
-        viewportState.pScissors = &scissor;
-
-        VkPipelineRasterizationStateCreateInfo rasterizer{};
-        rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        rasterizer.depthClampEnable = VK_FALSE;
-        rasterizer.rasterizerDiscardEnable = VK_FALSE;
-        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-        rasterizer.lineWidth = 1.0f;
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-        rasterizer.depthBiasEnable = VK_FALSE;
-
-        //---------------------------------------------------------------------
-        // fragment shader stage
-        //---------------------------------------------------------------------
-        VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragShaderStageInfo.module = pipeline.getFragmentShader().getShaderModule();
-        fragShaderStageInfo.pName = "main";
-
-        //---------------------------------------------------------------------
-        // color blending stage
-        //---------------------------------------------------------------------
-        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_FALSE;
-
-        VkPipelineColorBlendStateCreateInfo colorBlending{};
-        colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-        colorBlending.logicOpEnable = VK_FALSE;
-        colorBlending.logicOp = VK_LOGIC_OP_COPY;
-        colorBlending.attachmentCount = 1;
-        colorBlending.pAttachments = &colorBlendAttachment;
-        colorBlending.blendConstants[0] = 0.0f;
-        colorBlending.blendConstants[1] = 0.0f;
-        colorBlending.blendConstants[2] = 0.0f;
-        colorBlending.blendConstants[3] = 0.0f;
-
-        //---------------------------------------------------------------------
-        // Create Pipeline layout
-        //---------------------------------------------------------------------
-
-        VkPipelineMultisampleStateCreateInfo multisampling{};
-        multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        multisampling.sampleShadingEnable = VK_FALSE;
-        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pushConstantRangeCount = 0;
-        pipelineLayoutInfo.pSetLayouts = &_descriptorSetLayout;
-
-        if (vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, pipeline.getPipelineLayout()) != VK_SUCCESS)
-            throw std::runtime_error("failed to create pipeline layout!");
-
-        //---------------------------------------------------------------------
-        // Create Pipeline
-        //---------------------------------------------------------------------
-
-        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
-        VkGraphicsPipelineCreateInfo pipelineInfo{};
-        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount = 2;
-        pipelineInfo.pStages = shaderStages;
-        pipelineInfo.pVertexInputState = &vertexInputInfo;
-        pipelineInfo.pInputAssemblyState = &inputAssembly;
-        pipelineInfo.pViewportState = &viewportState;
-        pipelineInfo.pRasterizationState = &rasterizer;
-        pipelineInfo.pMultisampleState = &multisampling;
-        pipelineInfo.pColorBlendState = &colorBlending;
-        pipelineInfo.layout = *pipeline.getPipelineLayout();
-        pipelineInfo.renderPass = _renderPass;
-        pipelineInfo.subpass = 0;
-        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-        if (vkCreateGraphicsPipelines(_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, pipeline.getPipeline()) != VK_SUCCESS)
-            throw std::runtime_error("failed to create graphics pipeline!");
-    }
-
     void mvDevice::createFrameBuffers()
     {
         _swapChainFramebuffers.resize(_swapChainImageViews.size());
@@ -653,7 +539,7 @@ namespace Marvel
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-        if (vkCreateCommandPool(_device, &poolInfo, nullptr, graphics.getCommandPool()) != VK_SUCCESS)
+        if (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS)
             throw std::runtime_error("failed to create command pool!");
     }
 
@@ -744,23 +630,23 @@ namespace Marvel
 
     void mvDevice::createCommandBuffers(mvGraphicsContext& graphics)
     {
-        graphics.getCommandBuffers().resize(_swapChainFramebuffers.size());
+        _commandBuffers.resize(_swapChainFramebuffers.size());
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = *graphics.getCommandPool();
+        allocInfo.commandPool = _commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)graphics.getCommandBuffers().size();
+        allocInfo.commandBufferCount = (uint32_t)_commandBuffers.size();
 
-        if (vkAllocateCommandBuffers(_device, &allocInfo, graphics.getCommandBuffers().data()) != VK_SUCCESS)
+        if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate command buffers!");
 
-        for (size_t i = 0; i < graphics.getCommandBuffers().size(); i++)
+        for (size_t i = 0; i < _commandBuffers.size(); i++)
         {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-            if (vkBeginCommandBuffer(graphics.getCommandBuffers()[i], &beginInfo) != VK_SUCCESS)
+            if (vkBeginCommandBuffer(_commandBuffers[i], &beginInfo) != VK_SUCCESS)
                 throw std::runtime_error("failed to begin recording command buffer!");
 
             VkRenderPassBeginInfo renderPassInfo{};
@@ -774,21 +660,21 @@ namespace Marvel
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
 
-            vkCmdBeginRenderPass(graphics.getCommandBuffers()[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-            vkCmdBindPipeline(graphics.getCommandBuffers()[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *graphics.getPipeline().getPipeline());
+                vkCmdBindPipeline(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
 
-            graphics.getIndexBuffer().bind(graphics.getCommandBuffers()[i]);
-            graphics.getVertexBuffer().bind(graphics.getCommandBuffers()[i]);
+                graphics.getIndexBuffer().bind(_commandBuffers[i]);
+                graphics.getVertexBuffer().bind(_commandBuffers[i]);
 
-            vkCmdBindDescriptorSets(graphics.getCommandBuffers()[i], VK_PIPELINE_BIND_POINT_GRAPHICS, 
-                *graphics.getPipeline().getPipelineLayout(), 0, 1, &_descriptorSets[i], 0, nullptr);
+                vkCmdBindDescriptorSets(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    _pipelineLayout, 0, 1, &_descriptorSets[i], 0, nullptr);
 
-            vkCmdDrawIndexed(graphics.getCommandBuffers()[i], graphics.getIndexBuffer().getVertexCount(), 1, 0, 0, 0);
+                vkCmdDrawIndexed(_commandBuffers[i], graphics.getIndexBuffer().getVertexCount(), 1, 0, 0, 0);
 
-            vkCmdEndRenderPass(graphics.getCommandBuffers()[i]);
+            vkCmdEndRenderPass(_commandBuffers[i]);
 
-            if (vkEndCommandBuffer(graphics.getCommandBuffers()[i]) != VK_SUCCESS)
+            if (vkEndCommandBuffer(_commandBuffers[i]) != VK_SUCCESS)
                 throw std::runtime_error("failed to record command buffer!");
         }
     }
@@ -996,7 +882,7 @@ namespace Marvel
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = *graphics.getCommandPool();
+        allocInfo.commandPool = _commandPool;
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -1024,6 +910,6 @@ namespace Marvel
         vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(_graphicsQueue);
 
-        vkFreeCommandBuffers(_device, *graphics.getCommandPool(), 1, &commandBuffer);
+        vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
     }
 }

@@ -5,39 +5,38 @@
 
 namespace Marvel {
 
-	mvIndexBuffer::mvIndexBuffer(mvDevice& device, mvGraphicsContext& graphics, const std::vector<uint16_t>& ibuf)
+	mvIndexBuffer::mvIndexBuffer( mvGraphicsContext& graphics, const std::vector<uint16_t>& ibuf)
 	{
-        _device = device.getDevice();
         _indices = ibuf;
 
         VkDeviceSize bufferSize = sizeof(_indices[0]) * _indices.size();
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
-        device.createBuffer(bufferSize,
+        graphics.getDevice().createBuffer(bufferSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
             stagingBuffer, 
             stagingBufferMemory);
 
         void* data;
-        vkMapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        vkMapMemory(graphics.getDevice().getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, _indices.data(), (size_t)bufferSize);
-        vkUnmapMemory(_device, stagingBufferMemory);
+        vkUnmapMemory(graphics.getDevice().getDevice(), stagingBufferMemory);
 
-        device.createBuffer(bufferSize,
+        graphics.getDevice().createBuffer(bufferSize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
             _indexBuffer, _indexBufferMemory);
 
-        device.copyBuffer(graphics, stagingBuffer, _indexBuffer, bufferSize);
+        graphics.getDevice().copyBuffer(graphics, stagingBuffer, _indexBuffer, bufferSize);
 
-        vkDestroyBuffer(_device, stagingBuffer, nullptr);
-        vkFreeMemory(_device, stagingBufferMemory, nullptr);
+        vkDestroyBuffer(graphics.getDevice().getDevice(), stagingBuffer, nullptr);
+        vkFreeMemory(graphics.getDevice().getDevice(), stagingBufferMemory, nullptr);
 	}
 
-    mvIndexBuffer::~mvIndexBuffer()
+    void mvIndexBuffer::finish(mvGraphicsContext& graphics)
     {
-        vkDestroyBuffer(_device, _indexBuffer, nullptr);
-        vkFreeMemory(_device, _indexBufferMemory, nullptr);
+        vkDestroyBuffer(graphics.getDevice().getDevice(), _indexBuffer, nullptr);
+        vkFreeMemory(graphics.getDevice().getDevice(), _indexBufferMemory, nullptr);
     }
 
     uint32_t mvIndexBuffer::getVertexCount()

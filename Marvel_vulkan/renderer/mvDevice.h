@@ -14,9 +14,11 @@
 #include "mvVertexBuffer.h"
 #include "mvIndexBuffer.h"
 #include "mvPipeline.h"
-#include "mvGraphicsContext.h"
+
 
 namespace Marvel {
+
+	class mvGraphicsContext;
 
 	struct UniformBufferObject 
 	{
@@ -47,19 +49,28 @@ namespace Marvel {
 
 	public:
 
+		mvDevice() = default;
 		mvDevice(GLFWwindow* window);
 		~mvDevice();
+
+		void init(GLFWwindow* window);
+		void finish();
 
 		void present(mvGraphicsContext&);
 
 		VkDevice      getDevice();
+		VkExtent2D    getSwapChainExtent();
+		VkDescriptorSetLayout* getDescriptorSetLayout();
+		VkRenderPass getRenderPass();
+		VkPipelineLayout* getPipelineLayout();
+		VkPipeline*       getPipeline();
+
 		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void copyBuffer(mvGraphicsContext&, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 		// new uses
 		VkShaderModule createShaderModule(const std::vector<char>& code);
-		void createPipeline(mvPipeline&);
 		void createCommandPool(mvGraphicsContext&);
 		void createCommandBuffers(mvGraphicsContext&);
 
@@ -120,6 +131,10 @@ namespace Marvel {
 		VkDescriptorSetLayout        _descriptorSetLayout;
 		VkDescriptorPool             _descriptorPool;
 		std::vector<VkDescriptorSet> _descriptorSets;
+		VkCommandPool                _commandPool;
+		std::vector<VkCommandBuffer> _commandBuffers;
+		VkPipelineLayout             _pipelineLayout;
+		VkPipeline                   _pipeline;
 
 		size_t                       _currentFrame = 0;
 

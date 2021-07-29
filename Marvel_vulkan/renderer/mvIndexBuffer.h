@@ -7,7 +7,6 @@
 
 namespace Marvel {
 
-	class mvDevice;
 	class mvGraphicsContext;
 
 	class mvIndexBuffer
@@ -15,9 +14,9 @@ namespace Marvel {
 
 	public:
 
-		mvIndexBuffer(mvDevice& device, mvGraphicsContext& graphics, const std::vector<uint16_t>& ibuf);
-		~mvIndexBuffer();
+		mvIndexBuffer(mvGraphicsContext& graphics, const std::vector<uint16_t>& ibuf);
 
+		void finish(mvGraphicsContext& graphics);
 		void bind(VkCommandBuffer commandBuffer);
 		uint32_t getVertexCount();
 
@@ -25,7 +24,6 @@ namespace Marvel {
 
 		std::vector<uint16_t> _indices;
 
-		VkDevice _device;
 		VkBuffer _indexBuffer;
 		VkDeviceMemory _indexBufferMemory;
 

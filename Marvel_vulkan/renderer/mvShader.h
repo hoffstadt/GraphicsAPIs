@@ -7,22 +7,22 @@
 
 namespace Marvel {
 
-	class mvDevice;
+	class mvGraphicsContext;
 
 	class mvShader
 	{
 
 	public:
 
-		mvShader(mvDevice& device, const std::string& file);
-		~mvShader();
+		mvShader(mvGraphicsContext& graphics, const std::string& file);
+
+		void finish(mvGraphicsContext& graphics);
 
 		VkShaderModule getShaderModule() const;
 
 	private:
 
 		VkShaderModule _shaderModule = VK_NULL_HANDLE;
-		VkDevice       _device = VK_NULL_HANDLE;
 
 	};
 

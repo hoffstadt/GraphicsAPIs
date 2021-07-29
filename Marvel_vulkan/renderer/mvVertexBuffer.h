@@ -8,7 +8,6 @@
 
 namespace Marvel {
 
-	class mvDevice;
 	class mvGraphicsContext;
 
 	class mvVertexBuffer
@@ -16,9 +15,9 @@ namespace Marvel {
 
 	public:
 
-		mvVertexBuffer(mvDevice& device, mvGraphicsContext& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf);
-		~mvVertexBuffer();
+		mvVertexBuffer(mvGraphicsContext& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf);
 
+		void finish(mvGraphicsContext& graphics);
 		void bind(VkCommandBuffer commandBuffer);
 		const mvVertexLayout& GetLayout() const;
 
@@ -26,7 +25,6 @@ namespace Marvel {
 
 		std::vector<float>   _vertices;
 		mvVertexLayout       _layout;
-		VkDevice             _device;
 		VkBuffer             _vertexBuffer;
 		VkMemoryRequirements _memRequirements;
 		VkDeviceMemory       _vertexBufferMemory;

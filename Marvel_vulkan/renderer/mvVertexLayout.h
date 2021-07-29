@@ -44,7 +44,7 @@ namespace Marvel {
 
 		void                                           append(ElementType type);
 		std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() const;
-		VkVertexInputBindingDescription                getBindingDescription() const;
+		std::vector<VkVertexInputBindingDescription>   getBindingDescriptions() const;
 
 	private:
 

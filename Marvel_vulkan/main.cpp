@@ -9,11 +9,10 @@ int main()
 {
 
     auto window = mvWindow("Marvel Vulkan", 800, 600);
-    auto device = mvDevice(window.getHandle());
-    auto graphics = mvGraphicsContext(device);
-    auto pipeline = std::make_shared<mvPipeline>(device);
-    auto vertexShader = std::make_shared<mvShader>(device, "../../Marvel_vulkan/shaders/vert.spv");
-    auto fragShader = std::make_shared<mvShader>(device, "../../Marvel_vulkan/shaders/frag.spv");
+    auto graphics = mvGraphicsContext(window.getHandle());
+    auto pipeline = std::make_shared<mvPipeline>();
+    auto vertexShader = std::make_shared<mvShader>(graphics, "../../Marvel_vulkan/shaders/vert.spv");
+    auto fragShader = std::make_shared<mvShader>(graphics, "../../Marvel_vulkan/shaders/frag.spv");
 
     auto vlayout = mvVertexLayout();
     vlayout.append(ElementType::Position2D);
@@ -22,14 +21,14 @@ int main()
     pipeline->setVertexLayout(vlayout);
     pipeline->setVertexShader(vertexShader);
     pipeline->setFragmentShader(fragShader);
-    device.createPipeline(*pipeline);
+    pipeline->create(graphics);
     graphics.setPipeline(pipeline);
 
-    device.createCommandPool(graphics);
+    graphics.getDevice().createCommandPool(graphics);
 
-    auto indexBuffer = std::make_shared<mvIndexBuffer>(device, graphics, std::vector<uint16_t>{ 0u, 1u, 2u, 2u, 3u, 0u });
+    auto indexBuffer = std::make_shared<mvIndexBuffer>(graphics, std::vector<uint16_t>{ 0u, 1u, 2u, 2u, 3u, 0u });
 
-    auto vertexBuffer = std::make_shared<mvVertexBuffer>(device, graphics, vlayout, std::vector<float>{
+    auto vertexBuffer = std::make_shared<mvVertexBuffer>(graphics, vlayout, std::vector<float>{
         -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
             0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
             0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
@@ -39,13 +38,25 @@ int main()
     graphics.setIndexBuffer(indexBuffer);
     graphics.setVertexBuffer(vertexBuffer);
     
-    device.createCommandBuffers(graphics);
+    graphics.getDevice().createCommandBuffers(graphics);
 
+    //---------------------------------------------------------------------
+    // main loop
+    //---------------------------------------------------------------------
     while (window.isRunning())
     {
         window.processEvents();
 
-        device.present(graphics);
+        graphics.getDevice().present(graphics);
     }
+
+    //---------------------------------------------------------------------
+    // cleanup - crappy for now
+    //---------------------------------------------------------------------
+    vertexShader->finish(graphics);
+    fragShader->finish(graphics);
+    graphics.getDevice().finish();
+    vertexBuffer->finish(graphics);
+    indexBuffer->finish(graphics);
 
 }

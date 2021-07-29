@@ -8,6 +8,7 @@
 #include "mvVertexBuffer.h"
 #include "mvIndexBuffer.h"
 #include "mvPipeline.h"
+#include "mvDevice.h"
 
 namespace Marvel{
 
@@ -18,8 +19,7 @@ namespace Marvel{
 
 	public:
 
-		mvGraphicsContext(mvDevice&);
-		~mvGraphicsContext();
+		mvGraphicsContext(GLFWwindow* window);
 
 		void begin();
 		void end();
@@ -28,23 +28,21 @@ namespace Marvel{
 		void setVertexBuffer(std::shared_ptr<mvVertexBuffer>);
 		void setIndexBuffer (std::shared_ptr<mvIndexBuffer>);
 
+		mvDevice&   getDevice();
 		mvPipeline& getPipeline();
 
 		// filled by device
-		VkCommandPool*                getCommandPool();
-		std::vector<VkCommandBuffer>& getCommandBuffers();
 		mvVertexBuffer&               getVertexBuffer();
 		mvIndexBuffer&                getIndexBuffer();
 
 	private:
 
-		VkDevice                        _device;
+		mvDevice                        _device;
 		mvVertexLayout                  _vertexLayout;
 		std::shared_ptr<mvVertexBuffer> _vertexBuffer = nullptr;
 		std::shared_ptr<mvIndexBuffer>  _indexBuffer  = nullptr;
 		std::shared_ptr<mvPipeline>     _pipeline     = nullptr;
-		VkCommandPool                   _commandPool;
-		std::vector<VkCommandBuffer>    _commandBuffers;
+		
 	};
 
 }
