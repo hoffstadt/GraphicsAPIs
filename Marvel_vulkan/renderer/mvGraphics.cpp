@@ -60,16 +60,21 @@ namespace Marvel
 
         createVulkanInstance();
         setupDebugMessenger();
-        _mvdevice.init(_instance, window, _graphicsQueue, _presentQueue);
-        _mvdevice.createSwapChain(window, _swapChain, _swapChainImageFormat, _swapChainImages, _swapChainExtent);
+        createSurface(window);
+        pickPhysicalDevice();
+        createLogicalDevice();
+        createSwapChain(window);
         createImageViews();
         createRenderPass();
         createDescriptorSetLayout();
         createGraphicsPipeline();
         createFrameBuffers();
-        _mvdevice.createCommandPool(_commandPool);
+        createCommandPool();
+
 
         _indexBuffer = new mvIndexBuffer(*this, { 0u, 1u, 2u, 2u, 3u, 0u });
+
+
 
         _vertexBuffer = new mvVertexBuffer(*this, _vertexLayout, {
             -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
@@ -88,57 +93,57 @@ namespace Marvel
 
     mvGraphics::~mvGraphics()
     {
-        vkDeviceWaitIdle(_mvdevice._device);
+        vkDeviceWaitIdle(_device);
 
         for (size_t i = 0; i < _max_frames_in_flight; i++)
         {
-            vkDestroySemaphore(_mvdevice._device, _renderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(_mvdevice._device, _imageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(_mvdevice._device, _inFlightFences[i], nullptr);
+            vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
+            vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
+            vkDestroyFence(_device, _inFlightFences[i], nullptr);
         }
 
-        vkDestroyCommandPool(_mvdevice._device, _commandPool, nullptr);
+        vkDestroyCommandPool(_device, _commandPool, nullptr);
 
         for (auto framebuffer : _swapChainFramebuffers)
-            vkDestroyFramebuffer(_mvdevice._device, framebuffer, nullptr);
+            vkDestroyFramebuffer(_device, framebuffer, nullptr);
 
-        vkDestroyPipeline(_mvdevice._device, _graphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(_mvdevice._device, _pipelineLayout, nullptr);
-        vkDestroyRenderPass(_mvdevice._device, _renderPass, nullptr);
+        vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
+        vkDestroyRenderPass(_device, _renderPass, nullptr);
 
         for (auto imageView : _swapChainImageViews)
-            vkDestroyImageView(_mvdevice._device, imageView, nullptr);
+            vkDestroyImageView(_device, imageView, nullptr);
 
-        vkDestroySwapchainKHR(_mvdevice._device, _swapChain, nullptr);
+        vkDestroySwapchainKHR(_device, _swapChain, nullptr);
         delete _vertexBuffer;
         delete _indexBuffer;
         for (size_t i = 0; i < _swapChainImages.size(); i++) 
         {
-            vkDestroyBuffer(_mvdevice._device, _uniformBuffers[i], nullptr);
-            vkFreeMemory(_mvdevice._device, _uniformBuffersMemory[i], nullptr);
+            vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
+            vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
         }
 
-        vkDestroyDescriptorPool(_mvdevice._device, _descriptorPool, nullptr);
-        vkDestroyDescriptorSetLayout(_mvdevice._device, _descriptorSetLayout, nullptr);
-        vkDestroyDevice(_mvdevice._device, nullptr);
+        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
+        vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
+        vkDestroyDevice(_device, nullptr);
 
-        if (_mvdevice._enableValidationLayers)
+        if (_enableValidationLayers)
             DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
 
 
-        vkDestroySurfaceKHR(_instance, _mvdevice._surface, nullptr);
+        vkDestroySurfaceKHR(_instance, _surface, nullptr);
         vkDestroyInstance(_instance, nullptr);
     }
 
     void mvGraphics::present()
     {
-        vkWaitForFences(_mvdevice._device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(_mvdevice._device, _swapChain, UINT64_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &imageIndex);
+        vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         if (_imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-            vkWaitForFences(_mvdevice._device, 1, &_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+            vkWaitForFences(_device, 1, &_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 
         _imagesInFlight[imageIndex] = _inFlightFences[_currentFrame];
 
@@ -160,7 +165,7 @@ namespace Marvel
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(_mvdevice._device, 1, &_inFlightFences[_currentFrame]);
+        vkResetFences(_device, 1, &_inFlightFences[_currentFrame]);
 
         if (vkQueueSubmit(_graphicsQueue, 1, &submitInfo, _inFlightFences[_currentFrame]) != VK_SUCCESS)
             throw std::runtime_error("failed to submit draw command buffer!");
@@ -185,7 +190,7 @@ namespace Marvel
 	void mvGraphics::createVulkanInstance()
 	{
 
-        if (_mvdevice._enableValidationLayers && !_mvdevice.checkValidationLayerSupport())
+        if (_enableValidationLayers && !checkValidationLayerSupport())
             throw std::runtime_error("validation layers requested, but not available!");
 
         VkApplicationInfo appInfo{};
@@ -200,7 +205,7 @@ namespace Marvel
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-        if (_mvdevice._enableValidationLayers)
+        if (_enableValidationLayers)
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
@@ -208,10 +213,10 @@ namespace Marvel
 
         // Setup debug messenger for vulkan instance
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
-        if (_mvdevice._enableValidationLayers)
+        if (_enableValidationLayers)
         {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(_mvdevice._validationLayers.size());
-            createInfo.ppEnabledLayerNames = _mvdevice._validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
+            createInfo.ppEnabledLayerNames = _validationLayers.data();
 
             debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
             debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -232,7 +237,7 @@ namespace Marvel
 
     void mvGraphics::setupDebugMessenger()
     {
-        if (!_mvdevice._enableValidationLayers) 
+        if (!_enableValidationLayers) 
             return;
 
         VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
@@ -244,6 +249,174 @@ namespace Marvel
 
         if (CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, &_debugMessenger) != VK_SUCCESS)
             throw std::runtime_error("failed to set up debug messenger!");
+    }
+
+    void mvGraphics::createSurface(GLFWwindow* window)
+    {
+        if (glfwCreateWindowSurface(_instance, window, nullptr, &_surface) != VK_SUCCESS)
+            throw std::runtime_error("failed to create window surface!");
+    }
+
+    void mvGraphics::pickPhysicalDevice()
+    {
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
+
+        if (deviceCount == 0)
+            throw std::runtime_error("failed to find GPUs with Vulkan support!");
+
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
+
+        for (const auto& device : devices) {
+            if (isDeviceSuitable(device))
+            {
+                _physicalDevice = device;
+                break;
+            }
+        }
+
+        if (_physicalDevice == VK_NULL_HANDLE)
+            throw std::runtime_error("failed to find a suitable GPU!");
+    }
+
+    void mvGraphics::createLogicalDevice()
+    {
+        QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
+
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+
+        float queuePriority = 1.0f;
+        for (uint32_t queueFamily : uniqueQueueFamilies)
+        {
+            VkDeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
+
+        VkPhysicalDeviceFeatures deviceFeatures{};
+        {
+            VkDeviceCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+            createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+            createInfo.pQueueCreateInfos = queueCreateInfos.data();
+
+            createInfo.pEnabledFeatures = &deviceFeatures;
+
+            createInfo.enabledExtensionCount = static_cast<uint32_t>(_deviceExtensions.size());
+            createInfo.ppEnabledExtensionNames = _deviceExtensions.data();
+
+            if (_enableValidationLayers)
+            {
+                createInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
+                createInfo.ppEnabledLayerNames = _validationLayers.data();
+            }
+            else
+                createInfo.enabledLayerCount = 0;
+
+            if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS)
+                throw std::runtime_error("failed to create logical device!");
+        }
+
+        vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0, &_graphicsQueue);
+        vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
+    }
+
+    void mvGraphics::createSwapChain(GLFWwindow* window)
+    {
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(_physicalDevice);
+
+        // choose swap surface Format
+        VkSurfaceFormatKHR surfaceFormat = swapChainSupport.formats[0];
+        for (const auto& availableFormat : swapChainSupport.formats)
+        {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            {
+                surfaceFormat = availableFormat;
+                break;
+            }
+        }
+
+        // chose swap present mode
+        VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+        for (const auto& availablePresentMode : swapChainSupport.presentModes)
+        {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+            {
+                presentMode = availablePresentMode;
+                break;
+            }
+        }
+
+        // chose swap extent
+        VkExtent2D extent;
+        if (swapChainSupport.capabilities.currentExtent.width != UINT32_MAX)
+            extent = swapChainSupport.capabilities.currentExtent;
+        else
+        {
+            int width, height;
+            glfwGetFramebufferSize(window, &width, &height);
+
+            VkExtent2D actualExtent = {
+                static_cast<uint32_t>(width),
+                static_cast<uint32_t>(height)
+            };
+
+            actualExtent.width = std::max(swapChainSupport.capabilities.minImageExtent.width, std::min(swapChainSupport.capabilities.maxImageExtent.width, actualExtent.width));
+            actualExtent.height = std::max(swapChainSupport.capabilities.minImageExtent.height, std::min(swapChainSupport.capabilities.maxImageExtent.height, actualExtent.height));
+
+            extent = actualExtent;
+        }
+
+        uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+        if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
+            imageCount = swapChainSupport.capabilities.maxImageCount;
+
+        {
+            VkSwapchainCreateInfoKHR createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+            createInfo.surface = _surface;
+            createInfo.minImageCount = imageCount;
+            createInfo.imageFormat = surfaceFormat.format;
+            createInfo.imageColorSpace = surfaceFormat.colorSpace;
+            createInfo.imageExtent = extent;
+            createInfo.imageArrayLayers = 1;
+            createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+            QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
+            uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+
+            if (indices.graphicsFamily != indices.presentFamily)
+            {
+                createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+                createInfo.queueFamilyIndexCount = 2;
+                createInfo.pQueueFamilyIndices = queueFamilyIndices;
+            }
+            else
+                createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+            createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+            createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+            createInfo.presentMode = presentMode;
+            createInfo.clipped = VK_TRUE;
+
+            createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+            if (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &_swapChain) != VK_SUCCESS)
+                throw std::runtime_error("failed to create swap chain!");
+        }
+
+        vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
+        _swapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, _swapChainImages.data());
+
+        _swapChainImageFormat = surfaceFormat.format;
+        _swapChainExtent = extent;
     }
 
     void mvGraphics::createImageViews()
@@ -267,7 +440,7 @@ namespace Marvel
             createInfo.subresourceRange.baseArrayLayer = 0;
             createInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(_mvdevice._device, &createInfo, nullptr, &_swapChainImageViews[i]) != VK_SUCCESS)
+            if (vkCreateImageView(_device, &createInfo, nullptr, &_swapChainImageViews[i]) != VK_SUCCESS)
                 throw std::runtime_error("failed to create image views!");
         }
     }
@@ -310,7 +483,7 @@ namespace Marvel
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(_mvdevice._device, &renderPassInfo, nullptr, &_renderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_renderPass) != VK_SUCCESS)
             throw std::runtime_error("failed to create render pass!");
     }
 
@@ -328,7 +501,7 @@ namespace Marvel
         layoutInfo.bindingCount = 1;
         layoutInfo.pBindings = &uboLayoutBinding;
 
-        if (vkCreateDescriptorSetLayout(_mvdevice._device, &layoutInfo, nullptr, &_descriptorSetLayout) != VK_SUCCESS)
+        if (vkCreateDescriptorSetLayout(_device, &layoutInfo, nullptr, &_descriptorSetLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create descriptor set layout!");
     }
 
@@ -450,7 +623,7 @@ namespace Marvel
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pSetLayouts = &_descriptorSetLayout;
 
-        if (vkCreatePipelineLayout(_mvdevice._device, &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create pipeline layout!");
 
         //---------------------------------------------------------------------
@@ -474,11 +647,11 @@ namespace Marvel
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(_mvdevice._device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_graphicsPipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_graphicsPipeline) != VK_SUCCESS)
             throw std::runtime_error("failed to create graphics pipeline!");
 
-        vkDestroyShaderModule(_mvdevice._device, fragShaderModule, nullptr);
-        vkDestroyShaderModule(_mvdevice._device, vertShaderModule, nullptr);
+        vkDestroyShaderModule(_device, fragShaderModule, nullptr);
+        vkDestroyShaderModule(_device, vertShaderModule, nullptr);
     }
 
     void mvGraphics::createFrameBuffers()
@@ -500,9 +673,21 @@ namespace Marvel
             framebufferInfo.height = _swapChainExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(_mvdevice._device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]) != VK_SUCCESS)
+            if (vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]) != VK_SUCCESS)
                 throw std::runtime_error("failed to create framebuffer!");
         }
+    }
+
+    void mvGraphics::createCommandPool()
+    {
+        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(_physicalDevice);
+
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+        if (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS)
+            throw std::runtime_error("failed to create command pool!");
     }
 
     void mvGraphics::createUniformBuffers()
@@ -532,9 +717,9 @@ namespace Marvel
         ubo.proj[1][1] *= -1;
 
         void* data;
-        vkMapMemory(_mvdevice._device, _uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+        vkMapMemory(_device, _uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
         memcpy(data, &ubo, sizeof(ubo));
-        vkUnmapMemory(_mvdevice._device, _uniformBuffersMemory[currentImage]);
+        vkUnmapMemory(_device, _uniformBuffersMemory[currentImage]);
     }
 
     void mvGraphics::createDescriptorPool()
@@ -549,7 +734,7 @@ namespace Marvel
         poolInfo.pPoolSizes = &poolSize;
         poolInfo.maxSets = static_cast<uint32_t>(_swapChainImages.size());
 
-        if (vkCreateDescriptorPool(_mvdevice._device, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS)
+        if (vkCreateDescriptorPool(_device, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS)
             throw std::runtime_error("failed to create descriptor pool!");
     }
 
@@ -564,7 +749,7 @@ namespace Marvel
         allocInfo.pSetLayouts = layouts.data();
 
         _descriptorSets.resize(_swapChainImages.size());
-        if (vkAllocateDescriptorSets(_mvdevice._device, &allocInfo, _descriptorSets.data()) != VK_SUCCESS)
+        if (vkAllocateDescriptorSets(_device, &allocInfo, _descriptorSets.data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate descriptor sets!");
 
         for (size_t i = 0; i < _swapChainImages.size(); i++) 
@@ -585,7 +770,7 @@ namespace Marvel
             descriptorWrite.pImageInfo = nullptr; // Optional
             descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-            vkUpdateDescriptorSets(_mvdevice._device, 1, &descriptorWrite, 0, nullptr);
+            vkUpdateDescriptorSets(_device, 1, &descriptorWrite, 0, nullptr);
         }
 
     }
@@ -600,7 +785,7 @@ namespace Marvel
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = (uint32_t)_commandBuffers.size();
 
-        if (vkAllocateCommandBuffers(_mvdevice._device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
+        if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate command buffers!");
 
         for (size_t i = 0; i < _commandBuffers.size(); i++)
@@ -657,11 +842,125 @@ namespace Marvel
 
         for (size_t i = 0; i < _max_frames_in_flight; i++)
         {
-            if (vkCreateSemaphore(_mvdevice._device, &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(_mvdevice._device, &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]) != VK_SUCCESS ||
-                vkCreateFence(_mvdevice._device, &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS)
+            if (vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(_device, &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS)
                 throw std::runtime_error("failed to create synchronization objects for a frame!");
         }
+    }
+
+    bool mvGraphics::checkValidationLayerSupport()
+    {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        for (const char* layerName : _validationLayers) {
+            bool layerFound = false;
+
+            for (const auto& layerProperties : availableLayers) {
+                if (strcmp(layerName, layerProperties.layerName) == 0) {
+                    layerFound = true;
+                    break;
+                }
+            }
+
+            if (!layerFound) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool mvGraphics::isDeviceSuitable(VkPhysicalDevice device)
+    {
+        QueueFamilyIndices indices = findQueueFamilies(device);
+
+        bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+        bool swapChainAdequate = false;
+        if (extensionsSupported) {
+            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        }
+
+        return indices.isComplete() && extensionsSupported && swapChainAdequate;
+    }
+
+    bool mvGraphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        std::set<std::string> requiredExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
+
+        for (const auto& extension : availableExtensions) {
+            requiredExtensions.erase(extension.extensionName);
+        }
+
+        return requiredExtensions.empty();
+    }
+
+    mvGraphics::SwapChainSupportDetails mvGraphics::querySwapChainSupport(VkPhysicalDevice device)
+    {
+        SwapChainSupportDetails details;
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surface, &details.capabilities);
+
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, _surface, &formatCount, nullptr);
+
+        if (formatCount != 0) {
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, _surface, &formatCount, details.formats.data());
+        }
+
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, _surface, &presentModeCount, nullptr);
+
+        if (presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, _surface, &presentModeCount, details.presentModes.data());
+        }
+
+        return details;
+    }
+
+    mvGraphics::QueueFamilyIndices mvGraphics::findQueueFamilies(VkPhysicalDevice device)
+    {
+
+        QueueFamilyIndices indices;
+
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+        int i = 0;
+        for (const auto& queueFamily : queueFamilies)
+        {
+            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                indices.graphicsFamily = i;
+
+            VkBool32 presentSupport = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _surface, &presentSupport);
+
+            if (presentSupport)
+                indices.presentFamily = i;
+
+            if (indices.isComplete())
+                break;
+
+            i++;
+        }
+
+        return indices;
     }
 
     VkShaderModule mvGraphics::createShaderModule(const std::vector<char>& code)
@@ -672,7 +971,7 @@ namespace Marvel
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
         VkShaderModule shaderModule;
-        if (vkCreateShaderModule(_mvdevice._device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+        if (vkCreateShaderModule(_device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
             throw std::runtime_error("failed to create shader module!");
 
         return shaderModule;
@@ -681,7 +980,7 @@ namespace Marvel
     std::uint32_t mvGraphics::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
     {
         VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(_mvdevice._physicalDevice, &memProperties);
+        vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProperties);
 
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
             if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -694,7 +993,7 @@ namespace Marvel
 
     VkDevice mvGraphics::getDevice()
     {
-        return _mvdevice._device;
+        return _device;
     }
 
     void mvGraphics::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -705,23 +1004,23 @@ namespace Marvel
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(_mvdevice._device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+        if (vkCreateBuffer(_device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
             throw std::runtime_error("failed to create buffer!");
         }
 
         VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(_mvdevice._device, buffer, &memRequirements);
+        vkGetBufferMemoryRequirements(_device, buffer, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(_mvdevice._device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+        if (vkAllocateMemory(_device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate buffer memory!");
         }
 
-        vkBindBufferMemory(_mvdevice._device, buffer, bufferMemory, 0);
+        vkBindBufferMemory(_device, buffer, bufferMemory, 0);
     }
 
     void mvGraphics::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
@@ -733,7 +1032,7 @@ namespace Marvel
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(_mvdevice._device, &allocInfo, &commandBuffer);
+        vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -757,6 +1056,6 @@ namespace Marvel
         vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(_graphicsQueue);
 
-        vkFreeCommandBuffers(_mvdevice._device, _commandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
     }
 }
