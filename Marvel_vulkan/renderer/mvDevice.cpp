@@ -640,21 +640,19 @@ namespace Marvel
             throw std::runtime_error("failed to allocate command buffers!");
     }
 
-    void mvDevice::createCommandBuffers(mvGraphicsContext& graphics)
+    void mvDevice::createCommandBuffers(mvGraphicsContext& graphics, int buffer)
     {
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-        if (vkBeginCommandBuffer(_commandBuffers[_currentFrame], &beginInfo) != VK_SUCCESS)
+        if (vkBeginCommandBuffer(_commandBuffers[buffer], &beginInfo) != VK_SUCCESS)
             throw std::runtime_error("failed to begin recording command buffer!");
 
-        //vkResetCommandBuffer(_commandBuffers[(_currentFrame + 1) % _max_frames_in_flight], 0);
-        
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = _renderPass;
-        renderPassInfo.framebuffer = _swapChainFramebuffers[_currentFrame];
+        renderPassInfo.framebuffer = _swapChainFramebuffers[buffer];
         renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = _swapChainExtent;
 
@@ -662,21 +660,21 @@ namespace Marvel
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearColor;
 
-        vkCmdBeginRenderPass(_commandBuffers[_currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(_commandBuffers[buffer], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-            vkCmdBindPipeline(_commandBuffers[_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
+            vkCmdBindPipeline(_commandBuffers[buffer], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
 
-            graphics.getIndexBuffer().bind(_commandBuffers[_currentFrame]);
-            graphics.getVertexBuffer().bind(_commandBuffers[_currentFrame]);
+            graphics.getIndexBuffer().bind(_commandBuffers[buffer]);
+            graphics.getVertexBuffer().bind(_commandBuffers[buffer]);
 
-            vkCmdBindDescriptorSets(_commandBuffers[_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,
-                _pipelineLayout, 0, 1, &_descriptorSets[_currentFrame], 0, nullptr);
+            vkCmdBindDescriptorSets(_commandBuffers[buffer], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                _pipelineLayout, 0, 1, &_descriptorSets[buffer], 0, nullptr);
 
-            vkCmdDrawIndexed(_commandBuffers[_currentFrame], graphics.getIndexBuffer().getVertexCount(), 1, 0, 0, 0);
+            vkCmdDrawIndexed(_commandBuffers[buffer], graphics.getIndexBuffer().getVertexCount(), 1, 0, 0, 0);
 
-        vkCmdEndRenderPass(_commandBuffers[_currentFrame]);
+        vkCmdEndRenderPass(_commandBuffers[buffer]);
 
-        if (vkEndCommandBuffer(_commandBuffers[_currentFrame]) != VK_SUCCESS)
+        if (vkEndCommandBuffer(_commandBuffers[buffer]) != VK_SUCCESS)
             throw std::runtime_error("failed to record command buffer!");
     }
 

@@ -35,15 +35,16 @@ int main()
     graphics.setIndexBuffer(indexBuffer);
     graphics.setVertexBuffer(vertexBuffer);
     
+    graphics.getDevice().createCommandBuffers(graphics, 0);
+    graphics.getDevice().createCommandBuffers(graphics, 1);
+    graphics.getDevice().createCommandBuffers(graphics, 2);
+
     //---------------------------------------------------------------------
     // main loop
     //---------------------------------------------------------------------
     while (window.isRunning())
     {
         window.processEvents();
-
-        graphics.getDevice().createCommandBuffers(graphics);
-
         graphics.getDevice().present(graphics);
     }
 
