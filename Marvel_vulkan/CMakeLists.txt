@@ -29,6 +29,7 @@ target_include_directories(marvel_vulkan
 	    "$ENV{VK_SDK_PATH}/Include/"
 		"../Dependencies/glfw/include/"
 		"../Dependencies/glm/"
+		"../Dependencies/stb/"
 )
 
 target_link_directories(marvel_vulkan

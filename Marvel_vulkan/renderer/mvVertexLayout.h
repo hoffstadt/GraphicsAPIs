@@ -9,6 +9,7 @@ namespace Marvel {
 	enum class ElementType
 	{
 		Position2D,
+		Texture2D,
 		Color
 	};
 

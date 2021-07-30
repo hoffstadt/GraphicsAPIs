@@ -73,6 +73,18 @@ namespace Marvel {
 		void createCommandPool();
 		void allocCommandBuffers();
 		void createCommandBuffers(mvGraphicsContext& graphics, int buffer);
+		void createTextureImage();
+		void createTextureImageView();
+		VkImageView createImageView(VkImage image, VkFormat format);
+		void createImage(uint32_t width, uint32_t height, VkFormat format, 
+			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
+			VkImage& image, VkDeviceMemory& imageMemory);
+
+		VkCommandBuffer beginSingleTimeCommands();
+		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void createTextureSampler();
 
 	private:
 
@@ -105,6 +117,10 @@ namespace Marvel {
 
 		std::vector<VkBuffer>       _uniformBuffers;
 		std::vector<VkDeviceMemory> _uniformBuffersMemory;
+		VkImage                     _textureImage;
+		VkDeviceMemory              _textureImageMemory;
+		VkImageView                 _textureImageView;
+		VkSampler                   _textureSampler;
 
 		// options
 		bool _enableValidationLayers = true;

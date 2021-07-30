@@ -15,6 +15,7 @@ int main()
     auto vlayout = mvVertexLayout();
     vlayout.append(ElementType::Position2D);
     vlayout.append(ElementType::Color);
+    vlayout.append(ElementType::Texture2D);
 
     pipeline->setVertexLayout(vlayout);
     pipeline->setVertexShader(graphics, "../../Marvel_vulkan/shaders/vert.spv");
@@ -25,10 +26,10 @@ int main()
     auto indexBuffer = std::make_shared<mvIndexBuffer>(graphics, std::vector<uint16_t>{ 0u, 1u, 2u, 2u, 3u, 0u });
 
     auto vertexBuffer = std::make_shared<mvVertexBuffer>(graphics, vlayout, std::vector<float>{
-        -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-        -0.5f,  0.5f, 1.0f, 1.0f, 1.0f
+        -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
+         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
     });
 
     graphics.setPipeline(pipeline);
