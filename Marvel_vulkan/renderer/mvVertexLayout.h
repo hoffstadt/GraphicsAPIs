@@ -1,7 +1,6 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 #include <vector>
 
 namespace Marvel {
@@ -50,8 +49,8 @@ namespace Marvel {
 
 	private:
 
-		size_t _stride = 0;
-		size_t _size = 0;
+		size_t                       _stride = 0;
+		size_t                       _size = 0;
 		std::vector<mvVertexElement> _elements;
 
 	};

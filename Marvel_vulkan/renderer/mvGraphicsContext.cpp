@@ -8,49 +8,28 @@ namespace Marvel {
 		_device = std::make_unique<mvDevice>(window);
 	}
 
-	void mvGraphicsContext::begin()
-	{
-
-	}
-
-	void mvGraphicsContext::end()
-	{
-
-	}
-
-	void mvGraphicsContext::setPipeline(std::shared_ptr<mvPipeline> pipeline)
-	{
-		_pipeline = pipeline;
-	}
-
-	void mvGraphicsContext::setVertexBuffer(std::shared_ptr<mvVertexBuffer> buffer)
-	{
-		_vertexBuffer = buffer;
-	}
-
-	void mvGraphicsContext::setIndexBuffer(std::shared_ptr<mvIndexBuffer> buffer)
-	{
-		_indexBuffer = buffer;
-	}
-
-	mvPipeline& mvGraphicsContext::getPipeline()
-	{
-		return *_pipeline;
-	}
-
 	mvDevice& mvGraphicsContext::getDevice()
 	{
 		return *_device;
 	}
 
-	mvVertexBuffer& mvGraphicsContext::getVertexBuffer()
+	void mvGraphicsContext::beginRecording(int buffer)
 	{
-		return *_vertexBuffer;
+		_device->beginRecording(buffer);
 	}
 
-	mvIndexBuffer& mvGraphicsContext::getIndexBuffer()
+	void mvGraphicsContext::endRecording()
 	{
-		return *_indexBuffer;
+		_device->endRecording();
 	}
 
+	void mvGraphicsContext::draw(uint32_t vertexCount)
+	{
+		_device->draw(vertexCount);
+	}
+
+	void mvGraphicsContext::present()
+	{
+		_device->present(*this);
+	}
 }

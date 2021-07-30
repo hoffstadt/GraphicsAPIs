@@ -5,10 +5,10 @@
 
 namespace Marvel {
 
-    mvVertexBuffer::mvVertexBuffer(mvGraphicsContext& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf)
+    mvVertexBuffer::mvVertexBuffer(mvGraphicsContext& graphics, const std::vector<float>& vbuf)
+        :
+        _vertices(vbuf)
 	{
-        _vertices = vbuf;
-        _layout = layout;
 
         VkDeviceSize bufferSize = sizeof(float) * _vertices.size();
 
@@ -39,15 +39,10 @@ namespace Marvel {
         vkFreeMemory(graphics.getDevice().getDevice(), _vertexBufferMemory, nullptr);
     }
 
-    //const mvVertexLayout& mvVertexBuffer::GetLayout() const
-    //{
-    //    return _layout;
-    //}
-
-    void mvVertexBuffer::bind(VkCommandBuffer commandBuffer)
+    void mvVertexBuffer::bind(mvGraphicsContext& graphics)
     {
         VkBuffer vertexBuffers[] = { _vertexBuffer };
         VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+        vkCmdBindVertexBuffers(graphics.getDevice().getCurrentCommandBuffer(), 0, 1, vertexBuffers, offsets);
     }
 }

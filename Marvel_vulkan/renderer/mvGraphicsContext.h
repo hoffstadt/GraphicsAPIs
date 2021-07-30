@@ -21,26 +21,15 @@ namespace Marvel{
 
 		mvGraphicsContext(GLFWwindow* window);
 
-		void begin();
-		void end();
-
-		void setPipeline    (std::shared_ptr<mvPipeline>);
-		void setVertexBuffer(std::shared_ptr<mvVertexBuffer>);
-		void setIndexBuffer (std::shared_ptr<mvIndexBuffer>);
-
 		mvDevice&   getDevice();
-		mvPipeline& getPipeline();
-
-		// filled by device
-		mvVertexBuffer&               getVertexBuffer();
-		mvIndexBuffer&                getIndexBuffer();
+		void        beginRecording(int buffer);
+		void        endRecording();
+		void        draw(uint32_t vertexCount);
+		void        present();
 
 	private:
 
-		std::unique_ptr<mvDevice>       _device       = nullptr;
-		std::shared_ptr<mvVertexBuffer> _vertexBuffer = nullptr;
-		std::shared_ptr<mvIndexBuffer>  _indexBuffer  = nullptr;
-		std::shared_ptr<mvPipeline>     _pipeline     = nullptr;
+		std::unique_ptr<mvDevice> _device= nullptr;
 		
 	};
 

@@ -44,9 +44,9 @@ namespace Marvel {
         return _indices.size();
     }
 
-    void mvIndexBuffer::bind(VkCommandBuffer commandBuffer)
+    void mvIndexBuffer::bind(mvGraphicsContext& graphics)
     {
-        vkCmdBindIndexBuffer(commandBuffer, _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(graphics.getDevice().getCurrentCommandBuffer(), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     }
 
 }

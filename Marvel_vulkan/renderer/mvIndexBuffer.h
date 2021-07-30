@@ -17,7 +17,7 @@ namespace Marvel {
 		mvIndexBuffer(mvGraphicsContext& graphics, const std::vector<uint16_t>& ibuf);
 
 		void finish(mvGraphicsContext& graphics);
-		void bind(VkCommandBuffer commandBuffer);
+		void bind(mvGraphicsContext& graphics);
 		uint32_t getVertexCount();
 
 	private:

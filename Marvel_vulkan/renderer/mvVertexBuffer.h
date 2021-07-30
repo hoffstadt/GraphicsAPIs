@@ -1,32 +1,33 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 #include <vector>
 #include "mvVertexLayout.h"
 
-
 namespace Marvel {
 
+	//---------------------------------------------------------------------
+	// forward declarations
+	//---------------------------------------------------------------------
 	class mvGraphicsContext;
 
+	//---------------------------------------------------------------------
+	// mvVertexBuffer
+	//---------------------------------------------------------------------
 	class mvVertexBuffer
 	{
 
 	public:
 
-		mvVertexBuffer(mvGraphicsContext& graphics, const mvVertexLayout& layout, const std::vector<float>& vbuf);
+		mvVertexBuffer(mvGraphicsContext& graphics, const std::vector<float>& vbuf);
 
 		void finish(mvGraphicsContext& graphics);
-		void bind(VkCommandBuffer commandBuffer);
-		//const mvVertexLayout& GetLayout() const;
+		void bind(mvGraphicsContext& graphics);
 
 	private:
 
 		std::vector<float>   _vertices;
-		mvVertexLayout       _layout;
 		VkBuffer             _vertexBuffer;
-		VkMemoryRequirements _memRequirements;
 		VkDeviceMemory       _vertexBufferMemory;
 
 	};

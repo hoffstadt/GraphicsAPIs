@@ -4,7 +4,6 @@
 
 namespace Marvel {
 
-
 	void mvPipeline::setVertexLayout(mvVertexLayout layout)
 	{
 		_layout = layout;
@@ -20,7 +19,21 @@ namespace Marvel {
 		_fragShader = std::make_unique<mvShader>(graphics, file);
 	}
 
-	void mvPipeline::create(mvGraphicsContext& graphics)
+    void mvPipeline::bind(mvGraphicsContext& graphics)
+    {
+        vkCmdBindPipeline(graphics.getDevice().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
+
+        vkCmdBindDescriptorSets(graphics.getDevice().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+            _pipelineLayout, 0, 1, graphics.getDevice().getCurrentDescriptorSet(), 0, nullptr);
+    }
+
+    void mvPipeline::finish(mvGraphicsContext& graphics)
+    {
+        vkDestroyPipeline(graphics.getDevice().getDevice(), _pipeline, nullptr);
+        vkDestroyPipelineLayout(graphics.getDevice().getDevice(), _pipelineLayout, nullptr);
+    }
+
+	void mvPipeline::finalize(mvGraphicsContext& graphics)
 	{
         //---------------------------------------------------------------------
         // input assembler stage
@@ -150,7 +163,7 @@ namespace Marvel {
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pSetLayouts = graphics.getDevice().getDescriptorSetLayout();
 
-        if (vkCreatePipelineLayout(graphics.getDevice().getDevice(), &pipelineLayoutInfo, nullptr, graphics.getDevice().getPipelineLayout()) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(graphics.getDevice().getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create pipeline layout!");
 
         //---------------------------------------------------------------------
@@ -169,13 +182,13 @@ namespace Marvel {
         pipelineInfo.pRasterizationState = &rasterizer;
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
-        pipelineInfo.layout = *graphics.getDevice().getPipelineLayout();
+        pipelineInfo.layout = _pipelineLayout;
         pipelineInfo.renderPass = graphics.getDevice().getRenderPass();
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineInfo.pDepthStencilState = &depthStencil;
 
-        if (vkCreateGraphicsPipelines(graphics.getDevice().getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, graphics.getDevice().getPipeline()) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(graphics.getDevice().getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline) != VK_SUCCESS)
             throw std::runtime_error("failed to create graphics pipeline!");
 
         // no longer need this

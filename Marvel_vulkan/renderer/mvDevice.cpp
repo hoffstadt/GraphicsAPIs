@@ -40,6 +40,7 @@ namespace Marvel
     mvDevice::mvDevice(GLFWwindow* window)
 	{
 
+        // initialization
         createVulkanInstance();
         setupDebugMessenger();
         createSurface(window);
@@ -47,9 +48,11 @@ namespace Marvel
         createLogicalDevice();
         createSwapChain(window);
         createImageViews();
+        createCommandPool();
+
+        // asset initialization
         createRenderPass();
         createDescriptorSetLayout();
-        createCommandPool();
         createDepthResources();
         createFrameBuffers();  
         createTextureImage();
@@ -75,8 +78,6 @@ namespace Marvel
 
         vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
 
-        vkDestroyPipeline(_device, _pipeline, nullptr);
-        vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
         vkDestroyRenderPass(_device, _renderPass, nullptr);
 
         for (auto imageView : _swapChainImageViews)
@@ -135,16 +136,6 @@ namespace Marvel
     VkRenderPass mvDevice::getRenderPass()
     {
         return _renderPass;
-    }
-
-    VkPipelineLayout* mvDevice::getPipelineLayout()
-    {
-        return &_pipelineLayout;
-    }
-
-    VkPipeline* mvDevice::getPipeline()
-    {
-        return &_pipeline;
     }
 
     void mvDevice::present(mvGraphicsContext& graphics)
@@ -846,19 +837,20 @@ namespace Marvel
             throw std::runtime_error("failed to allocate command buffers!");
     }
 
-    void mvDevice::createCommandBuffers(mvGraphicsContext& graphics, int buffer)
+    void mvDevice::beginRecording(int buffer)
     {
+        _currentBufferIndex = buffer;
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-        if (vkBeginCommandBuffer(_commandBuffers[buffer], &beginInfo) != VK_SUCCESS)
+        if (vkBeginCommandBuffer(_commandBuffers[_currentBufferIndex], &beginInfo) != VK_SUCCESS)
             throw std::runtime_error("failed to begin recording command buffer!");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = _renderPass;
-        renderPassInfo.framebuffer = _swapChainFramebuffers[buffer];
+        renderPassInfo.framebuffer = _swapChainFramebuffers[_currentBufferIndex];
         renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = _swapChainExtent;
 
@@ -869,22 +861,20 @@ namespace Marvel
         renderPassInfo.clearValueCount = 2;
         renderPassInfo.pClearValues = clearValues.data();
 
-        vkCmdBeginRenderPass(_commandBuffers[buffer], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(_commandBuffers[_currentBufferIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    }
 
-            vkCmdBindPipeline(_commandBuffers[buffer], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
+    void mvDevice::endRecording()
+    {
+        vkCmdEndRenderPass(_commandBuffers[_currentBufferIndex]);
 
-            graphics.getIndexBuffer().bind(_commandBuffers[buffer]);
-            graphics.getVertexBuffer().bind(_commandBuffers[buffer]);
-
-            vkCmdBindDescriptorSets(_commandBuffers[buffer], VK_PIPELINE_BIND_POINT_GRAPHICS,
-                _pipelineLayout, 0, 1, &_descriptorSets[buffer], 0, nullptr);
-
-            vkCmdDrawIndexed(_commandBuffers[buffer], graphics.getIndexBuffer().getVertexCount(), 1, 0, 0, 0);
-
-        vkCmdEndRenderPass(_commandBuffers[buffer]);
-
-        if (vkEndCommandBuffer(_commandBuffers[buffer]) != VK_SUCCESS)
+        if (vkEndCommandBuffer(_commandBuffers[_currentBufferIndex]) != VK_SUCCESS)
             throw std::runtime_error("failed to record command buffer!");
+    }
+
+    void mvDevice::draw(uint32_t vertexCount)
+    {
+        vkCmdDrawIndexed(_commandBuffers[_currentBufferIndex], vertexCount, 1, 0, 0, 0);
     }
 
     void mvDevice::createSyncObjects()

@@ -16,7 +16,6 @@
 #include "mvIndexBuffer.h"
 #include "mvPipeline.h"
 
-
 namespace Marvel {
 
 	class mvGraphicsContext;
@@ -50,46 +49,33 @@ namespace Marvel {
 
 	public:
 
-		mvDevice() = default;
 		mvDevice(GLFWwindow* window);
 		~mvDevice();
 
+		// temporary utilities
+		void             setCurrentCommandBufferIndex(int buffer) { _currentBufferIndex = buffer; }
+		VkCommandBuffer  getCurrentCommandBuffer() { return _commandBuffers[_currentBufferIndex]; }
+		VkDescriptorSet* getCurrentDescriptorSet() { return &_descriptorSets[_currentBufferIndex]; }
+		void             beginRecording(int buffer);
+		void             endRecording();
+		void             draw(uint32_t vertexCount);
+		void             present(mvGraphicsContext&);
+
+		// utilities
+		void           createBuffer      (VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void           copyBuffer        (mvGraphicsContext&, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		VkShaderModule createShaderModule(const std::vector<char>& code);
+
 		void finish();
 
-		void present(mvGraphicsContext&);
-
-		VkDevice      getDevice();
-		VkExtent2D    getSwapChainExtent();
+		VkDevice               getDevice();
+		VkExtent2D             getSwapChainExtent();
 		VkDescriptorSetLayout* getDescriptorSetLayout();
-		VkRenderPass getRenderPass();
-		VkPipelineLayout* getPipelineLayout();
-		VkPipeline*       getPipeline();
-
-		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void copyBuffer(mvGraphicsContext&, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-		// new uses
-		VkShaderModule createShaderModule(const std::vector<char>& code);
-		void createCommandPool();
-		void createDepthResources();
-		void allocCommandBuffers();
-		void createCommandBuffers(mvGraphicsContext& graphics, int buffer);
-		void createTextureImage();
-		void createTextureImageView();
-		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-		void createImage(uint32_t width, uint32_t height, VkFormat format, 
-			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
-			VkImage& image, VkDeviceMemory& imageMemory);
-
-		VkCommandBuffer beginSingleTimeCommands();
-		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-		void createTextureSampler();
+		VkRenderPass           getRenderPass();
 
 	private:
 
+		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void createVulkanInstance();
 		void setupDebugMessenger();
 		void createSurface(GLFWwindow* window);
@@ -105,6 +91,21 @@ namespace Marvel {
 		void createDescriptorPool();
 		void createDescriptorSets();
 		void createSyncObjects();
+		void createCommandPool();
+		void createDepthResources();
+		void allocCommandBuffers();
+		void createTextureImage();
+		void createTextureImageView();
+		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+		void createImage(uint32_t width, uint32_t height, VkFormat format,
+			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+			VkImage& image, VkDeviceMemory& imageMemory);
+
+		VkCommandBuffer beginSingleTimeCommands();
+		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void createTextureSampler();
 
 		// helpers
 		bool                    checkValidationLayerSupport();
@@ -116,7 +117,7 @@ namespace Marvel {
 
 	private:
 
-
+		int                         _currentBufferIndex = 0;
 		std::vector<VkBuffer>       _uniformBuffers;
 		std::vector<VkDeviceMemory> _uniformBuffersMemory;
 		VkImage                     _textureImage;
@@ -155,8 +156,6 @@ namespace Marvel {
 		std::vector<VkDescriptorSet> _descriptorSets;
 		VkCommandPool                _commandPool;
 		std::vector<VkCommandBuffer> _commandBuffers;
-		VkPipelineLayout             _pipelineLayout;
-		VkPipeline                   _pipeline;
 
 		size_t                       _currentFrame = 0;
 
