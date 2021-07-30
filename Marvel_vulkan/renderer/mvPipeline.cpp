@@ -99,6 +99,18 @@ namespace Marvel {
         fragShaderStageInfo.module = _fragShader->getShaderModule();
         fragShaderStageInfo.pName = "main";
 
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depthStencil.depthTestEnable = VK_TRUE;
+        depthStencil.depthWriteEnable = VK_TRUE;
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+        depthStencil.depthBoundsTestEnable = VK_FALSE;
+        depthStencil.minDepthBounds = 0.0f; // Optional
+        depthStencil.maxDepthBounds = 1.0f; // Optional
+        depthStencil.stencilTestEnable = VK_FALSE;
+        depthStencil.front = {}; // Optional
+        depthStencil.back = {}; // Optional
+
         //---------------------------------------------------------------------
         // color blending stage
         //---------------------------------------------------------------------
@@ -155,6 +167,7 @@ namespace Marvel {
         pipelineInfo.renderPass = graphics.getDevice().getRenderPass();
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+        pipelineInfo.pDepthStencilState = &depthStencil;
 
         if (vkCreateGraphicsPipelines(graphics.getDevice().getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, graphics.getDevice().getPipeline()) != VK_SUCCESS)
             throw std::runtime_error("failed to create graphics pipeline!");

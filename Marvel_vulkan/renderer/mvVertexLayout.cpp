@@ -14,6 +14,12 @@ namespace Marvel {
 			_size = sizeof(float) * 2;
 			break;
 
+		case ElementType::Position3D:
+			_format = VK_FORMAT_R32G32B32_SFLOAT;
+			_itemCount = 3;
+			_size = sizeof(float) * 3;
+			break;
+
 		case ElementType::Texture2D:
 			_format = VK_FORMAT_R32G32_SFLOAT;
 			_itemCount = 2;

@@ -13,7 +13,7 @@ int main()
     auto pipeline = std::make_shared<mvPipeline>();
 
     auto vlayout = mvVertexLayout();
-    vlayout.append(ElementType::Position2D);
+    vlayout.append(ElementType::Position3D);
     vlayout.append(ElementType::Color);
     vlayout.append(ElementType::Texture2D);
 
@@ -23,13 +23,22 @@ int main()
     pipeline->create(graphics);
     
     
-    auto indexBuffer = std::make_shared<mvIndexBuffer>(graphics, std::vector<uint16_t>{ 0u, 1u, 2u, 2u, 3u, 0u });
+    auto indexBuffer = std::make_shared<mvIndexBuffer>(graphics, 
+        std::vector<uint16_t>{ 
+        0u, 1u, 2u, 2u, 3u, 0u,
+        4u, 5u, 6u, 6u, 7u, 4u
+    });
 
     auto vertexBuffer = std::make_shared<mvVertexBuffer>(graphics, vlayout, std::vector<float>{
-        -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
-         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-         0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
+         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+
+        -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
+         0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
     });
 
     graphics.setPipeline(pipeline);
