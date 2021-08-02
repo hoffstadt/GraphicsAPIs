@@ -13,28 +13,13 @@ namespace Marvel {
 		return *_device;
 	}
 
-	void mvGraphicsContext::beginRecording(int buffer)
-	{
-		_device->beginRecording(buffer);
-	}
-
-	void mvGraphicsContext::endRecording()
-	{
-		_device->endRecording();
-	}
-
-	void mvGraphicsContext::draw(uint32_t vertexCount)
-	{
-		_device->draw(vertexCount);
-	}
-
 	void mvGraphicsContext::beginpresent()
 	{
 		_device->beginpresent(*this);
 	}
 
-	void mvGraphicsContext::endpresent()
+	void mvGraphicsContext::endpresent(std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers)
 	{
-		_device->endpresent(*this);
+		_device->endpresent(*this, commandBuffers);
 	}
 }

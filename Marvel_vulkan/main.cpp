@@ -6,6 +6,8 @@
 #include "mvDescriptorSet.h"
 #include "mvDescriptorPool.h"
 #include "mvBuffer.h"
+#include "mvCommandPool.h"
+#include "mvCommandBuffer.h"
 
 using namespace Marvel;
 
@@ -90,18 +92,30 @@ int main()
     pipeline->setDescriptorSetLayout(descriptorSetLayout);
     pipeline->setDescriptorSets(descriptorSets);
     pipeline->finalize(graphics);
-    
+
+    //---------------------------------------------------------------------
+    // create command pool and buffers
+    //---------------------------------------------------------------------
+    auto commandPool = std::make_shared<mvCommandPool>(graphics);
+    std::vector<std::shared_ptr<mvCommandBuffer>> commandBuffers;
+    commandBuffers.push_back(std::make_shared<mvCommandBuffer>(0u));
+    commandBuffers.push_back(std::make_shared<mvCommandBuffer>(1u));
+    commandBuffers.push_back(std::make_shared<mvCommandBuffer>(2u));
+    commandPool->allocateCommandBuffer(graphics, commandBuffers[0].get());
+    commandPool->allocateCommandBuffer(graphics, commandBuffers[1].get());
+    commandPool->allocateCommandBuffer(graphics, commandBuffers[2].get());
+
     //---------------------------------------------------------------------
     // record command buffers
     //---------------------------------------------------------------------
     for (int i = 0; i < 3; i++)
     {
-        graphics.beginRecording(i);
-        pipeline->bind(graphics);
-        vertexBuffer->bind(graphics);
-        indexBuffer->bind(graphics);
-        graphics.draw(indexBuffer->getVertexCount());
-        graphics.endRecording();
+        commandBuffers[i]->beginRecording(graphics);
+        pipeline->bind(graphics, *commandBuffers[i]);
+        vertexBuffer->bind(*commandBuffers[i]);
+        indexBuffer->bind(*commandBuffers[i]);
+        commandBuffers[i]->draw(indexBuffer->getVertexCount());
+        commandBuffers[i]->endRecording();
     }
 
     //---------------------------------------------------------------------
@@ -127,7 +141,7 @@ int main()
 
         uniformBuffers[graphics.getDevice().getCurrentImageIndex()]->update(graphics, transforms);
 
-        graphics.endpresent();
+        graphics.endpresent(commandBuffers);
     }
 
     //---------------------------------------------------------------------

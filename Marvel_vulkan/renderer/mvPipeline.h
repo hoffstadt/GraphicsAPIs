@@ -12,6 +12,7 @@ namespace Marvel {
 	// forward declarations
 	//---------------------------------------------------------------------
 	class mvGraphicsContext;
+	class mvCommandBuffer;
 
 	//---------------------------------------------------------------------
 	// mvPipeline
@@ -21,7 +22,7 @@ namespace Marvel {
 
 	public:
 
-		void bind                   (mvGraphicsContext& graphics);
+		void bind                   (mvGraphicsContext& graphics, mvCommandBuffer& commandBuffer);
 		void finalize               (mvGraphicsContext& graphics);
 		void setDescriptorSets       (std::vector<std::shared_ptr<mvDescriptorSet>>);
 		void setDescriptorSetLayout (std::shared_ptr<mvDescriptorSetLayout>);

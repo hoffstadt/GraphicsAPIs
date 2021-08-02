@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "mvDevice.h"
 #include "mvGraphicsContext.h"
+#include "mvCommandBuffer.h"
 
 namespace Marvel {
 
@@ -44,9 +45,9 @@ namespace Marvel {
         return _indices.size();
     }
 
-    void mvIndexBuffer::bind(mvGraphicsContext& graphics)
+    void mvIndexBuffer::bind(mvCommandBuffer& commandBuffer)
     {
-        vkCmdBindIndexBuffer(graphics.getDevice().getCurrentCommandBuffer(), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(*commandBuffer.getCommandBuffer(), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     }
 
 }

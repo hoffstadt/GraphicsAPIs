@@ -5,6 +5,7 @@
 #include <fstream>
 #include <chrono>
 #include "mvGraphicsContext.h"
+#include "mvCommandBuffer.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -57,7 +58,6 @@ namespace Marvel
         createTextureImage();
         createTextureImageView();
         createTextureSampler();
-        allocCommandBuffers();
         createSyncObjects();
 	}
 
@@ -72,7 +72,7 @@ namespace Marvel
         vkDestroyImage(_device, _depthImage, nullptr);
         vkFreeMemory(_device, _depthImageMemory, nullptr);
 
-        vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
+        //vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
 
         vkDestroyRenderPass(_device, _renderPass, nullptr);
 
@@ -90,6 +90,55 @@ namespace Marvel
         //vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
     }
 
+    void mvDevice::createCommandPool()
+    {
+        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(_physicalDevice);
+
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+        if (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS)
+            throw std::runtime_error("failed to create command pool!");
+    }
+
+    VkCommandBuffer mvDevice::beginSingleTimeCommands()
+    {
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool = _commandPool;
+        allocInfo.commandBufferCount = 1;
+
+        VkCommandBuffer commandBuffer;
+        vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
+
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+        return commandBuffer;
+    }
+
+    void mvDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer)
+    {
+        vkEndCommandBuffer(commandBuffer);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+
+        vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(_graphicsQueue);
+
+        vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
+    }
+
+
     mvDevice::~mvDevice()
     {
         // vertex/index buffers
@@ -106,7 +155,7 @@ namespace Marvel
             vkDestroyFence(_device, _inFlightFences[i], nullptr);
         }
         
-        vkDestroyCommandPool(_device, _commandPool, nullptr); 
+        //vkDestroyCommandPool(_device, _commandPool, nullptr); 
         
         vkDestroyDevice(_device, nullptr);
 
@@ -141,7 +190,7 @@ namespace Marvel
 
     }
 
-    void mvDevice::endpresent(mvGraphicsContext& graphics)
+    void mvDevice::endpresent(mvGraphicsContext& graphics, std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers)
     {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -153,7 +202,7 @@ namespace Marvel
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &_commandBuffers[_currentImageIndex];
+        submitInfo.pCommandBuffers = commandBuffers[_currentImageIndex]->getCommandBuffer();
 
         VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
@@ -507,19 +556,6 @@ namespace Marvel
         }
     }
 
-    void mvDevice::createCommandPool()
-    {
-        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(_physicalDevice);
-
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-        if (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS)
-            throw std::runtime_error("failed to create command pool!");
-    }
-
     void mvDevice::createDepthResources()
     {
         VkFormat depthFormat = VK_FORMAT_D32_SFLOAT;
@@ -652,95 +688,6 @@ namespace Marvel
 
         if (vkCreateSampler(_device, &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS)
             throw std::runtime_error("failed to create texture sampler!");
-    }
-
-    VkCommandBuffer mvDevice::beginSingleTimeCommands()
-    {
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = _commandPool;
-        allocInfo.commandBufferCount = 1;
-
-        VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
-
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-        return commandBuffer;
-    }
-
-    void mvDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer)
-    {
-        vkEndCommandBuffer(commandBuffer);
-
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
-
-        vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(_graphicsQueue);
-
-        vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
-    }
-
-    void mvDevice::allocCommandBuffers()
-    {
-        _commandBuffers.resize(_swapChainFramebuffers.size());
-
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = _commandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)_commandBuffers.size();
-
-        if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
-            throw std::runtime_error("failed to allocate command buffers!");
-    }
-
-    void mvDevice::beginRecording(int buffer)
-    {
-        _currentBufferIndex = buffer;
-
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-        if (vkBeginCommandBuffer(_commandBuffers[_currentBufferIndex], &beginInfo) != VK_SUCCESS)
-            throw std::runtime_error("failed to begin recording command buffer!");
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = _renderPass;
-        renderPassInfo.framebuffer = _swapChainFramebuffers[_currentBufferIndex];
-        renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = _swapChainExtent;
-
-        std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-        clearValues[1].depthStencil = { 1.0f, 0 };
-
-        renderPassInfo.clearValueCount = 2;
-        renderPassInfo.pClearValues = clearValues.data();
-
-        vkCmdBeginRenderPass(_commandBuffers[_currentBufferIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    }
-
-    void mvDevice::endRecording()
-    {
-        vkCmdEndRenderPass(_commandBuffers[_currentBufferIndex]);
-
-        if (vkEndCommandBuffer(_commandBuffers[_currentBufferIndex]) != VK_SUCCESS)
-            throw std::runtime_error("failed to record command buffer!");
-    }
-
-    void mvDevice::draw(uint32_t vertexCount)
-    {
-        vkCmdDrawIndexed(_commandBuffers[_currentBufferIndex], vertexCount, 1, 0, 0, 0);
     }
 
     void mvDevice::createSyncObjects()

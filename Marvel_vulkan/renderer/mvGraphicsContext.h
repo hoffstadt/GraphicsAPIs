@@ -22,11 +22,8 @@ namespace Marvel{
 		mvGraphicsContext(GLFWwindow* window);
 
 		mvDevice&   getDevice();
-		void        beginRecording(int buffer);
-		void        endRecording();
-		void        draw(uint32_t vertexCount);
 		void        beginpresent();
-		void        endpresent();
+		void        endpresent(std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers);
 
 	private:
 

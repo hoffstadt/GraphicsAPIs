@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "mvGraphicsContext.h"
 #include "mvDescriptorSet.h"
+#include "mvCommandBuffer.h"
 
 namespace Marvel {
 
@@ -30,11 +31,11 @@ namespace Marvel {
         _descriptorSets = descriptorSets;
     }
 
-    void mvPipeline::bind(mvGraphicsContext& graphics)
+    void mvPipeline::bind(mvGraphicsContext& graphics, mvCommandBuffer& commandBuffer)
     {
-        vkCmdBindPipeline(graphics.getDevice().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
+        vkCmdBindPipeline(*commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
 
-        vkCmdBindDescriptorSets(graphics.getDevice().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+        vkCmdBindDescriptorSets(*commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
             _pipelineLayout, 0, 1, &_descriptorSets[graphics.getDevice().getCurrentCommandBufferIndex()]->_descriptorSet, 0, nullptr);
     }
 

@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "mvDevice.h"
 #include "mvGraphicsContext.h"
+#include "mvCommandBuffer.h"
 
 namespace Marvel {
 
@@ -39,10 +40,10 @@ namespace Marvel {
         vkFreeMemory(graphics.getDevice().getDevice(), _vertexBufferMemory, nullptr);
     }
 
-    void mvVertexBuffer::bind(mvGraphicsContext& graphics)
+    void mvVertexBuffer::bind(mvCommandBuffer& commandBuffer)
     {
         VkBuffer vertexBuffers[] = { _vertexBuffer };
         VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(graphics.getDevice().getCurrentCommandBuffer(), 0, 1, vertexBuffers, offsets);
+        vkCmdBindVertexBuffers(*commandBuffer.getCommandBuffer(), 0, 1, vertexBuffers, offsets);
     }
 }

@@ -54,7 +54,7 @@ namespace Marvel {
 			VkDescriptorBufferInfo bufferInfo{};
 			bufferInfo.buffer = buffer.getBuffer();
 			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(UniformBufferObject);
+			bufferInfo.range = sizeof(T);
 
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
