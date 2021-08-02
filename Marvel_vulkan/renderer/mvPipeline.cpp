@@ -31,12 +31,9 @@ namespace Marvel {
         _descriptorSets = descriptorSets;
     }
 
-    void mvPipeline::bind(mvGraphicsContext& graphics, mvCommandBuffer& commandBuffer)
+    void mvPipeline::bind(mvCommandBuffer& commandBuffer)
     {
         vkCmdBindPipeline(*commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
-
-        vkCmdBindDescriptorSets(*commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-            _pipelineLayout, 0, 1, &_descriptorSets[graphics.getDevice().getCurrentCommandBufferIndex()]->_descriptorSet, 0, nullptr);
     }
 
     void mvPipeline::finish(mvGraphicsContext& graphics)

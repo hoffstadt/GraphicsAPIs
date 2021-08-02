@@ -11,6 +11,8 @@ namespace Marvel {
 	//---------------------------------------------------------------------
 	class mvGraphicsContext;
 	class mvDescriptorSet;
+	class mvPipeline;
+	class mvCommandBuffer;
 
 	template<typename T>
 	class mvBuffer;
@@ -46,6 +48,8 @@ namespace Marvel {
 		friend class mvDescriptorPool;
 
 	public:
+
+		void bind(mvCommandBuffer& commandBuffer, mvPipeline& pipeline);
 
 		template<typename T>
 		void update(mvGraphicsContext& graphics, mvBuffer<T>& buffer, VkImageView imageview, VkSampler sampler)

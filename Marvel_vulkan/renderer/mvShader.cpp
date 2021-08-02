@@ -26,7 +26,15 @@ namespace Marvel {
 	mvShader::mvShader(mvGraphicsContext& graphics, const std::string& file)
 	{
         auto shaderCode = readFile(file);
-        _shaderModule = graphics.getDevice().createShaderModule(shaderCode);
+
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = shaderCode.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
+
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule(graphics.getDevice().getDevice(), &createInfo, nullptr, &_shaderModule) != VK_SUCCESS)
+            throw std::runtime_error("failed to create shader module!");
 	}
 
     VkShaderModule mvShader::getShaderModule() const

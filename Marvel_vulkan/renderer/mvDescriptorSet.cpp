@@ -1,6 +1,9 @@
 #include "mvDescriptorSet.h"
 #include <stdexcept>
+#include "mvCommandBuffer.h"
 #include "mvGraphicsContext.h"
+#include "mvPipeline.h"
+
 namespace Marvel {
 
 	void mvDescriptorSetLayout::append(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags)
@@ -26,4 +29,9 @@ namespace Marvel {
 			throw std::runtime_error("failed to create descriptor set layout!");
 	}
 
+	void mvDescriptorSet::bind(mvCommandBuffer& commandBuffer, mvPipeline& pipeline)
+	{
+		vkCmdBindDescriptorSets(*commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipeline.getLayout(), 0, 1, &_descriptorSet, 0, nullptr);
+	}
 }

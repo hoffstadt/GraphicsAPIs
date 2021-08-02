@@ -49,18 +49,15 @@ namespace Marvel {
 		~mvDevice();
 
 		// temporary utilities
-		uint32_t         getCurrentImageIndex() const { return _currentImageIndex; }
-		int              getCurrentCommandBufferIndex() const { return _currentBufferIndex; }
-		void             setCurrentCommandBufferIndex(int buffer) { _currentBufferIndex = buffer; }
-		void             beginpresent(mvGraphicsContext&);
-		void             endpresent(mvGraphicsContext& graphics, std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers);
-		VkFramebuffer    getFrameBuffer(uint32_t index) { return _swapChainFramebuffers[index]; }
-		size_t           getSwapChainImageCount() const { return _swapChainImages.size(); }
+		uint32_t      getCurrentImageIndex() const { return _currentImageIndex; }
+		void          beginpresent(mvGraphicsContext&);
+		void          endpresent(mvGraphicsContext& graphics, std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers);
+		VkFramebuffer getFrameBuffer(uint32_t index) { return _swapChainFramebuffers[index]; }
+		size_t        getSwapChainImageCount() const { return _swapChainImages.size(); }
 
 		// utilities
-		void           createBuffer      (VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void           copyBuffer        (mvGraphicsContext&, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-		VkShaderModule createShaderModule(const std::vector<char>& code);
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void copyBuffer  (mvGraphicsContext&, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 		void finish();
 
@@ -98,18 +95,15 @@ namespace Marvel {
 		void createSyncObjects();
 		void createDepthResources();
 
-
 		// helpers
 		bool                    checkValidationLayerSupport();
-		bool                    isDeviceSuitable(VkPhysicalDevice device);
-		
+		bool                    isDeviceSuitable(VkPhysicalDevice device);		
 		bool                    checkDeviceExtensionSupport(VkPhysicalDevice device);
 		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 		
 
 	private:
 
-		int           _currentBufferIndex = 0;
 		uint32_t      _currentImageIndex = 0;
 		VkCommandPool _commandPool;
 
@@ -121,26 +115,25 @@ namespace Marvel {
 		// options
 		bool _enableValidationLayers = true;
 
-		VkInstance                   _instance;
-		VkDebugUtilsMessengerEXT     _debugMessenger;
-		VkSurfaceKHR                 _surface;
-		VkPhysicalDevice             _physicalDevice = VK_NULL_HANDLE;
-		VkDevice                     _device;
-		VkQueue                      _graphicsQueue;
-		VkQueue                      _presentQueue;
-		VkSwapchainKHR               _swapChain;
-		std::vector<VkImage>         _swapChainImages;
-		std::vector<VkImageView>     _swapChainImageViews;
-		VkFormat                     _swapChainImageFormat;
-		VkExtent2D                   _swapChainExtent;
-		VkRenderPass                 _renderPass;
-		std::vector<VkFramebuffer>   _swapChainFramebuffers;
-		std::vector<VkSemaphore>     _imageAvailableSemaphores;
-		std::vector<VkSemaphore>     _renderFinishedSemaphores;
-		std::vector<VkFence>         _inFlightFences;
-		std::vector<VkFence>         _imagesInFlight;
-
-		size_t                       _currentFrame = 0;
+		VkInstance                 _instance;
+		VkDebugUtilsMessengerEXT   _debugMessenger;
+		VkSurfaceKHR               _surface;
+		VkPhysicalDevice           _physicalDevice = VK_NULL_HANDLE;
+		VkDevice                   _device;
+		VkQueue                    _graphicsQueue;
+		VkQueue                    _presentQueue;
+		VkSwapchainKHR             _swapChain;
+		std::vector<VkImage>       _swapChainImages;
+		std::vector<VkImageView>   _swapChainImageViews;
+		VkFormat                   _swapChainImageFormat;
+		VkExtent2D                 _swapChainExtent;
+		VkRenderPass               _renderPass;
+		std::vector<VkFramebuffer> _swapChainFramebuffers;
+		std::vector<VkSemaphore>   _imageAvailableSemaphores;
+		std::vector<VkSemaphore>   _renderFinishedSemaphores;
+		std::vector<VkFence>       _inFlightFences;
+		std::vector<VkFence>       _imagesInFlight;
+		size_t                     _currentFrame = 0;
 
 		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation"};
 		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME};

@@ -116,10 +116,12 @@ int main()
     //---------------------------------------------------------------------
     // record command buffers
     //---------------------------------------------------------------------
-    for (auto& commandBuffer : commandBuffers)
+    for (int i = 0; i < 3; i++)
     {
+        auto& commandBuffer = commandBuffers[i];
         commandBuffer->beginRecording(graphics);
-        pipeline->bind(graphics, *commandBuffer);
+        descriptorSets[i]->bind(*commandBuffer, *pipeline);
+        pipeline->bind(*commandBuffer);
         vertexBuffer->bind(*commandBuffer);
         indexBuffer->bind(*commandBuffer);
         commandBuffer->draw(indexBuffer->getVertexCount());
