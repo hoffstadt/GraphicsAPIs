@@ -2,6 +2,7 @@
 #include "mvWindow.h"
 #include "mvDevice.h"
 #include "mvGraphicsContext.h"
+#include "mvDescriptorSet.h"
 
 using namespace Marvel;
 
@@ -38,12 +39,34 @@ int main()
     });
 
     //---------------------------------------------------------------------
+    // create descriptor set layout
+    //---------------------------------------------------------------------
+    auto descriptorSetLayout = std::make_shared<mvDescriptorSetLayout>();
+    descriptorSetLayout->append(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+    descriptorSetLayout->append(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    descriptorSetLayout->finalize(graphics);
+
+    //---------------------------------------------------------------------
+    // create descriptor pool
+    //---------------------------------------------------------------------
+    auto descriptorPool = std::make_shared<mvDescriptorPool>();
+    descriptorPool->finalize(graphics);
+
+    //---------------------------------------------------------------------
+    // create and update descriptor sets
+    //---------------------------------------------------------------------
+    auto descriptorSet = descriptorPool->allocateDescriptorSets(graphics, *descriptorSetLayout);
+    descriptorSet->update(graphics);
+
+    //---------------------------------------------------------------------
     // create and finalize a single pipeline
     //---------------------------------------------------------------------
     auto pipeline = std::make_shared<mvPipeline>();
     pipeline->setVertexLayout(vlayout);
     pipeline->setVertexShader(graphics, "../../Marvel_vulkan/shaders/vert.spv");
     pipeline->setFragmentShader(graphics, "../../Marvel_vulkan/shaders/frag.spv");
+    pipeline->setDescriptorSetLayout(descriptorSetLayout);
+    pipeline->setDescriptorSet(descriptorSet);
     pipeline->finalize(graphics);
     
     //---------------------------------------------------------------------

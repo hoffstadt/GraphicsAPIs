@@ -52,15 +52,12 @@ namespace Marvel
 
         // asset initialization
         createRenderPass();
-        createDescriptorSetLayout();
         createDepthResources();
         createFrameBuffers();  
         createTextureImage();
         createTextureImageView();
         createTextureSampler();
         createUniformBuffers(); 
-        createDescriptorPool();
-        createDescriptorSets();
         allocCommandBuffers();
         createSyncObjects();
 	}
@@ -91,9 +88,9 @@ namespace Marvel
             vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
         }
 
-        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
+        //vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
 
-        vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
+        //vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
     }
 
     mvDevice::~mvDevice()
@@ -126,11 +123,6 @@ namespace Marvel
     VkExtent2D mvDevice::getSwapChainExtent()
     {
         return _swapChainExtent;
-    }
-
-    VkDescriptorSetLayout* mvDevice::getDescriptorSetLayout()
-    {
-        return &_descriptorSetLayout;
     }
 
     VkRenderPass mvDevice::getRenderPass()
@@ -491,32 +483,6 @@ namespace Marvel
             throw std::runtime_error("failed to create render pass!");
     }
 
-    void mvDevice::createDescriptorSetLayout()
-    {
-        VkDescriptorSetLayoutBinding uboLayoutBinding{};
-        uboLayoutBinding.binding = 0;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-        samplerLayoutBinding.binding = 1;
-        samplerLayoutBinding.descriptorCount = 1;
-        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        samplerLayoutBinding.pImmutableSamplers = nullptr;
-        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-        std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
-        VkDescriptorSetLayoutCreateInfo layoutInfo{};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-        layoutInfo.pBindings = bindings.data();
-
-        if (vkCreateDescriptorSetLayout(_device, &layoutInfo, nullptr, &_descriptorSetLayout) != VK_SUCCESS)
-            throw std::runtime_error("failed to create descriptor set layout!");
-    }
-
     void mvDevice::createFrameBuffers()
     {
         _swapChainFramebuffers.resize(_swapChainImageViews.size());
@@ -754,73 +720,6 @@ namespace Marvel
         vkMapMemory(_device, _uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
         memcpy(data, &ubo, sizeof(ubo));
         vkUnmapMemory(_device, _uniformBuffersMemory[currentImage]);
-    }
-
-    void mvDevice::createDescriptorPool()
-    {
-        std::array<VkDescriptorPoolSize, 2> poolSizes{};
-        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSizes[0].descriptorCount = static_cast<uint32_t>(_swapChainImages.size());
-        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[1].descriptorCount = static_cast<uint32_t>(_swapChainImages.size());
-
-        VkDescriptorPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-        poolInfo.pPoolSizes = poolSizes.data();
-        poolInfo.maxSets = static_cast<uint32_t>(_swapChainImages.size());
-
-        if (vkCreateDescriptorPool(_device, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS)
-            throw std::runtime_error("failed to create descriptor pool!");
-    }
-
-    void mvDevice::createDescriptorSets()
-    {
-
-        std::vector<VkDescriptorSetLayout> layouts(_swapChainImages.size(), _descriptorSetLayout);
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = _descriptorPool;
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(_swapChainImages.size());
-        allocInfo.pSetLayouts = layouts.data();
-
-        _descriptorSets.resize(_swapChainImages.size());
-        if (vkAllocateDescriptorSets(_device, &allocInfo, _descriptorSets.data()) != VK_SUCCESS)
-            throw std::runtime_error("failed to allocate descriptor sets!");
-
-        for (size_t i = 0; i < _swapChainImages.size(); i++) 
-        {
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = _uniformBuffers[i];
-            bufferInfo.offset = 0;
-            bufferInfo.range = sizeof(UniformBufferObject);
-
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = _textureImageView;
-            imageInfo.sampler = _textureSampler;
-
-            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = _descriptorSets[i];
-            descriptorWrites[0].dstBinding = 0;
-            descriptorWrites[0].dstArrayElement = 0;
-            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptorWrites[0].descriptorCount = 1;
-            descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = _descriptorSets[i];
-            descriptorWrites[1].dstBinding = 1;
-            descriptorWrites[1].dstArrayElement = 0;
-            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptorWrites[1].descriptorCount = 1;
-            descriptorWrites[1].pImageInfo = &imageInfo;
-
-            vkUpdateDescriptorSets(_device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-        }
-
     }
 
     void mvDevice::allocCommandBuffers()

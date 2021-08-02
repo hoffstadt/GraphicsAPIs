@@ -53,13 +53,17 @@ namespace Marvel {
 		~mvDevice();
 
 		// temporary utilities
+		int              getCurrentCommandBufferIndex() const { return _currentBufferIndex; }
 		void             setCurrentCommandBufferIndex(int buffer) { _currentBufferIndex = buffer; }
 		VkCommandBuffer  getCurrentCommandBuffer() { return _commandBuffers[_currentBufferIndex]; }
-		VkDescriptorSet* getCurrentDescriptorSet() { return &_descriptorSets[_currentBufferIndex]; }
 		void             beginRecording(int buffer);
 		void             endRecording();
 		void             draw(uint32_t vertexCount);
 		void             present(mvGraphicsContext&);
+		size_t           getSwapChainImageCount() const { return _swapChainImages.size(); }
+		VkImageView      getTextureImageView() { return _textureImageView; }
+		VkSampler        getTextureSampler() { return _textureSampler; }
+		std::vector<VkBuffer> getUniformBuffers() { return _uniformBuffers; }
 
 		// utilities
 		void           createBuffer      (VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -70,7 +74,6 @@ namespace Marvel {
 
 		VkDevice               getDevice();
 		VkExtent2D             getSwapChainExtent();
-		VkDescriptorSetLayout* getDescriptorSetLayout();
 		VkRenderPass           getRenderPass();
 
 	private:
@@ -84,12 +87,9 @@ namespace Marvel {
 		void createSwapChain(GLFWwindow* window);
 		void createImageViews();
 		void createRenderPass();
-		void createDescriptorSetLayout();
 		void createFrameBuffers();
 		void createUniformBuffers();
 		void updateUniformBuffer(uint32_t currentImage);
-		void createDescriptorPool();
-		void createDescriptorSets();
 		void createSyncObjects();
 		void createCommandPool();
 		void createDepthResources();
@@ -151,9 +151,6 @@ namespace Marvel {
 		std::vector<VkSemaphore>     _renderFinishedSemaphores;
 		std::vector<VkFence>         _inFlightFences;
 		std::vector<VkFence>         _imagesInFlight;
-		VkDescriptorSetLayout        _descriptorSetLayout;
-		VkDescriptorPool             _descriptorPool;
-		std::vector<VkDescriptorSet> _descriptorSets;
 		VkCommandPool                _commandPool;
 		std::vector<VkCommandBuffer> _commandBuffers;
 

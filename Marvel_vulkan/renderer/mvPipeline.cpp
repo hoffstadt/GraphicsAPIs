@@ -1,6 +1,7 @@
 #include "mvPipeline.h"
 #include <stdexcept>
 #include "mvGraphicsContext.h"
+#include "mvDescriptorSet.h"
 
 namespace Marvel {
 
@@ -19,12 +20,22 @@ namespace Marvel {
 		_fragShader = std::make_unique<mvShader>(graphics, file);
 	}
 
+    void mvPipeline::setDescriptorSetLayout(std::shared_ptr<mvDescriptorSetLayout> layout)
+    {
+        _descriptorSetLayout = layout;
+    }
+
+    void mvPipeline::setDescriptorSet(std::shared_ptr<mvDescriptorSet> descriptorSet)
+    {
+        _descriptorSet = descriptorSet;
+    }
+
     void mvPipeline::bind(mvGraphicsContext& graphics)
     {
         vkCmdBindPipeline(graphics.getDevice().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
 
         vkCmdBindDescriptorSets(graphics.getDevice().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-            _pipelineLayout, 0, 1, graphics.getDevice().getCurrentDescriptorSet(), 0, nullptr);
+            _pipelineLayout, 0, 1, &_descriptorSet->_descriptorSets[graphics.getDevice().getCurrentCommandBufferIndex()], 0, nullptr);
     }
 
     void mvPipeline::finish(mvGraphicsContext& graphics)
@@ -161,7 +172,7 @@ namespace Marvel {
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 1;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
-        pipelineLayoutInfo.pSetLayouts = graphics.getDevice().getDescriptorSetLayout();
+        pipelineLayoutInfo.pSetLayouts = _descriptorSetLayout->getLayout();
 
         if (vkCreatePipelineLayout(graphics.getDevice().getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create pipeline layout!");
