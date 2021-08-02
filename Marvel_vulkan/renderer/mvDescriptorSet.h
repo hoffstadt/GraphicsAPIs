@@ -48,7 +48,7 @@ namespace Marvel {
 	public:
 
 		template<typename T>
-		void update(mvGraphicsContext& graphics, mvBuffer<T>& buffer)
+		void update(mvGraphicsContext& graphics, mvBuffer<T>& buffer, VkImageView imageview, VkSampler sampler)
 		{
 
 			VkDescriptorBufferInfo bufferInfo{};
@@ -58,8 +58,8 @@ namespace Marvel {
 
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = graphics.getDevice().getTextureImageView();
-			imageInfo.sampler = graphics.getDevice().getTextureSampler();
+			imageInfo.imageView = imageview;
+			imageInfo.sampler = sampler;
 
 			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 

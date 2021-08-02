@@ -56,8 +56,6 @@ namespace Marvel {
 		void             endpresent(mvGraphicsContext& graphics, std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers);
 		VkFramebuffer    getFrameBuffer(uint32_t index) { return _swapChainFramebuffers[index]; }
 		size_t           getSwapChainImageCount() const { return _swapChainImages.size(); }
-		VkImageView      getTextureImageView() { return _textureImageView; }
-		VkSampler        getTextureSampler() { return _textureSampler; }
 
 		// utilities
 		void           createBuffer      (VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -66,17 +64,25 @@ namespace Marvel {
 
 		void finish();
 
-		VkDevice               getDevice();
-		VkPhysicalDevice       getPhysicalDevice() { return _physicalDevice; }
-		VkExtent2D             getSwapChainExtent();
-		VkRenderPass           getRenderPass();
-		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		QueueFamilyIndices      findQueueFamilies(VkPhysicalDevice device);
-		VkQueue                 getGraphicsQueue() { return _graphicsQueue; }
+		VkDevice           getDevice();
+		VkPhysicalDevice   getPhysicalDevice() { return _physicalDevice; }
+		VkExtent2D         getSwapChainExtent();
+		VkRenderPass       getRenderPass();
+		std::uint32_t      findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+		VkQueue            getGraphicsQueue() { return _graphicsQueue; }
 
 		void createCommandPool();
 		VkCommandBuffer beginSingleTimeCommands();
 		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+		void createImage(uint32_t width, uint32_t height, VkFormat format,
+			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+			VkImage& image, VkDeviceMemory& imageMemory);
+
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
 	private:
 
@@ -91,16 +97,7 @@ namespace Marvel {
 		void createFrameBuffers();
 		void createSyncObjects();
 		void createDepthResources();
-		void createTextureImage();
-		void createTextureImageView();
-		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-		void createImage(uint32_t width, uint32_t height, VkFormat format,
-			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
-			VkImage& image, VkDeviceMemory& imageMemory);
 
-		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-		void createTextureSampler();
 
 		// helpers
 		bool                    checkValidationLayerSupport();
@@ -112,13 +109,9 @@ namespace Marvel {
 
 	private:
 
-		int                         _currentBufferIndex = 0;
-		uint32_t                     _currentImageIndex = 0;
-		VkImage                     _textureImage;
-		VkDeviceMemory              _textureImageMemory;
-		VkImageView                 _textureImageView;
-		VkSampler                   _textureSampler;
-		VkCommandPool                _commandPool;
+		int           _currentBufferIndex = 0;
+		uint32_t      _currentImageIndex = 0;
+		VkCommandPool _commandPool;
 
 		// depth buffer
 		VkImage        _depthImage;

@@ -12,6 +12,8 @@ target_sources(marvel_vulkan
 
 		"core/mvWindow.cpp"
 
+		"renderer/mvSampler.cpp"
+		"renderer/mvTexture.cpp"
 		"renderer/mvCommandBuffer.cpp"
 		"renderer/mvCommandPool.cpp"
 		"renderer/mvDescriptorPool.cpp"

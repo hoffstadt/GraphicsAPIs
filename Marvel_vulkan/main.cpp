@@ -8,6 +8,8 @@
 #include "mvBuffer.h"
 #include "mvCommandPool.h"
 #include "mvCommandBuffer.h"
+#include "mvTexture.h"
+#include "mvSampler.h"
 
 using namespace Marvel;
 
@@ -56,6 +58,12 @@ int main()
     });
 
     //---------------------------------------------------------------------
+    // create texture and sampler
+    //---------------------------------------------------------------------
+    auto texture = std::make_shared<mvTexture>(graphics, "../../Resources/brickwall.jpg");
+    auto sampler = std::make_shared<mvSampler>(graphics);
+
+    //---------------------------------------------------------------------
     // create descriptor set layout
     //---------------------------------------------------------------------
     auto descriptorSetLayout = std::make_shared<mvDescriptorSetLayout>();
@@ -78,9 +86,9 @@ int main()
     descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[0]), *descriptorSetLayout);
     descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[1]), *descriptorSetLayout);
     descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[2]), *descriptorSetLayout);
-    descriptorSets[0]->update(graphics, *uniformBuffers[0]);
-    descriptorSets[1]->update(graphics, *uniformBuffers[1]);
-    descriptorSets[2]->update(graphics, *uniformBuffers[2]);
+    descriptorSets[0]->update(graphics, *uniformBuffers[0], texture->getImageView(), sampler->getSampler());
+    descriptorSets[1]->update(graphics, *uniformBuffers[1], texture->getImageView(), sampler->getSampler());
+    descriptorSets[2]->update(graphics, *uniformBuffers[2], texture->getImageView(), sampler->getSampler());
 
     //---------------------------------------------------------------------
     // create and finalize a single pipeline
@@ -108,14 +116,14 @@ int main()
     //---------------------------------------------------------------------
     // record command buffers
     //---------------------------------------------------------------------
-    for (int i = 0; i < 3; i++)
+    for (auto& commandBuffer : commandBuffers)
     {
-        commandBuffers[i]->beginRecording(graphics);
-        pipeline->bind(graphics, *commandBuffers[i]);
-        vertexBuffer->bind(*commandBuffers[i]);
-        indexBuffer->bind(*commandBuffers[i]);
-        commandBuffers[i]->draw(indexBuffer->getVertexCount());
-        commandBuffers[i]->endRecording();
+        commandBuffer->beginRecording(graphics);
+        pipeline->bind(graphics, *commandBuffer);
+        vertexBuffer->bind(*commandBuffer);
+        indexBuffer->bind(*commandBuffer);
+        commandBuffer->draw(indexBuffer->getVertexCount());
+        commandBuffer->endRecording();
     }
 
     //---------------------------------------------------------------------
