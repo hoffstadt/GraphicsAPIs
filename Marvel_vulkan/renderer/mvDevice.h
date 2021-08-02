@@ -53,17 +53,18 @@ namespace Marvel {
 		~mvDevice();
 
 		// temporary utilities
+		uint32_t         getCurrentImageIndex() const { return _currentImageIndex; }
 		int              getCurrentCommandBufferIndex() const { return _currentBufferIndex; }
 		void             setCurrentCommandBufferIndex(int buffer) { _currentBufferIndex = buffer; }
 		VkCommandBuffer  getCurrentCommandBuffer() { return _commandBuffers[_currentBufferIndex]; }
 		void             beginRecording(int buffer);
 		void             endRecording();
 		void             draw(uint32_t vertexCount);
-		void             present(mvGraphicsContext&);
+		void             beginpresent(mvGraphicsContext&);
+		void             endpresent(mvGraphicsContext&);
 		size_t           getSwapChainImageCount() const { return _swapChainImages.size(); }
 		VkImageView      getTextureImageView() { return _textureImageView; }
 		VkSampler        getTextureSampler() { return _textureSampler; }
-		std::vector<VkBuffer> getUniformBuffers() { return _uniformBuffers; }
 
 		// utilities
 		void           createBuffer      (VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -75,10 +76,10 @@ namespace Marvel {
 		VkDevice               getDevice();
 		VkExtent2D             getSwapChainExtent();
 		VkRenderPass           getRenderPass();
+		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	private:
 
-		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void createVulkanInstance();
 		void setupDebugMessenger();
 		void createSurface(GLFWwindow* window);
@@ -88,8 +89,6 @@ namespace Marvel {
 		void createImageViews();
 		void createRenderPass();
 		void createFrameBuffers();
-		void createUniformBuffers();
-		void updateUniformBuffer(uint32_t currentImage);
 		void createSyncObjects();
 		void createCommandPool();
 		void createDepthResources();
@@ -118,8 +117,7 @@ namespace Marvel {
 	private:
 
 		int                         _currentBufferIndex = 0;
-		std::vector<VkBuffer>       _uniformBuffers;
-		std::vector<VkDeviceMemory> _uniformBuffersMemory;
+		uint32_t                     _currentImageIndex = 0;
 		VkImage                     _textureImage;
 		VkDeviceMemory              _textureImageMemory;
 		VkImageView                 _textureImageView;

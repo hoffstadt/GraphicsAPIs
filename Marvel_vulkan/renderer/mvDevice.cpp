@@ -57,7 +57,6 @@ namespace Marvel
         createTextureImage();
         createTextureImageView();
         createTextureSampler();
-        createUniformBuffers(); 
         allocCommandBuffers();
         createSyncObjects();
 	}
@@ -82,13 +81,11 @@ namespace Marvel
 
         vkDestroySwapchainKHR(_device, _swapChain, nullptr);
 
-        for (size_t i = 0; i < _swapChainImages.size(); i++)
-        {
-            vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
-            vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
-        }
-
-        //vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
+        //for (size_t i = 0; i < _swapChainImages.size(); i++)
+        //{
+        //    vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
+        //    vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
+        //}
 
         //vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
     }
@@ -130,20 +127,22 @@ namespace Marvel
         return _renderPass;
     }
 
-    void mvDevice::present(mvGraphicsContext& graphics)
+    void mvDevice::beginpresent(mvGraphicsContext& graphics)
     {
         vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
-        uint32_t imageIndex;
-        vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &imageIndex);
+        vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, _imageAvailableSemaphores[_currentFrame],
+            VK_NULL_HANDLE, &_currentImageIndex);
 
-        if (_imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-            vkWaitForFences(_device, 1, &_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+        if (_imagesInFlight[_currentImageIndex] != VK_NULL_HANDLE)
+            vkWaitForFences(_device, 1, &_imagesInFlight[_currentImageIndex], VK_TRUE, UINT64_MAX);
 
-        _imagesInFlight[imageIndex] = _inFlightFences[_currentFrame];
+        _imagesInFlight[_currentImageIndex] = _inFlightFences[_currentFrame];
 
-        updateUniformBuffer(imageIndex);
+    }
 
+    void mvDevice::endpresent(mvGraphicsContext& graphics)
+    {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -154,7 +153,7 @@ namespace Marvel
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &_commandBuffers[imageIndex];
+        submitInfo.pCommandBuffers = &_commandBuffers[_currentImageIndex];
 
         VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
@@ -175,7 +174,7 @@ namespace Marvel
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
 
-        presentInfo.pImageIndices = &imageIndex;
+        presentInfo.pImageIndices = &_currentImageIndex;
 
         vkQueuePresentKHR(_presentQueue, &presentInfo);
 
@@ -688,38 +687,6 @@ namespace Marvel
         vkQueueWaitIdle(_graphicsQueue);
 
         vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
-    }
-
-    void mvDevice::createUniformBuffers()
-    {
-        VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-        _uniformBuffers.resize(_swapChainImages.size());
-        _uniformBuffersMemory.resize(_swapChainImages.size());
-
-        for (size_t i = 0; i < _swapChainImages.size(); i++)
-            createBuffer(bufferSize,
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-                _uniformBuffers[i], _uniformBuffersMemory[i]);
-    }
-
-    void mvDevice::updateUniformBuffer(uint32_t currentImage)
-    {
-        static auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-        UniformBufferObject ubo{};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), _swapChainExtent.width / (float)_swapChainExtent.height, 0.1f, 10.0f);
-        ubo.proj[1][1] *= -1;
-
-        void* data;
-        vkMapMemory(_device, _uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-        memcpy(data, &ubo, sizeof(ubo));
-        vkUnmapMemory(_device, _uniformBuffersMemory[currentImage]);
     }
 
     void mvDevice::allocCommandBuffers()

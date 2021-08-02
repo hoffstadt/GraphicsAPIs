@@ -1,16 +1,31 @@
 #include <vector>
+#include <chrono>
 #include "mvWindow.h"
 #include "mvDevice.h"
 #include "mvGraphicsContext.h"
 #include "mvDescriptorSet.h"
+#include "mvDescriptorPool.h"
+#include "mvBuffer.h"
 
 using namespace Marvel;
+
+struct mvTransforms
+{
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};
 
 int main() 
 {
 
     auto window = mvWindow("Marvel Vulkan", 800, 600);
     auto graphics = mvGraphicsContext(window.getHandle());
+
+    std::vector<std::shared_ptr<mvBuffer<mvTransforms>>> uniformBuffers;
+    uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
+    uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
+    uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
 
     //---------------------------------------------------------------------
     // create vertex buffer, vertex layout, and index buffer
@@ -49,14 +64,21 @@ int main()
     //---------------------------------------------------------------------
     // create descriptor pool
     //---------------------------------------------------------------------
-    auto descriptorPool = std::make_shared<mvDescriptorPool>();
-    descriptorPool->finalize(graphics);
+    auto descriptorPool = std::make_shared<mvDescriptorPool>(graphics);
 
     //---------------------------------------------------------------------
     // create and update descriptor sets
     //---------------------------------------------------------------------
-    auto descriptorSet = descriptorPool->allocateDescriptorSets(graphics, *descriptorSetLayout);
-    descriptorSet->update(graphics);
+    std::vector<std::shared_ptr<mvDescriptorSet>> descriptorSets;
+    descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
+    descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
+    descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
+    descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[0]), *descriptorSetLayout);
+    descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[1]), *descriptorSetLayout);
+    descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[2]), *descriptorSetLayout);
+    descriptorSets[0]->update(graphics, *uniformBuffers[0]);
+    descriptorSets[1]->update(graphics, *uniformBuffers[1]);
+    descriptorSets[2]->update(graphics, *uniformBuffers[2]);
 
     //---------------------------------------------------------------------
     // create and finalize a single pipeline
@@ -66,7 +88,7 @@ int main()
     pipeline->setVertexShader(graphics, "../../Marvel_vulkan/shaders/vert.spv");
     pipeline->setFragmentShader(graphics, "../../Marvel_vulkan/shaders/frag.spv");
     pipeline->setDescriptorSetLayout(descriptorSetLayout);
-    pipeline->setDescriptorSet(descriptorSet);
+    pipeline->setDescriptorSets(descriptorSets);
     pipeline->finalize(graphics);
     
     //---------------------------------------------------------------------
@@ -88,7 +110,24 @@ int main()
     while (window.isRunning())
     {
         window.processEvents();
-        graphics.present();
+        graphics.beginpresent();
+
+        static auto startTime = std::chrono::high_resolution_clock::now();
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        mvTransforms transforms{};
+        transforms.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        transforms.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        transforms.proj = glm::perspective(glm::radians(45.0f), 
+            graphics.getDevice().getSwapChainExtent().width / (float)graphics.getDevice().getSwapChainExtent().height, 
+            0.1f, 10.0f);
+        transforms.proj[1][1] *= -1;
+
+        uniformBuffers[graphics.getDevice().getCurrentImageIndex()]->update(graphics, transforms);
+
+        graphics.endpresent();
     }
 
     //---------------------------------------------------------------------

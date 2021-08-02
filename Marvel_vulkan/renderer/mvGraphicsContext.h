@@ -25,7 +25,8 @@ namespace Marvel{
 		void        beginRecording(int buffer);
 		void        endRecording();
 		void        draw(uint32_t vertexCount);
-		void        present();
+		void        beginpresent();
+		void        endpresent();
 
 	private:
 

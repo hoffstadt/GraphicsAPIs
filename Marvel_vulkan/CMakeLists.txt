@@ -12,6 +12,7 @@ target_sources(marvel_vulkan
 
 		"core/mvWindow.cpp"
 
+		"renderer/mvDescriptorPool.cpp"
 		"renderer/mvDescriptorSet.cpp"
 		"renderer/mvDevice.cpp"
 		"renderer/mvGraphicsContext.cpp"

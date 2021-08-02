@@ -25,9 +25,9 @@ namespace Marvel {
         _descriptorSetLayout = layout;
     }
 
-    void mvPipeline::setDescriptorSet(std::shared_ptr<mvDescriptorSet> descriptorSet)
+    void mvPipeline::setDescriptorSets(std::vector<std::shared_ptr<mvDescriptorSet>> descriptorSets)
     {
-        _descriptorSet = descriptorSet;
+        _descriptorSets = descriptorSets;
     }
 
     void mvPipeline::bind(mvGraphicsContext& graphics)
@@ -35,7 +35,7 @@ namespace Marvel {
         vkCmdBindPipeline(graphics.getDevice().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
 
         vkCmdBindDescriptorSets(graphics.getDevice().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-            _pipelineLayout, 0, 1, &_descriptorSet->_descriptorSets[graphics.getDevice().getCurrentCommandBufferIndex()], 0, nullptr);
+            _pipelineLayout, 0, 1, &_descriptorSets[graphics.getDevice().getCurrentCommandBufferIndex()]->_descriptorSet, 0, nullptr);
     }
 
     void mvPipeline::finish(mvGraphicsContext& graphics)

@@ -28,8 +28,13 @@ namespace Marvel {
 		_device->draw(vertexCount);
 	}
 
-	void mvGraphicsContext::present()
+	void mvGraphicsContext::beginpresent()
 	{
-		_device->present(*this);
+		_device->beginpresent(*this);
+	}
+
+	void mvGraphicsContext::endpresent()
+	{
+		_device->endpresent(*this);
 	}
 }

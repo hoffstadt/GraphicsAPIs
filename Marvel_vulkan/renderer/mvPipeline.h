@@ -23,7 +23,7 @@ namespace Marvel {
 
 		void bind                   (mvGraphicsContext& graphics);
 		void finalize               (mvGraphicsContext& graphics);
-		void setDescriptorSet       (std::shared_ptr<mvDescriptorSet>);
+		void setDescriptorSets       (std::vector<std::shared_ptr<mvDescriptorSet>>);
 		void setDescriptorSetLayout (std::shared_ptr<mvDescriptorSetLayout>);
 		void setVertexLayout        (mvVertexLayout);
 		void setVertexShader        (mvGraphicsContext& graphics, const std::string& file);
@@ -36,7 +36,7 @@ namespace Marvel {
 		std::unique_ptr<mvShader>              _fragShader = nullptr;
 		mvVertexLayout                         _layout;
 		std::shared_ptr<mvDescriptorSetLayout> _descriptorSetLayout = nullptr;
-		std::shared_ptr<mvDescriptorSet>       _descriptorSet = nullptr;
+		std::vector<std::shared_ptr<mvDescriptorSet>> _descriptorSets;
 		VkPipelineLayout                       _pipelineLayout = nullptr;
 		VkPipeline                             _pipeline = nullptr;
 
