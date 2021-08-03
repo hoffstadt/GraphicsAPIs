@@ -35,6 +35,6 @@ jobs:
         sudo apt install libxrandr-dev
         mkdir cmake-build-debug
         cd cmake-build-debug
-        cmake .. -DMV_OPENGL=ON -DMV_DEMOS=ON
+        cmake ..
         cd ..
         cmake --build cmake-build-debug --config Debug

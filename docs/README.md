@@ -1,30 +1,15 @@
-## Marvel
+## DearPy3D
 
-[![build status](https://github.com/hoffstadt/Marvel/workflows/Windows%20Builds/badge.svg?branch=master)](https://github.com/hoffstadt/Marvel/actions?workflow=Windows%20Builds)
+[![build status](https://github.com/hoffstadt/DearPy3D/workflows/Windows%20Builds/badge.svg?branch=master)](https://github.com/hoffstadt/DearPy3D/actions?workflow=Windows%20Builds)
 
-This repo is the working location of the eventual [Dear PyGui](https://github.com/hoffstadt/DearPyGui) 3D Engine. It also contains several single file minimal examples of creating for various graphics APIs. These were collected and modified from various sources as a starting point.
+This repo is the working location of the eventual [Dear PyGui](https://github.com/hoffstadt/DearPyGui) 3D Engine.
 
 This project is still early and parts of it are being ported over from earlier prototypes.
-
-### Hello Triangle
-* Demo_Directx11 - D3D11 Hello Triangle
-* Demo_Directx12 - D3D12 Hello Triangle
-* Demo_Metal - Metal Hello Triangle
-* Demo_OpenGL - OpenGL Hello Triangle
-* Demo_Vulkan - Vulkan Hello Triangle
-* Demo_WebGL - WebGL Hello Triangle
 
 ### 3D Engines
 * Marvel - Actual Engine (Directx 11 for now)
 * Marvel_vulkan - Vulkan 3D Engine
 * Marvel_webgl - WebGL 3D Engine - [demo](https://hoffstadt.github.io/Marvel/)
-
-### Progress
-| Step | WebGL | OpenGL | Directx 11 | Directx 12 | Vulkan | Metal |
-|---------|-------|--------|------------|------------|--------|-------|
-| Windows Support | - | ✅ | ✅  | ✅ | ✅ |
-| Linux Support | - | ✅ | - | - | ✅ | - |
-| Apple Support | - | | - | - | - | ✅ |
 
 
 ## Building
@@ -40,9 +25,9 @@ This project is still early and parts of it are being ported over from earlier p
 Instructions:
 1. From within a local directory, enter the following bash commands:
 ```
-git clone --recursive https://github.com/hoffstadt/Marvel
+git clone --recursive https://github.com/hoffstadt/DearPy3D
 ```
-4. In Visual Studio, use _Open a local folder_ to open _Marvel_ folder. This will use CMakeLists.txt as the project file.
+4. In Visual Studio, use _Open a local folder_ to open _DearPy3D_ folder. This will use CMakeLists.txt as the project file.
 5. Run _Build All_.
 
 ## Gallery
