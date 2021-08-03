@@ -4,16 +4,17 @@
 
 namespace Marvel {
 
+	//-----------------------------------------------------------------------------
+	//forward declarations
+	//-----------------------------------------------------------------------------
 	class mvGraphics;
 
 	class mvCommandBuffer
 	{
 
-		friend class mvCommandPool;
+		friend class mvGraphics;
 
 	public:
-
-		mvCommandBuffer(uint32_t frameBufferTarget);
 
 		void beginRecording(mvGraphics& graphics);
 		void endRecording();
@@ -24,7 +25,6 @@ namespace Marvel {
 	private:
 
 		VkCommandBuffer _commandBuffer;
-		uint32_t        _frameBufferTarget = 0u;
 	};
 
 }

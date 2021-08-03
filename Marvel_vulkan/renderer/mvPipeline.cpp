@@ -192,7 +192,7 @@ namespace Marvel {
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.layout = _pipelineLayout;
-        pipelineInfo.renderPass = graphics.getRenderPass();
+        pipelineInfo.renderPass = graphics.getMainRenderPassInfo().renderPass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineInfo.pDepthStencilState = &depthStencil;

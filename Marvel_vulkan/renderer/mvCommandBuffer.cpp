@@ -4,11 +4,6 @@
 
 namespace Marvel {
 
-    mvCommandBuffer::mvCommandBuffer(uint32_t frameBufferTarget)
-    {
-        _frameBufferTarget = frameBufferTarget;
-    }
-
 	void mvCommandBuffer::beginRecording(mvGraphics& graphics)
 	{
  
@@ -18,12 +13,8 @@ namespace Marvel {
         if (vkBeginCommandBuffer(_commandBuffer, &beginInfo) != VK_SUCCESS)
             throw std::runtime_error("failed to begin recording command buffer!");
 
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = graphics.getRenderPass();
-        renderPassInfo.framebuffer = graphics.getFrameBuffer(_frameBufferTarget);
-        renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = graphics.getSwapChainExtent();
+
+        auto renderPassInfo = graphics.getMainRenderPassInfo();
 
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };

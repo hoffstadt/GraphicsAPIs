@@ -6,19 +6,11 @@
 #include "mvDescriptorSet.h"
 #include "mvDescriptorPool.h"
 #include "mvBuffer.h"
-#include "mvCommandPool.h"
 #include "mvCommandBuffer.h"
 #include "mvTexture.h"
 #include "mvSampler.h"
 
 using namespace Marvel;
-
-struct mvTransforms
-{
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
-};
 
 int main() 
 {
@@ -26,10 +18,16 @@ int main()
     auto window = mvWindow("Marvel Vulkan", 800, 600);
     auto graphics = mvGraphics(window.getHandle());
 
+    struct mvTransforms
+    {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
     std::vector<std::shared_ptr<mvBuffer<mvTransforms>>> uniformBuffers;
-    uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
-    uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
-    uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
+    for (int i = 0; i < 3; i++)
+        uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
 
     //---------------------------------------------------------------------
     // create vertex buffer, vertex layout, and index buffer
@@ -80,15 +78,12 @@ int main()
     // create and update descriptor sets
     //---------------------------------------------------------------------
     std::vector<std::shared_ptr<mvDescriptorSet>> descriptorSets;
-    descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
-    descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
-    descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
-    descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[0]), *descriptorSetLayout);
-    descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[1]), *descriptorSetLayout);
-    descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets[2]), *descriptorSetLayout);
-    descriptorSets[0]->update(graphics, *uniformBuffers[0], texture->getImageView(), sampler->getSampler());
-    descriptorSets[1]->update(graphics, *uniformBuffers[1], texture->getImageView(), sampler->getSampler());
-    descriptorSets[2]->update(graphics, *uniformBuffers[2], texture->getImageView(), sampler->getSampler());
+    for (int i = 0; i < 3; i++)
+    {
+        descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
+        descriptorPool->allocateDescriptorSet(graphics, &(*descriptorSets.back()), *descriptorSetLayout);
+        descriptorSets.back()->update(graphics, *uniformBuffers[i], texture->getImageView(), sampler->getSampler());
+    }
 
     //---------------------------------------------------------------------
     // create and finalize a single pipeline
@@ -104,14 +99,12 @@ int main()
     //---------------------------------------------------------------------
     // create command pool and buffers
     //---------------------------------------------------------------------
-    auto commandPool = std::make_shared<mvCommandPool>(graphics);
     std::vector<std::shared_ptr<mvCommandBuffer>> commandBuffers;
-    commandBuffers.push_back(std::make_shared<mvCommandBuffer>(0u));
-    commandBuffers.push_back(std::make_shared<mvCommandBuffer>(1u));
-    commandBuffers.push_back(std::make_shared<mvCommandBuffer>(2u));
-    commandPool->allocateCommandBuffer(graphics, commandBuffers[0].get());
-    commandPool->allocateCommandBuffer(graphics, commandBuffers[1].get());
-    commandPool->allocateCommandBuffer(graphics, commandBuffers[2].get());
+    for (int i = 0; i < 3; i++)
+    {
+        commandBuffers.push_back(std::make_shared<mvCommandBuffer>());
+        graphics.allocateCommandBuffer(commandBuffers.back().get());
+    }
 
     //---------------------------------------------------------------------
     // main loop

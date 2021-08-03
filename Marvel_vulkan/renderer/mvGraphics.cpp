@@ -67,6 +67,18 @@ namespace Marvel
             throw std::runtime_error("failed to create command pool!");
     }
 
+    void mvGraphics::allocateCommandBuffer(mvCommandBuffer* commandBuffer)
+    {
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool = _commandPool;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = (uint32_t)1;
+
+        if (vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer->_commandBuffer) != VK_SUCCESS)
+            throw std::runtime_error("failed to allocate command buffers!");
+    }
+
     VkCommandBuffer mvGraphics::beginSingleTimeCommands()
     {
         VkCommandBufferAllocateInfo allocInfo{};
@@ -107,9 +119,16 @@ namespace Marvel
         return _swapChainExtent;
     }
 
-    VkRenderPass mvGraphics::getRenderPass()
+    VkRenderPassBeginInfo mvGraphics::getMainRenderPassInfo()
     {
-        return _renderPass;
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = _renderPass;
+        renderPassInfo.framebuffer = _swapChainFramebuffers[_currentImageIndex];
+        renderPassInfo.renderArea.offset = { 0, 0 };
+        renderPassInfo.renderArea.extent = _swapChainExtent;
+
+        return renderPassInfo;
     }
 
     void mvGraphics::begin()
