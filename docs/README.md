@@ -17,7 +17,6 @@ This project is still early and parts of it are being ported over from earlier p
 ### 3D Engines
 * Marvel - Actual Engine (Directx 11 for now)
 * Marvel_vulkan - Vulkan 3D Engine
-* Marvel_opengl - OpenGL 3D Engine
 * Marvel_webgl - WebGL 3D Engine - [demo](https://hoffstadt.github.io/Marvel/)
 
 ### Progress
