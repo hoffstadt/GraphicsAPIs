@@ -21,10 +21,6 @@ if(MV_VULKAN)
 	add_subdirectory ("Marvel_vulkan")
 endif()
 
-if(MV_OPENGL)
-	add_subdirectory ("Marvel_opengl")
-endif()
-
 if(WIN32)
 
 	add_definitions(-DGLFW_EXPOSE_NATIVE_WIN32)
