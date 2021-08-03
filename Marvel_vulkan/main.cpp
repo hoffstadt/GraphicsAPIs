@@ -114,28 +114,12 @@ int main()
     commandPool->allocateCommandBuffer(graphics, commandBuffers[2].get());
 
     //---------------------------------------------------------------------
-    // record command buffers
-    //---------------------------------------------------------------------
-    for (int i = 0; i < 3; i++)
-    {
-        auto& commandBuffer = commandBuffers[i];
-        commandBuffer->beginRecording(graphics);
-        descriptorSets[i]->bind(*commandBuffer, *pipeline);
-        pipeline->bind(*commandBuffer);
-        vertexBuffer->bind(*commandBuffer);
-        indexBuffer->bind(*commandBuffer);
-        commandBuffer->draw(indexBuffer->getVertexCount());
-        commandBuffer->endRecording();
-    }
-
-    //---------------------------------------------------------------------
     // main loop
     //---------------------------------------------------------------------
     while (window.isRunning())
     {
         window.processEvents();
-        graphics.beginpresent();
-
+        
         static auto startTime = std::chrono::high_resolution_clock::now();
 
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -149,17 +133,42 @@ int main()
             0.1f, 10.0f);
         transforms.proj[1][1] *= -1;
 
-        uniformBuffers[graphics.getDevice().getCurrentImageIndex()]->update(graphics, transforms);
+        //---------------------------------------------------------------------
+        // wait for fences and acquire next image
+        //---------------------------------------------------------------------
+        graphics.begin();
+        auto index = graphics.getDevice().getCurrentImageIndex();
 
-        graphics.endpresent(commandBuffers);
+        //---------------------------------------------------------------------
+        // update uniform buffers
+        //---------------------------------------------------------------------
+        uniformBuffers[index]->update(graphics, transforms);
+        
+        //---------------------------------------------------------------------
+        // record command buffers
+        //---------------------------------------------------------------------
+        auto& commandBuffer = commandBuffers[index];
+        commandBuffer->beginRecording(graphics);
+        descriptorSets[index]->bind(*commandBuffer, *pipeline);
+        pipeline->bind(*commandBuffer);
+        vertexBuffer->bind(*commandBuffer);
+        indexBuffer->bind(*commandBuffer);
+        commandBuffer->draw(indexBuffer->getVertexCount());
+        commandBuffer->endRecording();
+
+        //---------------------------------------------------------------------
+        // submit command buffers
+        //---------------------------------------------------------------------
+        graphics.submit(*commandBuffers[index]);
+
+        //---------------------------------------------------------------------
+        // present
+        //---------------------------------------------------------------------
+        graphics.present();
     }
 
     //---------------------------------------------------------------------
     // cleanup - crappy for now, need to add a deletion queue
     //---------------------------------------------------------------------
-    graphics.getDevice().finish();
-    vertexBuffer->finish(graphics);
-    indexBuffer->finish(graphics);
-    pipeline->finish(graphics);
 
 }

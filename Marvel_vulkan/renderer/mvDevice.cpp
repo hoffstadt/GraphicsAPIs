@@ -36,7 +36,7 @@ namespace Marvel
 {
 
     mvDevice::mvDevice(GLFWwindow* window)
-	{
+    {
 
         // initialization
         createVulkanInstance();
@@ -51,38 +51,10 @@ namespace Marvel
         // asset initialization
         createRenderPass();
         createDepthResources();
-        createFrameBuffers();  
+        createFrameBuffers();
         createSyncObjects();
-	}
-
-    void mvDevice::finish()
-    {
-        vkDeviceWaitIdle(_device);
-
-        for (auto framebuffer : _swapChainFramebuffers)
-            vkDestroyFramebuffer(_device, framebuffer, nullptr);
-
-        vkDestroyImageView(_device, _depthImageView, nullptr);
-        vkDestroyImage(_device, _depthImage, nullptr);
-        vkFreeMemory(_device, _depthImageMemory, nullptr);
-
-        //vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
-
-        vkDestroyRenderPass(_device, _renderPass, nullptr);
-
-        for (auto imageView : _swapChainImageViews)
-            vkDestroyImageView(_device, imageView, nullptr);
-
-        vkDestroySwapchainKHR(_device, _swapChain, nullptr);
-
-        //for (size_t i = 0; i < _swapChainImages.size(); i++)
-        //{
-        //    vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
-        //    vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
-        //}
-
-        //vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
     }
+
 
     void mvDevice::createCommandPool()
     {
@@ -132,28 +104,6 @@ namespace Marvel
         vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
     }
 
-    mvDevice::~mvDevice()
-    {
-        // vertex/index buffers
-
-        for (size_t i = 0; i < _max_frames_in_flight; i++)
-        {
-            vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(_device, _inFlightFences[i], nullptr);
-        }
-        
-        //vkDestroyCommandPool(_device, _commandPool, nullptr); 
-        
-        vkDestroyDevice(_device, nullptr);
-
-        if (_enableValidationLayers)
-            DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
-
-        vkDestroySurfaceKHR(_instance, _surface, nullptr);
-        vkDestroyInstance(_instance, nullptr);
-    }
-
     VkExtent2D mvDevice::getSwapChainExtent()
     {
         return _swapChainExtent;
@@ -164,7 +114,7 @@ namespace Marvel
         return _renderPass;
     }
 
-    void mvDevice::beginpresent(mvGraphicsContext& graphics)
+    void mvDevice::begin(mvGraphicsContext& graphics)
     {
         vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -175,10 +125,9 @@ namespace Marvel
             vkWaitForFences(_device, 1, &_imagesInFlight[_currentImageIndex], VK_TRUE, UINT64_MAX);
 
         _imagesInFlight[_currentImageIndex] = _inFlightFences[_currentFrame];
-
     }
 
-    void mvDevice::endpresent(mvGraphicsContext& graphics, std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers)
+    void mvDevice::submit(mvCommandBuffer& commandBuffer)
     {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -188,9 +137,8 @@ namespace Marvel
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
-
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = commandBuffers[_currentImageIndex]->getCommandBuffer();
+        submitInfo.pCommandBuffers = commandBuffer.getCommandBuffer();
 
         VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
@@ -200,23 +148,26 @@ namespace Marvel
 
         if (vkQueueSubmit(_graphicsQueue, 1, &submitInfo, _inFlightFences[_currentFrame]) != VK_SUCCESS)
             throw std::runtime_error("failed to submit draw command buffer!");
+    }
+
+    void mvDevice::present(mvGraphicsContext& graphics)
+    {
+
+        VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
 
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
 
         VkSwapchainKHR swapChains[] = { _swapChain };
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
-
         presentInfo.pImageIndices = &_currentImageIndex;
 
         vkQueuePresentKHR(_presentQueue, &presentInfo);
 
         _currentFrame = (_currentFrame + 1) % _max_frames_in_flight;
-     
     }
 
 	void mvDevice::createVulkanInstance()

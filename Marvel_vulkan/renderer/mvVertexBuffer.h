@@ -22,7 +22,6 @@ namespace Marvel {
 
 		mvVertexBuffer(mvGraphicsContext& graphics, const std::vector<float>& vbuf);
 
-		void finish(mvGraphicsContext& graphics);
 		void bind(mvCommandBuffer& commandBuffer);
 
 	private:

@@ -13,13 +13,18 @@ namespace Marvel {
 		return *_device;
 	}
 
-	void mvGraphicsContext::beginpresent()
+	void mvGraphicsContext::present()
 	{
-		_device->beginpresent(*this);
+		_device->present(*this);
 	}
 
-	void mvGraphicsContext::endpresent(std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers)
+	void mvGraphicsContext::begin()
 	{
-		_device->endpresent(*this, commandBuffers);
+		_device->begin(*this);
+	}
+
+	void mvGraphicsContext::submit(mvCommandBuffer& commandBuffer)
+	{
+		_device->submit(commandBuffer);
 	}
 }

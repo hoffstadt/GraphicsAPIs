@@ -34,12 +34,6 @@ namespace Marvel {
         vkFreeMemory(graphics.getDevice().getDevice(), stagingBufferMemory, nullptr);
 	}
 
-    void mvVertexBuffer::finish(mvGraphicsContext& graphics)
-    {
-        vkDestroyBuffer(graphics.getDevice().getDevice(), _vertexBuffer, nullptr);
-        vkFreeMemory(graphics.getDevice().getDevice(), _vertexBufferMemory, nullptr);
-    }
-
     void mvVertexBuffer::bind(mvCommandBuffer& commandBuffer)
     {
         VkBuffer vertexBuffers[] = { _vertexBuffer };

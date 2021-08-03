@@ -46,20 +46,18 @@ namespace Marvel {
 	public:
 
 		mvDevice(GLFWwindow* window);
-		~mvDevice();
 
 		// temporary utilities
 		uint32_t      getCurrentImageIndex() const { return _currentImageIndex; }
-		void          beginpresent(mvGraphicsContext&);
-		void          endpresent(mvGraphicsContext& graphics, std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers);
+		void          begin(mvGraphicsContext& graphics);
+		void          submit(mvCommandBuffer& commandBuffer);
+		void          present(mvGraphicsContext& graphics);
 		VkFramebuffer getFrameBuffer(uint32_t index) { return _swapChainFramebuffers[index]; }
 		size_t        getSwapChainImageCount() const { return _swapChainImages.size(); }
 
 		// utilities
 		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void copyBuffer  (mvGraphicsContext&, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-		void finish();
 
 		VkDevice           getDevice();
 		VkPhysicalDevice   getPhysicalDevice() { return _physicalDevice; }

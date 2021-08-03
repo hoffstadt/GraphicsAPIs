@@ -22,8 +22,9 @@ namespace Marvel{
 		mvGraphicsContext(GLFWwindow* window);
 
 		mvDevice&   getDevice();
-		void        beginpresent();
-		void        endpresent(std::vector<std::shared_ptr<mvCommandBuffer>>& commandBuffers);
+		void        begin();
+		void        submit(mvCommandBuffer& commandBuffer);
+		void        present();
 
 	private:
 
