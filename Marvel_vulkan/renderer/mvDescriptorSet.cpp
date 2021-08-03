@@ -1,7 +1,7 @@
 #include "mvDescriptorSet.h"
 #include <stdexcept>
 #include "mvCommandBuffer.h"
-#include "mvGraphicsContext.h"
+#include "mvGraphics.h"
 #include "mvPipeline.h"
 
 namespace Marvel {
@@ -18,14 +18,14 @@ namespace Marvel {
 
 	}
 
-	void mvDescriptorSetLayout::finalize(mvGraphicsContext& graphics)
+	void mvDescriptorSetLayout::finalize(mvGraphics& graphics)
 	{
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = static_cast<uint32_t>(_bindings.size());
 		layoutInfo.pBindings = _bindings.data();
 
-		if (vkCreateDescriptorSetLayout(graphics.getDevice().getDevice(), &layoutInfo, nullptr, &_layout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(graphics.getDevice(), &layoutInfo, nullptr, &_layout) != VK_SUCCESS)
 			throw std::runtime_error("failed to create descriptor set layout!");
 	}
 

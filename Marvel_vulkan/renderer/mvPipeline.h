@@ -11,7 +11,7 @@ namespace Marvel {
 	//---------------------------------------------------------------------
 	// forward declarations
 	//---------------------------------------------------------------------
-	class mvGraphicsContext;
+	class mvGraphics;
 	class mvCommandBuffer;
 
 	//---------------------------------------------------------------------
@@ -23,13 +23,13 @@ namespace Marvel {
 	public:
 
 		void bind                   (mvCommandBuffer& commandBuffer);
-		void finalize               (mvGraphicsContext& graphics);
+		void finalize               (mvGraphics& graphics);
 		void setDescriptorSets       (std::vector<std::shared_ptr<mvDescriptorSet>>);
 		void setDescriptorSetLayout (std::shared_ptr<mvDescriptorSetLayout>);
 		void setVertexLayout        (mvVertexLayout);
-		void setVertexShader        (mvGraphicsContext& graphics, const std::string& file);
-		void setFragmentShader      (mvGraphicsContext& graphics, const std::string& file);
-		void finish                 (mvGraphicsContext&);
+		void setVertexShader        (mvGraphics& graphics, const std::string& file);
+		void setFragmentShader      (mvGraphics& graphics, const std::string& file);
+		void finish                 (mvGraphics&);
 
 		VkPipelineLayout getLayout() { return _pipelineLayout; }
 

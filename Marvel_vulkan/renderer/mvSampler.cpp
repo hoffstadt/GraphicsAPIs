@@ -1,13 +1,13 @@
 #include "mvSampler.h"
 #include <stdexcept>
-#include "mvGraphicsContext.h"
+#include "mvGraphics.h"
 
 namespace Marvel {
 
-	mvSampler::mvSampler(mvGraphicsContext& graphics)
+	mvSampler::mvSampler(mvGraphics& graphics)
 	{
         VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(graphics.getDevice().getPhysicalDevice(), &properties);
+        vkGetPhysicalDeviceProperties(graphics.getPhysicalDevice(), &properties);
 
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -27,7 +27,7 @@ namespace Marvel {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
-        if (vkCreateSampler(graphics.getDevice().getDevice(), &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS)
+        if (vkCreateSampler(graphics.getDevice(), &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS)
             throw std::runtime_error("failed to create texture sampler!");
 	}
 

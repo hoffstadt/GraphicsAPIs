@@ -9,7 +9,7 @@ namespace Marvel {
 	//---------------------------------------------------------------------
 	// forward declarations
 	//---------------------------------------------------------------------
-	class mvGraphicsContext;
+	class mvGraphics;
 	class mvDescriptorSet;
 	class mvDescriptorSetLayout;
 
@@ -21,11 +21,11 @@ namespace Marvel {
 
 	public:
 
-		mvDescriptorPool(mvGraphicsContext& graphics);
+		mvDescriptorPool(mvGraphics& graphics);
 
-		void cleanup(mvGraphicsContext& graphics);
+		void cleanup(mvGraphics& graphics);
 
-		void allocateDescriptorSet(mvGraphicsContext& graphics, mvDescriptorSet* descriptorSet, mvDescriptorSetLayout& layout);
+		void allocateDescriptorSet(mvGraphics& graphics, mvDescriptorSet* descriptorSet, mvDescriptorSetLayout& layout);
 
 	private:
 

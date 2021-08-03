@@ -5,14 +5,14 @@
 
 namespace Marvel {
 
-	class mvGraphicsContext;
+	class mvGraphics;
 
 	class mvTexture
 	{
 
 	public:
 
-		mvTexture(mvGraphicsContext& graphics, const std::string& file);
+		mvTexture(mvGraphics& graphics, const std::string& file);
 		VkImageView getImageView() { return _textureImageView; }
 
 	private:

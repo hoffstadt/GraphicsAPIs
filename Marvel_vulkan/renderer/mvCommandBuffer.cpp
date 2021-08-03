@@ -1,6 +1,6 @@
 #include "mvCommandBuffer.h"
 #include <stdexcept>
-#include "mvGraphicsContext.h"
+#include "mvGraphics.h"
 
 namespace Marvel {
 
@@ -9,7 +9,7 @@ namespace Marvel {
         _frameBufferTarget = frameBufferTarget;
     }
 
-	void mvCommandBuffer::beginRecording(mvGraphicsContext& graphics)
+	void mvCommandBuffer::beginRecording(mvGraphics& graphics)
 	{
  
         VkCommandBufferBeginInfo beginInfo{};
@@ -20,10 +20,10 @@ namespace Marvel {
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = graphics.getDevice().getRenderPass();
-        renderPassInfo.framebuffer = graphics.getDevice().getFrameBuffer(_frameBufferTarget);
+        renderPassInfo.renderPass = graphics.getRenderPass();
+        renderPassInfo.framebuffer = graphics.getFrameBuffer(_frameBufferTarget);
         renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = graphics.getDevice().getSwapChainExtent();
+        renderPassInfo.renderArea.extent = graphics.getSwapChainExtent();
 
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };

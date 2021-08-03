@@ -1,7 +1,7 @@
 #include "mvShader.h"
 #include <fstream>
 #include <stdexcept>
-#include "mvGraphicsContext.h"
+#include "mvGraphics.h"
 
 static std::vector<char> readFile(const std::string& filename)
 {
@@ -23,7 +23,7 @@ static std::vector<char> readFile(const std::string& filename)
 
 namespace Marvel {
 
-	mvShader::mvShader(mvGraphicsContext& graphics, const std::string& file)
+	mvShader::mvShader(mvGraphics& graphics, const std::string& file)
 	{
         auto shaderCode = readFile(file);
 
@@ -33,7 +33,7 @@ namespace Marvel {
         createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
         VkShaderModule shaderModule;
-        if (vkCreateShaderModule(graphics.getDevice().getDevice(), &createInfo, nullptr, &_shaderModule) != VK_SUCCESS)
+        if (vkCreateShaderModule(graphics.getDevice(), &createInfo, nullptr, &_shaderModule) != VK_SUCCESS)
             throw std::runtime_error("failed to create shader module!");
 	}
 

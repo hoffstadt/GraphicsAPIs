@@ -5,14 +5,14 @@
 
 namespace Marvel {
 
-	class mvGraphicsContext;
+	class mvGraphics;
 
 	class mvSampler
 	{
 
 	public:
 
-		mvSampler(mvGraphicsContext& graphics);
+		mvSampler(mvGraphics& graphics);
 		VkSampler getSampler() { return _textureSampler; }
 
 	private:

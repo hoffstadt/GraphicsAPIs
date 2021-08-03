@@ -8,7 +8,7 @@ namespace Marvel {
 	//---------------------------------------------------------------------
 	// forward declarations
 	//---------------------------------------------------------------------
-	class mvGraphicsContext;
+	class mvGraphics;
 
 	//---------------------------------------------------------------------
 	// mvShader
@@ -18,7 +18,7 @@ namespace Marvel {
 
 	public:
 
-		mvShader(mvGraphicsContext& graphics, const std::string& file);
+		mvShader(mvGraphics& graphics, const std::string& file);
 
 		VkShaderModule getShaderModule() const;
 

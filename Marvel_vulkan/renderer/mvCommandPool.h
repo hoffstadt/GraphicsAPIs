@@ -4,7 +4,7 @@
 
 namespace Marvel {
 
-	class mvGraphicsContext;
+	class mvGraphics;
 	class mvCommandBuffer;
 
 	class mvCommandPool
@@ -12,9 +12,9 @@ namespace Marvel {
 
 	public:
 
-		mvCommandPool(mvGraphicsContext& graphics);
+		mvCommandPool(mvGraphics& graphics);
 
-		void allocateCommandBuffer(mvGraphicsContext& graphics, mvCommandBuffer* commandBuffer);
+		void allocateCommandBuffer(mvGraphics& graphics, mvCommandBuffer* commandBuffer);
 
 	private:
 

@@ -1,6 +1,6 @@
 #include "mvPipeline.h"
 #include <stdexcept>
-#include "mvGraphicsContext.h"
+#include "mvGraphics.h"
 #include "mvDescriptorSet.h"
 #include "mvCommandBuffer.h"
 
@@ -11,12 +11,12 @@ namespace Marvel {
 		_layout = layout;
 	}
 
-	void mvPipeline::setVertexShader(mvGraphicsContext& graphics, const std::string& file)
+	void mvPipeline::setVertexShader(mvGraphics& graphics, const std::string& file)
 	{
         _vertexShader = std::make_unique<mvShader>(graphics, file);
 	}
 
-	void mvPipeline::setFragmentShader(mvGraphicsContext& graphics, const std::string& file)
+	void mvPipeline::setFragmentShader(mvGraphics& graphics, const std::string& file)
 	{
 		_fragShader = std::make_unique<mvShader>(graphics, file);
 	}
@@ -36,13 +36,13 @@ namespace Marvel {
         vkCmdBindPipeline(*commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
     }
 
-    void mvPipeline::finish(mvGraphicsContext& graphics)
+    void mvPipeline::finish(mvGraphics& graphics)
     {
-        vkDestroyPipeline(graphics.getDevice().getDevice(), _pipeline, nullptr);
-        vkDestroyPipelineLayout(graphics.getDevice().getDevice(), _pipelineLayout, nullptr);
+        vkDestroyPipeline(graphics.getDevice(), _pipeline, nullptr);
+        vkDestroyPipelineLayout(graphics.getDevice(), _pipelineLayout, nullptr);
     }
 
-	void mvPipeline::finalize(mvGraphicsContext& graphics)
+	void mvPipeline::finalize(mvGraphics& graphics)
 	{
         //---------------------------------------------------------------------
         // input assembler stage
@@ -86,14 +86,14 @@ namespace Marvel {
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = (float)graphics.getDevice().getSwapChainExtent().width;
-        viewport.height = (float)graphics.getDevice().getSwapChainExtent().height;
+        viewport.width = (float)graphics.getSwapChainExtent().width;
+        viewport.height = (float)graphics.getSwapChainExtent().height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
         VkRect2D scissor{};
         scissor.offset = { 0, 0 };
-        scissor.extent = graphics.getDevice().getSwapChainExtent();
+        scissor.extent = graphics.getSwapChainExtent();
 
         VkPipelineViewportStateCreateInfo viewportState{};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -172,7 +172,7 @@ namespace Marvel {
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pSetLayouts = _descriptorSetLayout->getLayout();
 
-        if (vkCreatePipelineLayout(graphics.getDevice().getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(graphics.getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create pipeline layout!");
 
         //---------------------------------------------------------------------
@@ -192,17 +192,17 @@ namespace Marvel {
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.layout = _pipelineLayout;
-        pipelineInfo.renderPass = graphics.getDevice().getRenderPass();
+        pipelineInfo.renderPass = graphics.getRenderPass();
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineInfo.pDepthStencilState = &depthStencil;
 
-        if (vkCreateGraphicsPipelines(graphics.getDevice().getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(graphics.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline) != VK_SUCCESS)
             throw std::runtime_error("failed to create graphics pipeline!");
 
         // no longer need this
-        vkDestroyShaderModule(graphics.getDevice().getDevice(), _vertexShader->getShaderModule(), nullptr);
-        vkDestroyShaderModule(graphics.getDevice().getDevice(), _fragShader->getShaderModule(), nullptr);
+        vkDestroyShaderModule(graphics.getDevice(), _vertexShader->getShaderModule(), nullptr);
+        vkDestroyShaderModule(graphics.getDevice(), _fragShader->getShaderModule(), nullptr);
         _vertexShader = nullptr;
         _fragShader = nullptr;
 	}

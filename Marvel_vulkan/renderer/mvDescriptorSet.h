@@ -9,7 +9,7 @@ namespace Marvel {
 	//---------------------------------------------------------------------
 	// forward declarations
 	//---------------------------------------------------------------------
-	class mvGraphicsContext;
+	class mvGraphics;
 	class mvDescriptorSet;
 	class mvPipeline;
 	class mvCommandBuffer;
@@ -28,7 +28,7 @@ namespace Marvel {
 	public:
 
 		void append(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags);
-		void finalize(mvGraphicsContext& graphics);
+		void finalize(mvGraphics& graphics);
 		const VkDescriptorSetLayout* getLayout() const { return &_layout; }
 
 	private:
@@ -52,7 +52,7 @@ namespace Marvel {
 		void bind(mvCommandBuffer& commandBuffer, mvPipeline& pipeline);
 
 		template<typename T>
-		void update(mvGraphicsContext& graphics, mvBuffer<T>& buffer, VkImageView imageview, VkSampler sampler)
+		void update(mvGraphics& graphics, mvBuffer<T>& buffer, VkImageView imageview, VkSampler sampler)
 		{
 
 			VkDescriptorBufferInfo bufferInfo{};
@@ -83,7 +83,7 @@ namespace Marvel {
 			descriptorWrites[1].descriptorCount = 1;
 			descriptorWrites[1].pImageInfo = &imageInfo;
 
-			vkUpdateDescriptorSets(graphics.getDevice().getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			vkUpdateDescriptorSets(graphics.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
 		}
 

@@ -9,7 +9,7 @@ namespace Marvel {
 	//---------------------------------------------------------------------
 	// forward declarations
 	//---------------------------------------------------------------------
-	class mvGraphicsContext;
+	class mvGraphics;
 	class mvCommandBuffer;
 
 	//---------------------------------------------------------------------
@@ -20,7 +20,7 @@ namespace Marvel {
 
 	public:
 
-		mvVertexBuffer(mvGraphicsContext& graphics, const std::vector<float>& vbuf);
+		mvVertexBuffer(mvGraphics& graphics, const std::vector<float>& vbuf);
 
 		void bind(mvCommandBuffer& commandBuffer);
 

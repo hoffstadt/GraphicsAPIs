@@ -1,8 +1,8 @@
 #include <vector>
 #include <chrono>
 #include "mvWindow.h"
-#include "mvDevice.h"
-#include "mvGraphicsContext.h"
+#include "mvGraphics.h"
+#include "mvGraphics.h"
 #include "mvDescriptorSet.h"
 #include "mvDescriptorPool.h"
 #include "mvBuffer.h"
@@ -24,7 +24,7 @@ int main()
 {
 
     auto window = mvWindow("Marvel Vulkan", 800, 600);
-    auto graphics = mvGraphicsContext(window.getHandle());
+    auto graphics = mvGraphics(window.getHandle());
 
     std::vector<std::shared_ptr<mvBuffer<mvTransforms>>> uniformBuffers;
     uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
@@ -129,7 +129,7 @@ int main()
         transforms.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         transforms.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         transforms.proj = glm::perspective(glm::radians(45.0f), 
-            graphics.getDevice().getSwapChainExtent().width / (float)graphics.getDevice().getSwapChainExtent().height, 
+            graphics.getSwapChainExtent().width / (float)graphics.getSwapChainExtent().height, 
             0.1f, 10.0f);
         transforms.proj[1][1] *= -1;
 
@@ -137,7 +137,7 @@ int main()
         // wait for fences and acquire next image
         //---------------------------------------------------------------------
         graphics.begin();
-        auto index = graphics.getDevice().getCurrentImageIndex();
+        auto index = graphics.getCurrentImageIndex();
 
         //---------------------------------------------------------------------
         // update uniform buffers

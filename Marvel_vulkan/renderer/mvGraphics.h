@@ -21,7 +21,7 @@ namespace Marvel {
 	class mvGraphicsContext;
 	class mvCommandBuffer;
 
-	class mvDevice
+	class mvGraphics
 	{
 
 	public:
@@ -45,19 +45,19 @@ namespace Marvel {
 
 	public:
 
-		mvDevice(GLFWwindow* window);
+		mvGraphics(GLFWwindow* window);
 
 		// temporary utilities
 		uint32_t      getCurrentImageIndex() const { return _currentImageIndex; }
-		void          begin(mvGraphicsContext& graphics);
+		void          begin();
 		void          submit(mvCommandBuffer& commandBuffer);
-		void          present(mvGraphicsContext& graphics);
+		void          present();
 		VkFramebuffer getFrameBuffer(uint32_t index) { return _swapChainFramebuffers[index]; }
 		size_t        getSwapChainImageCount() const { return _swapChainImages.size(); }
 
 		// utilities
 		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void copyBuffer  (mvGraphicsContext&, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void copyBuffer  (VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 		VkDevice           getDevice();
 		VkPhysicalDevice   getPhysicalDevice() { return _physicalDevice; }

@@ -4,7 +4,7 @@
 
 namespace Marvel {
 
-	class mvGraphicsContext;
+	class mvGraphics;
 
 	class mvCommandBuffer
 	{
@@ -15,7 +15,7 @@ namespace Marvel {
 
 		mvCommandBuffer(uint32_t frameBufferTarget);
 
-		void beginRecording(mvGraphicsContext& graphics);
+		void beginRecording(mvGraphics& graphics);
 		void endRecording();
 		void draw(uint32_t vertexCount);
 

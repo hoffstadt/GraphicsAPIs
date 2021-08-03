@@ -1,10 +1,9 @@
-#include "mvDevice.h"
+#include "mvGraphics.h"
 #include <stdexcept>
 #include <iostream>
 #include <set>
 #include <fstream>
 #include <chrono>
-#include "mvGraphicsContext.h"
 #include "mvCommandBuffer.h"
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -35,7 +34,7 @@ static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMesse
 namespace Marvel
 {
 
-    mvDevice::mvDevice(GLFWwindow* window)
+    mvGraphics::mvGraphics(GLFWwindow* window)
     {
 
         // initialization
@@ -55,8 +54,7 @@ namespace Marvel
         createSyncObjects();
     }
 
-
-    void mvDevice::createCommandPool()
+    void mvGraphics::createCommandPool()
     {
         QueueFamilyIndices queueFamilyIndices = findQueueFamilies(_physicalDevice);
 
@@ -69,7 +67,7 @@ namespace Marvel
             throw std::runtime_error("failed to create command pool!");
     }
 
-    VkCommandBuffer mvDevice::beginSingleTimeCommands()
+    VkCommandBuffer mvGraphics::beginSingleTimeCommands()
     {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -89,7 +87,7 @@ namespace Marvel
         return commandBuffer;
     }
 
-    void mvDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer)
+    void mvGraphics::endSingleTimeCommands(VkCommandBuffer commandBuffer)
     {
         vkEndCommandBuffer(commandBuffer);
 
@@ -104,17 +102,17 @@ namespace Marvel
         vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
     }
 
-    VkExtent2D mvDevice::getSwapChainExtent()
+    VkExtent2D mvGraphics::getSwapChainExtent()
     {
         return _swapChainExtent;
     }
 
-    VkRenderPass mvDevice::getRenderPass()
+    VkRenderPass mvGraphics::getRenderPass()
     {
         return _renderPass;
     }
 
-    void mvDevice::begin(mvGraphicsContext& graphics)
+    void mvGraphics::begin()
     {
         vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -127,7 +125,7 @@ namespace Marvel
         _imagesInFlight[_currentImageIndex] = _inFlightFences[_currentFrame];
     }
 
-    void mvDevice::submit(mvCommandBuffer& commandBuffer)
+    void mvGraphics::submit(mvCommandBuffer& commandBuffer)
     {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -150,7 +148,7 @@ namespace Marvel
             throw std::runtime_error("failed to submit draw command buffer!");
     }
 
-    void mvDevice::present(mvGraphicsContext& graphics)
+    void mvGraphics::present()
     {
 
         VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
@@ -170,7 +168,7 @@ namespace Marvel
         _currentFrame = (_currentFrame + 1) % _max_frames_in_flight;
     }
 
-	void mvDevice::createVulkanInstance()
+	void mvGraphics::createVulkanInstance()
 	{
 
         if (_enableValidationLayers && !checkValidationLayerSupport())
@@ -219,7 +217,7 @@ namespace Marvel
             throw std::runtime_error("failed to create instance!");
 	}
 
-    void mvDevice::setupDebugMessenger()
+    void mvGraphics::setupDebugMessenger()
     {
         if (!_enableValidationLayers) 
             return;
@@ -235,13 +233,13 @@ namespace Marvel
             throw std::runtime_error("failed to set up debug messenger!");
     }
 
-    void mvDevice::createSurface(GLFWwindow* window)
+    void mvGraphics::createSurface(GLFWwindow* window)
     {
         if (glfwCreateWindowSurface(_instance, window, nullptr, &_surface) != VK_SUCCESS)
             throw std::runtime_error("failed to create window surface!");
     }
 
-    void mvDevice::pickPhysicalDevice()
+    void mvGraphics::pickPhysicalDevice()
     {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
@@ -264,7 +262,7 @@ namespace Marvel
             throw std::runtime_error("failed to find a suitable GPU!");
     }
 
-    void mvDevice::createLogicalDevice()
+    void mvGraphics::createLogicalDevice()
     {
         QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
 
@@ -312,7 +310,7 @@ namespace Marvel
         vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
     }
 
-    void mvDevice::createSwapChain(GLFWwindow* window)
+    void mvGraphics::createSwapChain(GLFWwindow* window)
     {
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(_physicalDevice);
 
@@ -404,7 +402,7 @@ namespace Marvel
         _swapChainExtent = extent;
     }
 
-    void mvDevice::createImageViews()
+    void mvGraphics::createImageViews()
     {
         _swapChainImageViews.resize(_swapChainImages.size());
 
@@ -412,7 +410,7 @@ namespace Marvel
             _swapChainImageViews[i] = createImageView(_swapChainImages[i], _swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 
-    void mvDevice::createRenderPass()
+    void mvGraphics::createRenderPass()
     {
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = _swapChainImageFormat;
@@ -470,7 +468,7 @@ namespace Marvel
             throw std::runtime_error("failed to create render pass!");
     }
 
-    void mvDevice::createFrameBuffers()
+    void mvGraphics::createFrameBuffers()
     {
         _swapChainFramebuffers.resize(_swapChainImageViews.size());
 
@@ -495,7 +493,7 @@ namespace Marvel
         }
     }
 
-    void mvDevice::createDepthResources()
+    void mvGraphics::createDepthResources()
     {
         VkFormat depthFormat = VK_FORMAT_D32_SFLOAT;
 
@@ -506,7 +504,7 @@ namespace Marvel
         _depthImageView = createImageView(_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 
-    VkImageView mvDevice::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
+    VkImageView mvGraphics::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
     {
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -526,7 +524,7 @@ namespace Marvel
         return imageView;
     }
 
-    void mvDevice::createImage(uint32_t width, uint32_t height, VkFormat format,
+    void mvGraphics::createImage(uint32_t width, uint32_t height, VkFormat format,
         VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
         VkImage& image, VkDeviceMemory& imageMemory)
     {
@@ -563,7 +561,7 @@ namespace Marvel
         vkBindImageMemory(_device, image, imageMemory, 0);
     }
 
-    void mvDevice::createSyncObjects()
+    void mvGraphics::createSyncObjects()
     {
 
         _imageAvailableSemaphores.resize(_max_frames_in_flight);
@@ -588,7 +586,7 @@ namespace Marvel
 
     }
 
-    bool mvDevice::checkValidationLayerSupport()
+    bool mvGraphics::checkValidationLayerSupport()
     {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -614,7 +612,7 @@ namespace Marvel
         return true;
     }
 
-    bool mvDevice::isDeviceSuitable(VkPhysicalDevice device)
+    bool mvGraphics::isDeviceSuitable(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -629,7 +627,7 @@ namespace Marvel
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
-    bool mvDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool mvGraphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -645,7 +643,7 @@ namespace Marvel
         return requiredExtensions.empty();
     }
 
-    mvDevice::SwapChainSupportDetails mvDevice::querySwapChainSupport(VkPhysicalDevice device)
+    mvGraphics::SwapChainSupportDetails mvGraphics::querySwapChainSupport(VkPhysicalDevice device)
     {
         SwapChainSupportDetails details;
 
@@ -670,7 +668,7 @@ namespace Marvel
         return details;
     }
 
-    mvDevice::QueueFamilyIndices mvDevice::findQueueFamilies(VkPhysicalDevice device)
+    mvGraphics::QueueFamilyIndices mvGraphics::findQueueFamilies(VkPhysicalDevice device)
     {
 
         QueueFamilyIndices indices;
@@ -702,7 +700,7 @@ namespace Marvel
         return indices;
     }
 
-    std::uint32_t mvDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    std::uint32_t mvGraphics::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
     {
         VkPhysicalDeviceMemoryProperties memProperties;
         vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProperties);
@@ -716,12 +714,12 @@ namespace Marvel
         throw std::runtime_error("failed to find suitable memory type!");
     }
 
-    VkDevice mvDevice::getDevice()
+    VkDevice mvGraphics::getDevice()
     {
         return _device;
     }
 
-    void mvDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+    void mvGraphics::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
     {
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -748,7 +746,7 @@ namespace Marvel
         vkBindBufferMemory(_device, buffer, bufferMemory, 0);
     }
 
-    void mvDevice::copyBuffer(mvGraphicsContext& graphics, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+    void mvGraphics::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     {
         VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -759,7 +757,7 @@ namespace Marvel
         endSingleTimeCommands(commandBuffer);
     }
 
-    void mvDevice::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+    void mvGraphics::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
     {
         VkCommandBuffer commandBuffer = beginSingleTimeCommands();
         VkImageMemoryBarrier barrier{};
@@ -829,7 +827,7 @@ namespace Marvel
         endSingleTimeCommands(commandBuffer);
     }
 
-    void mvDevice::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+    void mvGraphics::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
     {
         VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 

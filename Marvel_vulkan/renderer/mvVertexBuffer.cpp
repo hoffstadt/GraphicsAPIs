@@ -1,12 +1,11 @@
 #include "mvVertexBuffer.h"
 #include <stdexcept>
-#include "mvDevice.h"
-#include "mvGraphicsContext.h"
+#include "mvGraphics.h"
 #include "mvCommandBuffer.h"
 
 namespace Marvel {
 
-    mvVertexBuffer::mvVertexBuffer(mvGraphicsContext& graphics, const std::vector<float>& vbuf)
+    mvVertexBuffer::mvVertexBuffer(mvGraphics& graphics, const std::vector<float>& vbuf)
         :
         _vertices(vbuf)
 	{
@@ -15,23 +14,23 @@ namespace Marvel {
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
-        graphics.getDevice().createBuffer(bufferSize,
+        graphics.createBuffer(bufferSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             stagingBuffer, stagingBufferMemory);
 
         void* data;
-        vkMapMemory(graphics.getDevice().getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        vkMapMemory(graphics.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, _vertices.data(), (size_t)bufferSize);
-        vkUnmapMemory(graphics.getDevice().getDevice(), stagingBufferMemory);
+        vkUnmapMemory(graphics.getDevice(), stagingBufferMemory);
 
-        graphics.getDevice().createBuffer(bufferSize,
+        graphics.createBuffer(bufferSize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
             _vertexBuffer, _vertexBufferMemory);
 
-        graphics.getDevice().copyBuffer(graphics, stagingBuffer, _vertexBuffer, bufferSize);
+        graphics.copyBuffer(stagingBuffer, _vertexBuffer, bufferSize);
 
-        vkDestroyBuffer(graphics.getDevice().getDevice(), stagingBuffer, nullptr);
-        vkFreeMemory(graphics.getDevice().getDevice(), stagingBufferMemory, nullptr);
+        vkDestroyBuffer(graphics.getDevice(), stagingBuffer, nullptr);
+        vkFreeMemory(graphics.getDevice(), stagingBufferMemory, nullptr);
 	}
 
     void mvVertexBuffer::bind(mvCommandBuffer& commandBuffer)
