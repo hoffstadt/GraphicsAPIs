@@ -4,7 +4,6 @@
 #include <set>
 #include <fstream>
 #include <chrono>
-#include "mvCommandBuffer.h"
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -65,17 +64,16 @@ namespace Marvel
 
         if (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS)
             throw std::runtime_error("failed to create command pool!");
-    }
 
-    void mvGraphics::allocateCommandBuffer(mvCommandBuffer* commandBuffer)
-    {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = _commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)1;
+        allocInfo.commandBufferCount = (uint32_t)3;
 
-        if (vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer->_commandBuffer) != VK_SUCCESS)
+        _commandBuffers.resize(3);
+
+        if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate command buffers!");
     }
 
@@ -131,7 +129,7 @@ namespace Marvel
         return renderPassInfo;
     }
 
-    void mvGraphics::begin()
+    void mvGraphics::beginFrame()
     {
         vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -144,7 +142,46 @@ namespace Marvel
         _imagesInFlight[_currentImageIndex] = _inFlightFences[_currentFrame];
     }
 
-    void mvGraphics::submit(mvCommandBuffer& commandBuffer)
+    void mvGraphics::begin()
+    {
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        if (vkBeginCommandBuffer(_commandBuffers[_currentImageIndex], &beginInfo) != VK_SUCCESS)
+            throw std::runtime_error("failed to begin recording command buffer!");
+
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = _renderPass;
+        renderPassInfo.framebuffer = _swapChainFramebuffers[_currentImageIndex];
+        renderPassInfo.renderArea.offset = { 0, 0 };
+        renderPassInfo.renderArea.extent = _swapChainExtent;
+
+        std::array<VkClearValue, 2> clearValues{};
+        clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+        clearValues[1].depthStencil = { 1.0f, 0 };
+
+        renderPassInfo.clearValueCount = 2;
+        renderPassInfo.pClearValues = clearValues.data();
+
+        vkCmdBeginRenderPass(_commandBuffers[_currentImageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    }
+
+    void mvGraphics::end()
+    {
+        vkCmdEndRenderPass(_commandBuffers[_currentImageIndex]);
+
+        if (vkEndCommandBuffer(_commandBuffers[_currentImageIndex]) != VK_SUCCESS)
+            throw std::runtime_error("failed to record command buffer!");
+    }
+
+    void mvGraphics::draw(uint32_t vertexCount)
+    {
+        vkCmdDrawIndexed(_commandBuffers[_currentImageIndex], vertexCount, 1, 0, 0, 0);
+    }
+
+    void mvGraphics::endFrame()
     {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -155,7 +192,7 @@ namespace Marvel
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = commandBuffer.getCommandBuffer();
+        submitInfo.pCommandBuffers = &_commandBuffers[_currentImageIndex];
 
         VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
         submitInfo.signalSemaphoreCount = 1;

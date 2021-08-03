@@ -11,7 +11,6 @@ namespace Marvel {
 	// forward declarations
 	//-----------------------------------------------------------------------------
 	class mvGraphics;
-	class mvCommandBuffer;
 
 	//-----------------------------------------------------------------------------
 	// mvIndexBuffer
@@ -23,7 +22,7 @@ namespace Marvel {
 
 		mvIndexBuffer(mvGraphics& graphics, const std::vector<uint16_t>& ibuf);
 
-		void bind(mvCommandBuffer& commandBuffer);
+		void bind(mvGraphics& graphics);
 		uint32_t getVertexCount();
 
 	private:

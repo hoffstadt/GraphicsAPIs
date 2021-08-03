@@ -1,7 +1,6 @@
 #include "mvIndexBuffer.h"
 #include <stdexcept>
 #include "mvGraphics.h"
-#include "mvCommandBuffer.h"
 
 namespace Marvel {
 
@@ -38,9 +37,9 @@ namespace Marvel {
         return _indices.size();
     }
 
-    void mvIndexBuffer::bind(mvCommandBuffer& commandBuffer)
+    void mvIndexBuffer::bind(mvGraphics& graphics)
     {
-        vkCmdBindIndexBuffer(*commandBuffer.getCommandBuffer(), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(graphics.getCurrentCommandBuffer(), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     }
 
 }

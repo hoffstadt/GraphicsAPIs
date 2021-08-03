@@ -14,7 +14,6 @@
 
 #include "mvVertexBuffer.h"
 #include "mvIndexBuffer.h"
-#include "mvCommandBuffer.h"
 #include "mvPipeline.h"
 
 namespace Marvel {
@@ -47,15 +46,18 @@ namespace Marvel {
 		VkPhysicalDevice getPhysicalDevice() { return _physicalDevice; }
 
 		// command buffers
-		void                  allocateCommandBuffer(mvCommandBuffer* commandBuffer);
 		VkCommandBuffer       beginSingleTimeCommands();
 		void                  endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		VkRenderPassBeginInfo getMainRenderPassInfo();
+		VkCommandBuffer       getCurrentCommandBuffer() { return _commandBuffers[_currentImageIndex]; }
 
 		// temporary utilities
 		uint32_t getCurrentImageIndex() const { return _currentImageIndex; }
+		void     beginFrame();
 		void     begin();
-		void     submit(mvCommandBuffer& commandBuffer);
+		void     draw(uint32_t vertexCount);
+		void     end();
+		void     endFrame();
 		void     present();
 
 		// resource utilities
@@ -123,6 +125,7 @@ namespace Marvel {
 		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation"};
 		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 		const int                      _max_frames_in_flight = 2;
+		std::vector<VkCommandBuffer>   _commandBuffers;
 	};
 
 }

@@ -6,7 +6,6 @@
 #include "mvDescriptorSet.h"
 #include "mvDescriptorPool.h"
 #include "mvBuffer.h"
-#include "mvCommandBuffer.h"
 #include "mvTexture.h"
 #include "mvSampler.h"
 
@@ -97,16 +96,6 @@ int main()
     pipeline->finalize(graphics);
 
     //---------------------------------------------------------------------
-    // create command pool and buffers
-    //---------------------------------------------------------------------
-    std::vector<std::shared_ptr<mvCommandBuffer>> commandBuffers;
-    for (int i = 0; i < 3; i++)
-    {
-        commandBuffers.push_back(std::make_shared<mvCommandBuffer>());
-        graphics.allocateCommandBuffer(commandBuffers.back().get());
-    }
-
-    //---------------------------------------------------------------------
     // main loop
     //---------------------------------------------------------------------
     while (window.isRunning())
@@ -129,7 +118,7 @@ int main()
         //---------------------------------------------------------------------
         // wait for fences and acquire next image
         //---------------------------------------------------------------------
-        graphics.begin();
+        graphics.beginFrame();
         auto index = graphics.getCurrentImageIndex();
 
         //---------------------------------------------------------------------
@@ -140,19 +129,19 @@ int main()
         //---------------------------------------------------------------------
         // record command buffers
         //---------------------------------------------------------------------
-        auto& commandBuffer = commandBuffers[index];
-        commandBuffer->beginRecording(graphics);
-        descriptorSets[index]->bind(*commandBuffer, *pipeline);
-        pipeline->bind(*commandBuffer);
-        vertexBuffer->bind(*commandBuffer);
-        indexBuffer->bind(*commandBuffer);
-        commandBuffer->draw(indexBuffer->getVertexCount());
-        commandBuffer->endRecording();
+        
+        graphics.begin();
+        descriptorSets[index]->bind(graphics, *pipeline);
+        pipeline->bind(graphics);
+        vertexBuffer->bind(graphics);
+        indexBuffer->bind(graphics);
+        graphics.draw(indexBuffer->getVertexCount());
+        graphics.end();
 
         //---------------------------------------------------------------------
         // submit command buffers
         //---------------------------------------------------------------------
-        graphics.submit(*commandBuffers[index]);
+        graphics.endFrame();
 
         //---------------------------------------------------------------------
         // present
