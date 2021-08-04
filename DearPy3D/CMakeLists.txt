@@ -14,6 +14,8 @@ target_sources(dearpy3d
 		"core/mvWindow.cpp"
 		"core/mvTimer.cpp"
 
+		# renderer
+		"renderer/mvAllocator.cpp"
 		"renderer/mvObjMaterial.cpp"
 		"renderer/mvGraphics.cpp"
 		"renderer/mvCamera.cpp"
@@ -36,6 +38,9 @@ target_sources(dearpy3d
 		# drawables
 		"renderer/drawables/mvDrawable.cpp"
 		"renderer/drawables/mvTexturedQuad.cpp"
+
+		# Vulkan Memory Allocator
+		"../Dependencies/VulkanMemoryAllocator/vk_mem_alloc.cpp"
 )
 
 target_include_directories(dearpy3d
@@ -53,6 +58,7 @@ target_include_directories(dearpy3d
 		"../Dependencies/glfw/include/"
 		"../Dependencies/glm/"
 		"../Dependencies/stb/"
+		"../Dependencies/VulkanMemoryAllocator/"
 )
 
 target_link_directories(dearpy3d

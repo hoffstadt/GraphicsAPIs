@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "mvVertexLayout.h"
+#include "mvAllocator.h"
 
 namespace DearPy3D {
 
@@ -25,9 +26,9 @@ namespace DearPy3D {
 
 	private:
 
-		std::vector<float>   _vertices;
-		VkBuffer             _vertexBuffer;
-		VkDeviceMemory       _vertexBufferMemory;
+		std::vector<float> _vertices;
+		VkBuffer           _vertexBuffer;
+		VmaAllocation      _memoryAllocation;
 
 	};
 

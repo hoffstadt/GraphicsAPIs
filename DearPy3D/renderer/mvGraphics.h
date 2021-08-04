@@ -15,6 +15,7 @@
 #include "mvVertexBuffer.h"
 #include "mvIndexBuffer.h"
 #include "mvPipeline.h"
+#include "mvAllocator.h"
 
 namespace DearPy3D {
 
@@ -42,8 +43,9 @@ namespace DearPy3D {
 
 		mvGraphics(GLFWwindow* window);
 
-		VkDevice         getDevice();
+		VkDevice         getDevice()         { return _device; }
 		VkPhysicalDevice getPhysicalDevice() { return _physicalDevice; }
+		VkInstance       getInstance()       { return _instance; }
 
 
 

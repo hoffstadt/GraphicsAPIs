@@ -1,9 +1,8 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 #include <vector>
-
+#include "mvAllocator.h"
 
 namespace DearPy3D {
 
@@ -28,9 +27,8 @@ namespace DearPy3D {
 	private:
 
 		std::vector<uint16_t> _indices;
-
 		VkBuffer _indexBuffer;
-		VkDeviceMemory _indexBufferMemory;
+		VmaAllocation _memoryAllocation;
 
 	};
 

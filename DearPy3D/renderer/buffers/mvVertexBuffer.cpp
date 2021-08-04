@@ -8,28 +8,46 @@ namespace DearPy3D {
         :
         _vertices(vbuf)
 	{
-
         VkDeviceSize bufferSize = sizeof(float) * _vertices.size();
 
+        auto allocator = mvAllocator();
+
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = bufferSize;
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
         VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        graphics.createBuffer(bufferSize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer, stagingBufferMemory);
 
-        void* data;
-        vkMapMemory(graphics.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        VmaAllocation stagingBufferAllocation = allocator.allocateBuffer(bufferInfo,
+            VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
+
+        float* data = allocator.mapMemory<float>(stagingBufferAllocation);
         memcpy(data, _vertices.data(), (size_t)bufferSize);
-        vkUnmapMemory(graphics.getDevice(), stagingBufferMemory);
+        allocator.unmapMemory(stagingBufferAllocation);
 
-        graphics.createBuffer(bufferSize,
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-            _vertexBuffer, _vertexBufferMemory);
+        VkBufferCreateInfo indexBufferInfo{};
+        indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        indexBufferInfo.size = bufferSize;
+        indexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        graphics.copyBuffer(stagingBuffer, _vertexBuffer, bufferSize);
+        _memoryAllocation = allocator.allocateBuffer(indexBufferInfo, VMA_MEMORY_USAGE_GPU_ONLY, _vertexBuffer);
 
-        vkDestroyBuffer(graphics.getDevice(), stagingBuffer, nullptr);
-        vkFreeMemory(graphics.getDevice(), stagingBufferMemory, nullptr);
+        VkCommandBuffer copyCmd = graphics.beginSingleTimeCommands();
+
+        VkBufferCopy copyRegion = {};
+        copyRegion.size = bufferSize;
+        vkCmdCopyBuffer(
+            copyCmd,
+            stagingBuffer,
+            _vertexBuffer,
+            1,
+            &copyRegion);
+
+        graphics.endSingleTimeCommands(copyCmd);
+
+        allocator.destroyBuffer(stagingBuffer, stagingBufferAllocation);
 	}
 
     void mvVertexBuffer::bind(mvGraphics& graphics)

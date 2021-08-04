@@ -10,26 +10,44 @@ namespace DearPy3D {
 
         VkDeviceSize bufferSize = sizeof(_indices[0]) * _indices.size();
 
+        auto allocator = mvAllocator();
+
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = bufferSize;
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
         VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        graphics.createBuffer(bufferSize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-            stagingBuffer, 
-            stagingBufferMemory);
 
-        void* data;
-        vkMapMemory(graphics.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        VmaAllocation stagingBufferAllocation = allocator.allocateBuffer(bufferInfo,
+            VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
+
+        uint16_t* data = allocator.mapMemory<uint16_t>(stagingBufferAllocation);
         memcpy(data, _indices.data(), (size_t)bufferSize);
-        vkUnmapMemory(graphics.getDevice(), stagingBufferMemory);
+        allocator.unmapMemory(stagingBufferAllocation);
 
-        graphics.createBuffer(bufferSize,
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-            _indexBuffer, _indexBufferMemory);
+        VkBufferCreateInfo indexBufferInfo{};
+        indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        indexBufferInfo.size = bufferSize;
+        indexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
-        graphics.copyBuffer(stagingBuffer, _indexBuffer, bufferSize);
+        _memoryAllocation = allocator.allocateBuffer(indexBufferInfo, VMA_MEMORY_USAGE_GPU_ONLY, _indexBuffer);
 
-        vkDestroyBuffer(graphics.getDevice(), stagingBuffer, nullptr);
-        vkFreeMemory(graphics.getDevice(), stagingBufferMemory, nullptr);
+        VkCommandBuffer copyCmd = graphics.beginSingleTimeCommands();
+
+        VkBufferCopy copyRegion = {};
+        copyRegion.size = bufferSize;
+        vkCmdCopyBuffer(
+            copyCmd,
+            stagingBuffer,
+            _indexBuffer,
+            1,
+            &copyRegion);
+
+        graphics.endSingleTimeCommands(copyCmd);
+
+        allocator.destroyBuffer(stagingBuffer, stagingBufferAllocation);
 	}
 
     uint32_t mvIndexBuffer::getVertexCount()

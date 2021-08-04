@@ -42,6 +42,7 @@ namespace DearPy3D
         createSurface(window);
         pickPhysicalDevice();
         createLogicalDevice();
+        mvAllocator::Init(*this);
         createSwapChain(window);
         createImageViews();
         createCommandPool();
@@ -796,11 +797,6 @@ namespace DearPy3D
         }
 
         throw std::runtime_error("failed to find suitable memory type!");
-    }
-
-    VkDevice mvGraphics::getDevice()
-    {
-        return _device;
     }
 
     void mvGraphics::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
