@@ -10,21 +10,28 @@ target_sources(dearpy3d
 
 		"main.cpp"
 
+		# core
 		"core/mvWindow.cpp"
 		"core/mvTimer.cpp"
 
 		"renderer/mvObjMaterial.cpp"
-		"renderer/mvSampler.cpp"
-		"renderer/mvTexture.cpp"
-		"renderer/mvDescriptorSet.cpp"
 		"renderer/mvGraphics.cpp"
-		"renderer/mvPipeline.cpp"
-		"renderer/mvShader.cpp"
-		"renderer/mvVertexBuffer.cpp"
-		"renderer/mvIndexBuffer.cpp"
-		"renderer/mvVertexLayout.cpp"
 		"renderer/mvCamera.cpp"
-		"renderer/mvTransformUniform.cpp"
+
+		# pipeline
+		"renderer/pipeline/mvPipeline.cpp"
+		"renderer/pipeline/mvShader.cpp"
+		"renderer/pipeline/mvSampler.cpp"
+		"renderer/pipeline/mvDescriptorSet.cpp"
+		
+		# buffers
+		"renderer/buffers/mvTransformUniform.cpp"
+		"renderer/buffers/mvVertexBuffer.cpp"
+		"renderer/buffers/mvIndexBuffer.cpp"
+		"renderer/buffers/mvVertexLayout.cpp"
+
+		# bindables
+		"renderer/bindables/mvTexture.cpp"
 		
 		# drawables
 		"renderer/drawables/mvDrawable.cpp"
@@ -34,9 +41,14 @@ target_sources(dearpy3d
 target_include_directories(dearpy3d
 
 	PRIVATE
+
 		"core/"
 		"renderer/"
 		"renderer/drawables/"
+		"renderer/bindables/"
+		"renderer/buffers/"
+		"renderer/pipeline/"
+
 	    "$ENV{VK_SDK_PATH}/Include/"
 		"../Dependencies/glfw/include/"
 		"../Dependencies/glm/"
