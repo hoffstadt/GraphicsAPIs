@@ -45,6 +45,7 @@ namespace DearPy3D
         createSwapChain(window);
         createImageViews();
         createCommandPool();
+        createDescriptorPool();
 
         // asset initialization
         createRenderPass();
@@ -75,6 +76,33 @@ namespace DearPy3D
 
         if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate command buffers!");
+    }
+
+    void mvGraphics::createDescriptorPool()
+    {
+        VkDescriptorPoolSize poolSizes[] =
+        {
+            { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+        };
+        VkDescriptorPoolCreateInfo poolInfo = {};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        poolInfo.maxSets = 1000 * 11;
+        poolInfo.poolSizeCount = 11u;
+        poolInfo.pPoolSizes = poolSizes;
+
+        if (vkCreateDescriptorPool(_device, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS)
+            throw std::runtime_error("failed to create descriptor pool!");
     }
 
     VkCommandBuffer mvGraphics::beginSingleTimeCommands()
@@ -914,5 +942,18 @@ namespace DearPy3D
         );
 
         endSingleTimeCommands(commandBuffer);
+    }
+
+    void mvGraphics::allocateDescriptorSet(mvDescriptorSet* descriptorSet, mvDescriptorSetLayout& layout)
+    {
+        std::vector<VkDescriptorSetLayout> layouts(1, layout._layout);
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = _descriptorPool;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = layouts.data();
+
+        if (vkAllocateDescriptorSets(_device, &allocInfo, &descriptorSet->_descriptorSet) != VK_SUCCESS)
+            throw std::runtime_error("failed to allocate descriptor sets!");
     }
 }

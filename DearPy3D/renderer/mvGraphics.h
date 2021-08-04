@@ -51,6 +51,9 @@ namespace DearPy3D {
 		VkRenderPassBeginInfo getMainRenderPassInfo();
 		VkCommandBuffer       getCurrentCommandBuffer() { return _commandBuffers[_currentImageIndex]; }
 
+		// descriptor pool
+		void allocateDescriptorSet(mvDescriptorSet* descriptorSet, mvDescriptorSetLayout& layout);
+
 		// temporary utilities
 		uint32_t getCurrentImageIndex() const { return _currentImageIndex; }
 		void     beginFrame();
@@ -87,6 +90,7 @@ namespace DearPy3D {
 		void createSyncObjects();
 		void createDepthResources();
 		void createCommandPool();
+		void createDescriptorPool();
 
 		// internal helpers
 		bool                    checkValidationLayerSupport();
@@ -126,6 +130,7 @@ namespace DearPy3D {
 		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 		const int                      _max_frames_in_flight = 2;
 		std::vector<VkCommandBuffer>   _commandBuffers;
+		VkDescriptorPool               _descriptorPool;
 	};
 
 }

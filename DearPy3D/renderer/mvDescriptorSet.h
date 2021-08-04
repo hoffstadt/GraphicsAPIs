@@ -22,7 +22,7 @@ namespace DearPy3D {
 	class mvDescriptorSetLayout
 	{
 
-		friend class mvDescriptorPool;
+		friend class mvGraphics;
 
 	public:
 
@@ -44,7 +44,7 @@ namespace DearPy3D {
 	{
 
 		friend class mvPipeline;
-		friend class mvDescriptorPool;
+		friend class mvGraphics;
 
 	public:
 

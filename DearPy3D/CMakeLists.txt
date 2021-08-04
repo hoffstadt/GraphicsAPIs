@@ -12,9 +12,9 @@ target_sources(dearpy3d
 
 		"core/mvWindow.cpp"
 
+		"renderer/mvObjMaterial.cpp"
 		"renderer/mvSampler.cpp"
 		"renderer/mvTexture.cpp"
-		"renderer/mvDescriptorPool.cpp"
 		"renderer/mvDescriptorSet.cpp"
 		"renderer/mvGraphics.cpp"
 		"renderer/mvPipeline.cpp"
@@ -22,6 +22,10 @@ target_sources(dearpy3d
 		"renderer/mvVertexBuffer.cpp"
 		"renderer/mvIndexBuffer.cpp"
 		"renderer/mvVertexLayout.cpp"
+		
+		# drawables
+		"renderer/drawables/mvDrawable.cpp"
+		"renderer/drawables/mvTexturedQuad.cpp"
 )
 
 target_include_directories(dearpy3d
@@ -29,6 +33,7 @@ target_include_directories(dearpy3d
 	PRIVATE
 		"core/"
 		"renderer/"
+		"renderer/drawables/"
 	    "$ENV{VK_SDK_PATH}/Include/"
 		"../Dependencies/glfw/include/"
 		"../Dependencies/glm/"
