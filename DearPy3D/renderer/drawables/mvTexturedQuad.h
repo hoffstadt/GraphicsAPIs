@@ -3,6 +3,7 @@
 #include "mvBuffer.h"
 #include "mvMath.h"
 #include "mvDrawable.h"
+#include "mvTransformUniform.h"
 
 namespace DearPy3D {
 
@@ -25,7 +26,7 @@ namespace DearPy3D {
 
 		mvTexturedQuad(mvGraphics& graphics, const std::string& path);
 
-		void update(mvGraphics& graphics);
+		void bind(mvGraphics& graphics) const override;
 
 		glm::mat4 getTransform() const override;
 
@@ -41,9 +42,9 @@ namespace DearPy3D {
 		float m_yangle = 0.0f;
 		float m_zangle = 0.0f;
 
+		std::shared_ptr<mvTransformUniform> _transformBuffer;
 		std::shared_ptr<mvTexture> _texture;
 		std::shared_ptr<mvSampler> _sampler;
-		std::vector<std::shared_ptr<mvBuffer<mvTransforms>>> _uniformBuffers;
 	};
 
 }

@@ -10,14 +10,13 @@ namespace DearPy3D {
 	mvTexturedQuad::mvTexturedQuad(mvGraphics& graphics, const std::string& path)
 	{
 
+		_transformBuffer = std::make_unique<mvTransformUniform>(graphics);
+		_transformBuffer->_parent = this;
+
 		auto vlayout = mvVertexLayout();
 		vlayout.append(ElementType::Position3D);
 		vlayout.append(ElementType::Color);
 		vlayout.append(ElementType::Texture2D);
-
-		for (int i = 0; i < 3; i++)
-			_uniformBuffers.push_back(std::make_shared<mvBuffer<mvTransforms>>(graphics, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
-
 
 		_vertexBuffer = std::make_shared<mvVertexBuffer>(graphics, std::vector<float>{
 			-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
@@ -42,7 +41,7 @@ namespace DearPy3D {
 		{
 			_descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
 			graphics.allocateDescriptorSet(&(*_descriptorSets.back()), *_descriptorSetLayout);
-			_descriptorSets.back()->update(graphics, *_uniformBuffers[i], _texture->getImageView(), _sampler->getSampler());
+			_descriptorSets.back()->update(graphics, *_transformBuffer->_buf[i], _texture->getImageView(), _sampler->getSampler());
 		}
 
 		_pipeline = std::make_shared<mvPipeline>();
@@ -52,25 +51,6 @@ namespace DearPy3D {
 		_pipeline->setDescriptorSetLayout(_descriptorSetLayout);
 		_pipeline->setDescriptorSets(_descriptorSets);
 		_pipeline->finalize(graphics);
-	}
-
-	void mvTexturedQuad::update(mvGraphics& graphics)
-	{
-		static auto startTime = std::chrono::high_resolution_clock::now();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		mvTransforms transforms{};
-		transforms.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		transforms.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		transforms.proj = glm::perspective(glm::radians(45.0f),
-			graphics.getSwapChainExtent().width / (float)graphics.getSwapChainExtent().height,
-			0.1f, 10.0f);
-		transforms.proj[1][1] *= -1;
-
-		auto index = graphics.getCurrentImageIndex();
-		_uniformBuffers[index]->update(graphics, transforms);
 	}
 
 	glm::mat4 mvTexturedQuad::getTransform() const
@@ -93,6 +73,16 @@ namespace DearPy3D {
 		m_xangle = x;
 		m_yangle = y;
 		m_zangle = z;
+	}
+
+	void mvTexturedQuad::bind(mvGraphics& graphics) const
+	{
+		auto index = graphics.getCurrentImageIndex();
+		_transformBuffer->bind(graphics);
+		_descriptorSets[index]->bind(graphics, *_pipeline);
+		_pipeline->bind(graphics);
+		_indexBuffer->bind(graphics);
+		_vertexBuffer->bind(graphics);
 	}
 
 }

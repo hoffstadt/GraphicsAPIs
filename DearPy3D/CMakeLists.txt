@@ -11,6 +11,7 @@ target_sources(dearpy3d
 		"main.cpp"
 
 		"core/mvWindow.cpp"
+		"core/mvTimer.cpp"
 
 		"renderer/mvObjMaterial.cpp"
 		"renderer/mvSampler.cpp"
@@ -22,6 +23,8 @@ target_sources(dearpy3d
 		"renderer/mvVertexBuffer.cpp"
 		"renderer/mvIndexBuffer.cpp"
 		"renderer/mvVertexLayout.cpp"
+		"renderer/mvCamera.cpp"
+		"renderer/mvTransformUniform.cpp"
 		
 		# drawables
 		"renderer/drawables/mvDrawable.cpp"

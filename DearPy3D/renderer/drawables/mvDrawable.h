@@ -21,7 +21,7 @@ namespace DearPy3D {
 
 		virtual glm::mat4 getTransform() const = 0;
 
-		void bind(mvGraphics & graphics) const;
+		virtual void bind(mvGraphics& graphics) const;
 		void draw(mvGraphics & graphics) const;
 
 	protected:

@@ -2,18 +2,46 @@
 
 namespace DearPy3D {
 
+	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+		mvWindow* win = static_cast<mvWindow*>(glfwGetWindowUserPointer(window));
+
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		{
+			if (win->cursorEnabled())
+				win->disableCursor();
+
+			else
+				win->enableCursor();
+		}
+	}
+
+	void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+	{
+
+		mvWindow* win = static_cast<mvWindow*>(glfwGetWindowUserPointer(window));
+
+		float xoffset = xpos - win->getLastX();
+		float yoffset = ypos - win->getLastY();
+		win->setDelta(xoffset, yoffset);
+		win->setLast(xpos, ypos);
+	}
+
 	mvWindow::mvWindow(const char* name, int width, int height)
 		:
-		m_width(width),
-		m_height(height),
-		m_handle(nullptr),
-		m_running(true)
+		_width(width),
+		_height(height),
+		_handle(nullptr),
+		_running(true)
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-		m_handle = glfwCreateWindow(width, height, name, nullptr, nullptr);
+		_handle = glfwCreateWindow(width, height, name, nullptr, nullptr);
+		glfwSetWindowUserPointer(_handle, this);
+		glfwSetCursorPosCallback(_handle, mouse_callback);
+		glfwSetKeyCallback(_handle, key_callback);
 
 	}
 
@@ -24,11 +52,22 @@ namespace DearPy3D {
 
 	void mvWindow::processEvents()
 	{
-		/* Loop until the user closes the window */
-		m_running = !glfwWindowShouldClose(m_handle);
-
-		/* Poll for and process events */
+		_deltaX = 0.0;
+		_deltaY = 0.0;
+		_running = !glfwWindowShouldClose(_handle);
 		glfwPollEvents();
+	}
+
+	void mvWindow::enableCursor()
+	{
+		_cursorEnabled = true;
+		glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+
+	void mvWindow::disableCursor()
+	{
+		_cursorEnabled = false;
+		glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
 }

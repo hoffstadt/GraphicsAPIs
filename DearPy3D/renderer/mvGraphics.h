@@ -45,6 +45,8 @@ namespace DearPy3D {
 		VkDevice         getDevice();
 		VkPhysicalDevice getPhysicalDevice() { return _physicalDevice; }
 
+
+
 		// command buffers
 		VkCommandBuffer       beginSingleTimeCommands();
 		void                  endSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -62,6 +64,11 @@ namespace DearPy3D {
 		void     end();
 		void     endFrame();
 		void     present();
+
+		void setCamera(glm::mat4 camera) { _camera = camera; }
+		void setProjection(glm::mat4 projection) { _projection = projection; }
+		glm::mat4 getCamera() const { return _camera; }
+		glm::mat4 getProjection() const { return _projection; }
 
 		// resource utilities
 		void        createBuffer         (VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -100,6 +107,9 @@ namespace DearPy3D {
 		QueueFamilyIndices      findQueueFamilies(VkPhysicalDevice device);
 		
 	private:
+
+		glm::mat4 _camera;
+		glm::mat4 _projection;
 
 		uint32_t                       _currentImageIndex = 0;
 		VkImage                        _depthImage;
