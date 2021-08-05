@@ -6,11 +6,6 @@ This repo is the working location of the eventual [Dear PyGui](https://github.co
 
 This project is still early and parts of it are being ported over from earlier prototypes.
 
-### 3D Engines
-* Marvel - Actual Engine (Directx 11 for now)
-* Marvel_vulkan - Vulkan 3D Engine
-* Marvel_webgl - WebGL 3D Engine - [demo](https://hoffstadt.github.io/Marvel/)
-
 
 ## Building
 ### Windows

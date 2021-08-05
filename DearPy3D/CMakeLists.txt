@@ -1,14 +1,12 @@
 cmake_minimum_required (VERSION 3.13)
 
-add_executable (dearpy3d)
+add_library(dearpy3d STATIC)
 
 set_property(TARGET dearpy3d PROPERTY CXX_STANDARD 17)
 
 target_sources(dearpy3d
 
 	PRIVATE
-
-		"main.cpp"
 
 		# core
 		"core/mvWindow.cpp"
