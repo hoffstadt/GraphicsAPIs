@@ -42,6 +42,16 @@ target_sources(dearpy3d
 
 		# Vulkan Memory Allocator
 		"../Dependencies/VulkanMemoryAllocator/vk_mem_alloc.cpp"
+
+		# imgui
+		"../Dependencies/imgui/misc/cpp/imgui_stdlib.cpp"
+		"../Dependencies/imgui/imgui.cpp"
+		"../Dependencies/imgui/imgui_demo.cpp"
+		"../Dependencies/imgui/imgui_draw.cpp"
+		"../Dependencies/imgui/imgui_widgets.cpp"
+		"../Dependencies/imgui/imgui_tables.cpp"
+		"../Dependencies/imgui/backends/imgui_impl_glfw.cpp"
+		"../Dependencies/imgui/backends/imgui_impl_vulkan.cpp"
 )
 
 target_include_directories(dearpy3d
@@ -62,6 +72,8 @@ target_include_directories(dearpy3d
 		"../Dependencies/stb/"
 		"../Dependencies/VulkanMemoryAllocator/"
 		"../Dependencies/json/"
+		"../Dependencies/imgui/"
+		"../Dependencies/imgui/backends/"
 )
 
 target_link_directories(dearpy3d
