@@ -19,6 +19,7 @@ namespace DearPy3D {
 	class mvTransformUniform
 	{
 		friend class mvTexturedQuad;
+		friend class mvCube;
 
 		struct Transforms
 		{

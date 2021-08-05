@@ -1,6 +1,7 @@
 #include "mvWindow.h"
 #include "mvGraphics.h"
 #include "mvTexturedQuad.h"
+#include "mvCube.h"
 #include "mvCamera.h"
 #include "mvTimer.h"
 
@@ -16,6 +17,8 @@ int main()
     auto camera = mvCamera(graphics, width, height, glm::vec3{5.0f, 5.0f, -15.0f});
 
     auto quad1 = std::make_shared<mvTexturedQuad>(graphics, "../../Resources/brickwall.jpg");
+    auto cube1 = std::make_shared<mvCube>(graphics, "../../Resources/brickwall.jpg");
+    cube1->setPosition(10, 10, 10);
 
     //---------------------------------------------------------------------
     // main loop
@@ -39,9 +42,13 @@ int main()
                 glfwWaitEvents();
             }
             quad1->cleanup(graphics);
+            cube1->cleanup(graphics);
             graphics.recreateSwapChain(newwidth, newheight);
             quad1.reset();
+            cube1.reset();
             quad1 = std::make_shared<mvTexturedQuad>(graphics, "../../Resources/brickwall.jpg");
+            cube1 = std::make_shared<mvCube>(graphics, "../../Resources/brickwall.jpg");
+            cube1->setPosition(10, 10, 10);
             window.setResized(false);
             camera.setWidth(newwidth);
             camera.setHeight(newheight);
@@ -71,8 +78,9 @@ int main()
         camera.bind(graphics);
         quad1->bind(graphics);
         quad1->draw(graphics);
-        
-        ImGui::ShowDemoWindow();
+
+        cube1->bind(graphics);
+        cube1->draw(graphics);
 
         graphics.end();
 
@@ -87,6 +95,7 @@ int main()
         graphics.present();
     }
 
+    cube1->cleanup(graphics);
     quad1->cleanup(graphics);
     graphics.cleanup();
 

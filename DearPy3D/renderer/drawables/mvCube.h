@@ -12,12 +12,12 @@ namespace DearPy3D {
 	class mvTexture;
 	class mvSampler;
 
-	class mvTexturedQuad : public mvDrawable
+	class mvCube : public mvDrawable
 	{
 
 	public:
 
-		mvTexturedQuad(mvGraphics& graphics, const std::string& path);
+		mvCube(mvGraphics& graphics, const std::string& path);
 
 		void bind(mvGraphics& graphics) const override;
 

@@ -10,6 +10,9 @@ namespace DearPy3D {
 		Position2D,
 		Position3D,
 		Texture2D,
+		Normal,
+		Tangent,
+		Bitangent,
 		Color
 	};
 

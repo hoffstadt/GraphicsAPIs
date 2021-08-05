@@ -8,15 +8,27 @@ layout(binding = 0) uniform UniformBufferObject {
 } ubo;
 
 layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
-layout(location = 2) in vec2 inTexCoord;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec3 inTangent;
+layout(location = 3) in vec3 inBitangent;
+layout(location = 4) in vec2 inTexCoord;
 
-layout(location = 0) out vec3 fragColor;
-layout(location = 1) out vec2 fragTexCoord;
+layout(location = 0) out vec3 viewPos;
+layout(location = 1) out vec3 viewNormal;
+layout(location = 2) out vec3 worldNormal;
+layout(location = 3) out vec2 texCoord;
+layout(location = 4) out mat3 tangentBasis;
 
 void main() 
 {
     gl_Position = ubo.modelViewProj * vec4(inPosition, 1.0);
-    fragColor = inColor;
-    fragTexCoord = inTexCoord;
+    viewPos = vec3(ubo.modelView * vec4(inPosition, 1.0));
+    viewNormal = mat3(ubo.modelView) * inNormal;
+    worldNormal = mat3(ubo.model) * inNormal;
+    texCoord = inTexCoord;
+    vec3 T = mat3(ubo.modelView)*inTangent;
+    vec3 B = mat3(ubo.modelView)*inBitangent;
+    vec3 N = mat3(ubo.modelView)*inNormal;
+    tangentBasis = mat3(T, B, N);
+
 }

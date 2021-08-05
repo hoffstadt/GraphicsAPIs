@@ -41,6 +41,7 @@ target_sources(dearpy3d
 		# drawables
 		"renderer/drawables/mvDrawable.cpp"
 		"renderer/drawables/mvTexturedQuad.cpp"
+		"renderer/drawables/mvCube.cpp"
 
 		# Vulkan Memory Allocator
 		"../Dependencies/VulkanMemoryAllocator/vk_mem_alloc.cpp"

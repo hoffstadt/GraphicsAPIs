@@ -20,6 +20,24 @@ namespace DearPy3D {
 			_size = sizeof(float) * 3;
 			break;
 
+		case ElementType::Tangent:
+			_format = VK_FORMAT_R32G32B32_SFLOAT;
+			_itemCount = 3;
+			_size = sizeof(float) * 3;
+			break;
+
+		case ElementType::Bitangent:
+			_format = VK_FORMAT_R32G32B32_SFLOAT;
+			_itemCount = 3;
+			_size = sizeof(float) * 3;
+			break;
+
+		case ElementType::Normal:
+			_format = VK_FORMAT_R32G32B32_SFLOAT;
+			_itemCount = 3;
+			_size = sizeof(float) * 3;
+			break;
+
 		case ElementType::Texture2D:
 			_format = VK_FORMAT_R32G32_SFLOAT;
 			_itemCount = 2;
