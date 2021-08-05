@@ -12,6 +12,9 @@ target_sources(dearpy3d
 		"core/mvWindow.cpp"
 		"core/mvTimer.cpp"
 
+		# utilities
+		"utilities/mvImporter.cpp"
+
 		# renderer
 		"renderer/mvAllocator.cpp"
 		"renderer/mvObjMaterial.cpp"
@@ -46,6 +49,7 @@ target_include_directories(dearpy3d
 	PRIVATE
 
 		"core/"
+		"utilities/"
 		"renderer/"
 		"renderer/drawables/"
 		"renderer/bindables/"
@@ -57,6 +61,7 @@ target_include_directories(dearpy3d
 		"../Dependencies/glm/"
 		"../Dependencies/stb/"
 		"../Dependencies/VulkanMemoryAllocator/"
+		"../Dependencies/json/"
 )
 
 target_link_directories(dearpy3d
