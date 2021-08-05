@@ -25,6 +25,8 @@ namespace DearPy3D {
 		mvImGuiManager(GLFWwindow* window, mvGraphics& graphics);
 		~mvImGuiManager();
 
+		void resize(mvGraphics& graphics);
+
 		void beginFrame(mvGraphics& graphics) const;
 		void endFrame(mvGraphics& graphics) const;
 

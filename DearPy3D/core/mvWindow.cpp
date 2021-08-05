@@ -2,7 +2,7 @@
 
 namespace DearPy3D {
 
-	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		mvWindow* win = static_cast<mvWindow*>(glfwGetWindowUserPointer(window));
 
@@ -16,7 +16,7 @@ namespace DearPy3D {
 		}
 	}
 
-	void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+	static void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	{
 
 		mvWindow* win = static_cast<mvWindow*>(glfwGetWindowUserPointer(window));
@@ -25,6 +25,13 @@ namespace DearPy3D {
 		float yoffset = ypos - win->getLastY();
 		win->setDelta(xoffset, yoffset);
 		win->setLast(xpos, ypos);
+	}
+
+	static void framebufferResizeCallback(GLFWwindow* window, int width, int height) 
+	{
+		mvWindow* win = static_cast<mvWindow*>(glfwGetWindowUserPointer(window));
+
+		win->setResized(true);
 	}
 
 	mvWindow::mvWindow(const char* name, int width, int height)
@@ -42,6 +49,7 @@ namespace DearPy3D {
 		glfwSetWindowUserPointer(_handle, this);
 		glfwSetCursorPosCallback(_handle, mouse_callback);
 		glfwSetKeyCallback(_handle, key_callback);
+		glfwSetFramebufferSizeCallback(_handle, framebufferResizeCallback);
 
 	}
 

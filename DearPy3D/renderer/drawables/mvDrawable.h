@@ -17,7 +17,7 @@ namespace DearPy3D {
 	public:
 
 		mvDrawable() = default;
-		virtual ~mvDrawable() = default;
+		virtual ~mvDrawable();
 
 		virtual glm::mat4 getTransform() const = 0;
 

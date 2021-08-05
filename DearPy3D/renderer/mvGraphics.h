@@ -43,6 +43,9 @@ namespace DearPy3D {
 
 		mvGraphics(GLFWwindow* window);
 
+		void recreateSwapChain(GLFWwindow* window);
+		void cleanupSwapChain();
+
 		VkDevice         getDevice()              { return _device; }
 		VkPhysicalDevice getPhysicalDevice()      { return _physicalDevice; }
 		VkInstance       getInstance()            { return _instance; }

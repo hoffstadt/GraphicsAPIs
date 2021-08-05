@@ -55,6 +55,66 @@ namespace DearPy3D
         createSyncObjects();
     }
 
+    void mvGraphics::cleanupSwapChain()
+    {
+        vkDestroyImageView(_device, _depthImageView, nullptr);
+        vkDestroyImage(_device, _depthImage, nullptr);
+        vkFreeMemory(_device, _depthImageMemory, nullptr);
+
+        for (auto framebuffer : _swapChainFramebuffers)
+            vkDestroyFramebuffer(_device, framebuffer, nullptr);
+
+        vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
+
+        //vkDestroyPipeline(_device, _p, nullptr);
+        //vkDestroyPipelineLayout(_device, pipelineLayout, nullptr);
+        vkDestroyRenderPass(_device, _renderPass, nullptr);
+
+        for (auto imageView : _swapChainImageViews)
+            vkDestroyImageView(_device, imageView, nullptr);
+
+        vkDestroySwapchainKHR(_device, _swapChain, nullptr);
+
+        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
+    }
+
+    void mvGraphics::recreateSwapChain(GLFWwindow* window)
+    {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(window, &width, &height);
+        while (width == 0 || height == 0) {
+            glfwGetFramebufferSize(window, &width, &height);
+            glfwWaitEvents();
+        }
+
+        vkDeviceWaitIdle(_device);
+
+        cleanupSwapChain();
+
+        createSwapChain(window);
+        createImageViews();
+        createRenderPass();
+        //createGraphicsPipeline();
+        createDepthResources();
+        createFrameBuffers();
+        //createUniformBuffers();
+        createDescriptorPool();
+        //createDescriptorSets();
+
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool = _commandPool;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = (uint32_t)3;
+
+        _commandBuffers.resize(3);
+
+        if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
+            throw std::runtime_error("failed to allocate command buffers!");
+
+        _imagesInFlight.resize(_swapChainImages.size(), VK_NULL_HANDLE);
+    }
+
     void mvGraphics::createCommandPool()
     {
         QueueFamilyIndices queueFamilyIndices = findQueueFamilies(_physicalDevice);

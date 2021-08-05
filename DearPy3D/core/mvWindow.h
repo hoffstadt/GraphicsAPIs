@@ -26,6 +26,8 @@ namespace DearPy3D {
 		double getDeltaY() { return _deltaY; }
 		double getLastX() { return _lastX; }
 		double getLastY() { return _lastY; }
+		bool isResized() { return _resized; }
+		void setResized(bool value) { _resized = value; }
 
 	private:
 
@@ -38,6 +40,7 @@ namespace DearPy3D {
 		double      _lastY = 0.0;
 		double      _deltaX = 0.0;
 		double      _deltaY = 0.0;
+		bool        _resized = false;
 
 	};
 

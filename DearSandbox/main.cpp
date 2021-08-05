@@ -9,12 +9,13 @@ using namespace DearPy3D;
 
 int main() 
 {
-
-    auto window = mvWindow("Dear Py3D", 800, 600);
+    int width = 1000;
+    int height = 1000;
+    auto window = mvWindow("Dear Py3D", width, height);
     auto graphics = mvGraphics(window.getHandle());
     auto imguiManager = mvImGuiManager(window.getHandle(), graphics);
 
-    auto camera = mvCamera(graphics, 800, 600, glm::vec3{5.0f, 5.0f, -15.0f});
+    auto camera = mvCamera(graphics, width, height, glm::vec3{5.0f, 5.0f, -15.0f});
 
     auto quad1 = std::make_shared<mvTexturedQuad>(graphics, "../../Resources/brickwall.jpg");
 
@@ -29,7 +30,15 @@ int main()
 
         window.processEvents();
 
-
+        if (window.isResized())
+        {
+            
+            graphics.recreateSwapChain(window.getHandle());
+            quad1.reset();
+            quad1 = std::make_shared<mvTexturedQuad>(graphics, "../../Resources/brickwall.jpg");
+            window.setResized(false);
+            imguiManager.resize(graphics);
+        }
 
         if (glfwGetKey(window.getHandle(), GLFW_KEY_W) == GLFW_PRESS) camera.translate(0.0f, 0.0f, dt);
         if (glfwGetKey(window.getHandle(), GLFW_KEY_S) == GLFW_PRESS) camera.translate(0.0f, 0.0f, -dt);
@@ -72,9 +81,5 @@ int main()
         //---------------------------------------------------------------------
         graphics.present();
     }
-
-    //---------------------------------------------------------------------
-    // cleanup - crappy for now, need to add a deletion queue
-    //---------------------------------------------------------------------
 
 }

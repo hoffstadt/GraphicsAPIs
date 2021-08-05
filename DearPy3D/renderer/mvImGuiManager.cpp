@@ -51,6 +51,25 @@ namespace DearPy3D {
         ImGui::DestroyContext();
 	}
 
+    void mvImGuiManager::resize(mvGraphics& graphics)
+    {
+        
+        ImGui_ImplVulkan_InitInfo init_info = {};
+        init_info.Instance = graphics.getInstance();
+        init_info.PhysicalDevice = graphics.getPhysicalDevice();
+        init_info.Device = graphics.getDevice();
+        init_info.QueueFamily = graphics.getGraphicsQueueFamily();
+        init_info.Queue = graphics.getGraphicsQueue();
+        init_info.PipelineCache = nullptr;
+        init_info.DescriptorPool = graphics.getDescriptorPool();
+        init_info.Allocator = nullptr;
+        init_info.MinImageCount = graphics.getMinImageCount();
+        init_info.ImageCount = graphics.getMinImageCount();
+        init_info.CheckVkResultFn = nullptr;
+        ImGui_ImplVulkan_Init(&init_info, graphics.getRenderPass());
+        ImGui_ImplVulkan_SetMinImageCount(graphics.getMinImageCount());
+    }
+
 	void mvImGuiManager::beginFrame(mvGraphics& graphics) const
 	{
         ImGui_ImplVulkan_NewFrame();
