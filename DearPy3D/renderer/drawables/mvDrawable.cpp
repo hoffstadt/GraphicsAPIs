@@ -3,13 +3,10 @@
 
 namespace DearPy3D {
 
-	mvDrawable::~mvDrawable()
+	void mvDrawable::cleanup(mvGraphics& graphics)
 	{
-		//std::shared_ptr<mvPipeline>                   _pipeline;
-		//std::shared_ptr<mvDescriptorSetLayout>        _descriptorSetLayout;
-		//std::vector<std::shared_ptr<mvDescriptorSet>> _descriptorSets;
-		//std::shared_ptr<mvIndexBuffer>                _indexBuffer;
-		//std::shared_ptr<mvVertexBuffer>               _vertexBuffer;
+		vkDeviceWaitIdle(graphics.getDevice());
+		_deletionQueue.flush();
 	}
 
 	void mvDrawable::bind(mvGraphics& graphics) const

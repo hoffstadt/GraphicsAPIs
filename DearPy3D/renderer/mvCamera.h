@@ -15,6 +15,8 @@ namespace DearPy3D {
 
 		void rotate(float dx, float dy);
 		void translate(float dx, float dy, float dz);
+		void setWidth(float width) { _width = width; }
+		void setHeight(float height) { _height = height; }
 
 		glm::mat4 getMatrix() const;
 		glm::mat4 getProjection() const;

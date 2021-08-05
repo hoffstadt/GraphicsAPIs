@@ -51,6 +51,12 @@ namespace DearPy3D {
 			vkUnmapMemory(graphics.getDevice(), _bufferMemory);
 		}
 
+		void cleanup(mvGraphics& graphics)
+		{
+			vkDestroyBuffer(graphics.getDevice(), _buffer, nullptr);
+			vkFreeMemory(graphics.getDevice(), _bufferMemory, nullptr);
+		}
+
 		VkBuffer getBuffer() { return _buffer; }
 
 	private:

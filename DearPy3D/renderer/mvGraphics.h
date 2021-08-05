@@ -16,6 +16,8 @@
 #include "mvIndexBuffer.h"
 #include "mvPipeline.h"
 #include "mvAllocator.h"
+#include "mvDeletionQueue.h"
+#include "mvImGuiManager.h"
 
 namespace DearPy3D {
 
@@ -43,8 +45,8 @@ namespace DearPy3D {
 
 		mvGraphics(GLFWwindow* window);
 
-		void recreateSwapChain(GLFWwindow* window);
-		void cleanupSwapChain();
+		void cleanup();
+		void recreateSwapChain(float width, float height);
 
 		VkDevice         getDevice()              { return _device; }
 		VkPhysicalDevice getPhysicalDevice()      { return _physicalDevice; }
@@ -55,8 +57,8 @@ namespace DearPy3D {
 		VkQueue          getGraphicsQueue()       { return _graphicsQueue; }
 		VkRenderPass     getRenderPass()          { return _renderPass; }
 		VkCommandPool    getCommandPool()         { return _commandPool; }
-
-
+		VkExtent2D       getSwapChainExtent()     { return _swapChainExtent; }
+		mvDeletionQueue& getDeletionQueue()       { return _deletionQueue; }
 
 		// command buffers
 		VkCommandBuffer       beginSingleTimeCommands();
@@ -90,7 +92,6 @@ namespace DearPy3D {
 		void        createImage          (uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
 		// misc
-		VkExtent2D    getSwapChainExtent();
 		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		
 	private:
@@ -101,7 +102,7 @@ namespace DearPy3D {
 		void createSurface(GLFWwindow* window);
 		void pickPhysicalDevice();
 		void createLogicalDevice();
-		void createSwapChain(GLFWwindow* window);
+		void createSwapChain(float width, float height);
 		void createImageViews();
 		void createRenderPass();
 		void createFrameBuffers();
@@ -121,7 +122,9 @@ namespace DearPy3D {
 
 		glm::mat4 _camera;
 		glm::mat4 _projection;
+		std::unique_ptr<mvImGuiManager> _imgui = nullptr;
 
+		mvDeletionQueue                _deletionQueue;
 		uint32_t                       _minImageCount = 0;
 		uint32_t                       _currentImageIndex = 0;
 		uint32_t                       _graphicsQueueFamily = 0;
@@ -150,7 +153,7 @@ namespace DearPy3D {
 		std::vector<VkFence>           _imagesInFlight;
 		size_t                         _currentFrame = 0;
 		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation"};
-		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		const int                      _max_frames_in_flight = 2;
 		std::vector<VkCommandBuffer>   _commandBuffers;
 		VkDescriptorPool               _descriptorPool;

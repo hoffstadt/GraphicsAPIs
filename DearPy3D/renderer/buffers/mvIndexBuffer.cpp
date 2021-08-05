@@ -60,4 +60,11 @@ namespace DearPy3D {
         vkCmdBindIndexBuffer(graphics.getCurrentCommandBuffer(), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     }
 
+    void mvIndexBuffer::cleanup(mvGraphics& graphics)
+    {
+        auto allocator = mvAllocator();
+        vkDestroyBuffer(graphics.getDevice(), _indexBuffer, nullptr);
+        allocator.free(_memoryAllocation);
+    }
+
 }

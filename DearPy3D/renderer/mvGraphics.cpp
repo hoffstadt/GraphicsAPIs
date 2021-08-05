@@ -5,36 +5,19 @@
 #include <fstream>
 #include <chrono>
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-    void* pUserData) {
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-
-    return VK_FALSE;
-}
-
-static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    }
-    else {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-}
-
-static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        func(instance, debugMessenger, pAllocator);
-    }
-}
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
+    VkDebugUtilsMessageTypeFlagsEXT messageType, 
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
+    void* pUserData);
 
 namespace DearPy3D
 {
 
     mvGraphics::mvGraphics(GLFWwindow* window)
     {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(window, &width, &height);
 
         // initialization
         createVulkanInstance();
@@ -43,7 +26,7 @@ namespace DearPy3D
         pickPhysicalDevice();
         createLogicalDevice();
         mvAllocator::Init(*this);
-        createSwapChain(window);
+        createSwapChain(width, height);
         createImageViews();
         createCommandPool();
         createDescriptorPool();
@@ -53,66 +36,53 @@ namespace DearPy3D
         createDepthResources();
         createFrameBuffers();
         createSyncObjects();
+
+        _imgui = std::make_unique<mvImGuiManager>(window, *this);
     }
 
-    void mvGraphics::cleanupSwapChain()
+    void mvGraphics::recreateSwapChain(float width, float height)
     {
-        vkDestroyImageView(_device, _depthImageView, nullptr);
-        vkDestroyImage(_device, _depthImage, nullptr);
-        vkFreeMemory(_device, _depthImageMemory, nullptr);
-
-        for (auto framebuffer : _swapChainFramebuffers)
-            vkDestroyFramebuffer(_device, framebuffer, nullptr);
-
-        vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
-
-        //vkDestroyPipeline(_device, _p, nullptr);
-        //vkDestroyPipelineLayout(_device, pipelineLayout, nullptr);
-        vkDestroyRenderPass(_device, _renderPass, nullptr);
-
-        for (auto imageView : _swapChainImageViews)
-            vkDestroyImageView(_device, imageView, nullptr);
-
-        vkDestroySwapchainKHR(_device, _swapChain, nullptr);
-
-        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
-    }
-
-    void mvGraphics::recreateSwapChain(GLFWwindow* window)
-    {
-        int width = 0, height = 0;
-        glfwGetFramebufferSize(window, &width, &height);
-        while (width == 0 || height == 0) {
-            glfwGetFramebufferSize(window, &width, &height);
-            glfwWaitEvents();
-        }
-
         vkDeviceWaitIdle(_device);
 
-        cleanupSwapChain();
+        _deletionQueue.flush();
 
-        createSwapChain(window);
+        mvAllocator::Shutdown();
+        mvAllocator::Init(*this);
+
+        createSwapChain(width, height);
         createImageViews();
+        createCommandPool();
         createRenderPass();
-        //createGraphicsPipeline();
         createDepthResources();
-        createFrameBuffers();
-        //createUniformBuffers();
-        createDescriptorPool();
-        //createDescriptorSets();
+        createFrameBuffers(); 
 
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = _commandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)3;
+        _imgui->resize(*this);
+    }
 
-        _commandBuffers.resize(3);
+    void mvGraphics::cleanup()
+    {
+        _imgui.reset();
+        _deletionQueue.flush();
+        mvAllocator::Shutdown();
+        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
 
-        if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
-            throw std::runtime_error("failed to allocate command buffers!");
+        for (size_t i = 0; i < _max_frames_in_flight; i++)
+        {
+            vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
+            vkDestroyFence(_device, _inFlightFences[i], nullptr);
+        }
 
-        _imagesInFlight.resize(_swapChainImages.size(), VK_NULL_HANDLE);
+        if (_enableValidationLayers)
+        {
+            auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(_instance, "vkDestroyDebugUtilsMessengerEXT");
+            if (func != nullptr)
+                func(_instance, _debugMessenger, nullptr);
+        }
+
+        vkDestroySurfaceKHR(_instance, _surface, nullptr);
+        vkDestroyDevice(_device, nullptr);
+        vkDestroyInstance(_instance, nullptr);
     }
 
     void mvGraphics::createCommandPool()
@@ -137,6 +107,8 @@ namespace DearPy3D
 
         if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate command buffers!");
+
+        _deletionQueue.pushDeletor([=]() {vkDestroyCommandPool(_device, _commandPool, nullptr); });
     }
 
     void mvGraphics::createDescriptorPool()
@@ -201,11 +173,6 @@ namespace DearPy3D
         vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
     }
 
-    VkExtent2D mvGraphics::getSwapChainExtent()
-    {
-        return _swapChainExtent;
-    }
-
     VkRenderPassBeginInfo mvGraphics::getMainRenderPassInfo()
     {
         VkRenderPassBeginInfo renderPassInfo{};
@@ -255,10 +222,14 @@ namespace DearPy3D
         renderPassInfo.pClearValues = clearValues.data();
 
         vkCmdBeginRenderPass(_commandBuffers[_currentImageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        
+        _imgui->beginFrame(*this);
     }
 
     void mvGraphics::end()
     {
+        _imgui->endFrame(*this);
+
         vkCmdEndRenderPass(_commandBuffers[_currentImageIndex]);
 
         if (vkEndCommandBuffer(_commandBuffers[_currentImageIndex]) != VK_SUCCESS)
@@ -374,7 +345,14 @@ namespace DearPy3D
         createInfo.pfnUserCallback = debugCallback;
         createInfo.pNext = VK_NULL_HANDLE;
 
-        if (CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, &_debugMessenger) != VK_SUCCESS)
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(_instance, "vkCreateDebugUtilsMessengerEXT");
+        if (func != nullptr) 
+        {
+            VkResult result = func(_instance, &createInfo, nullptr, &_debugMessenger);
+            if (result != VK_SUCCESS)
+                throw std::runtime_error("failed to set up debug messenger!");
+        }
+        else
             throw std::runtime_error("failed to set up debug messenger!");
     }
 
@@ -457,7 +435,7 @@ namespace DearPy3D
         vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
     }
 
-    void mvGraphics::createSwapChain(GLFWwindow* window)
+    void mvGraphics::createSwapChain(float width, float height)
     {
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(_physicalDevice);
 
@@ -489,9 +467,6 @@ namespace DearPy3D
             extent = swapChainSupport.capabilities.currentExtent;
         else
         {
-            int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
-
             VkExtent2D actualExtent = {
                 static_cast<uint32_t>(width),
                 static_cast<uint32_t>(height)
@@ -547,6 +522,7 @@ namespace DearPy3D
 
         _swapChainImageFormat = surfaceFormat.format;
         _swapChainExtent = extent;
+        _deletionQueue.pushDeletor([=]() { vkDestroySwapchainKHR(_device, _swapChain, nullptr);});
     }
 
     void mvGraphics::createImageViews()
@@ -613,6 +589,11 @@ namespace DearPy3D
 
         if (vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_renderPass) != VK_SUCCESS)
             throw std::runtime_error("failed to create render pass!");
+
+        _deletionQueue.pushDeletor([=]() { 
+            vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
+            vkDestroyRenderPass(_device, _renderPass, nullptr);}
+        );
     }
 
     void mvGraphics::createFrameBuffers()
@@ -637,6 +618,11 @@ namespace DearPy3D
 
             if (vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]) != VK_SUCCESS)
                 throw std::runtime_error("failed to create framebuffer!");
+
+            _deletionQueue.pushDeletor([=]() {
+                vkDestroyFramebuffer(_device, _swapChainFramebuffers[i], nullptr);
+                vkDestroyImageView(_device, _swapChainImageViews[i], nullptr);
+             });
         }
     }
 
@@ -649,6 +635,12 @@ namespace DearPy3D
             _depthImage, _depthImageMemory);
 
         _depthImageView = createImageView(_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+        _deletionQueue.pushDeletor([=]() {
+            vkDestroyImageView(_device, _depthImageView, nullptr);
+            vkDestroyImage(_device, _depthImage, nullptr);
+            vkFreeMemory(_device, _depthImageMemory, nullptr);
+            });
     }
 
     VkImageView mvGraphics::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
@@ -1014,4 +1006,9 @@ namespace DearPy3D
         if (vkAllocateDescriptorSets(_device, &allocInfo, &descriptorSet->_descriptorSet) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate descriptor sets!");
     }
+}
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    return VK_FALSE;
 }

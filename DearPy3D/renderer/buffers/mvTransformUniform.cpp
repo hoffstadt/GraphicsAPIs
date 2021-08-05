@@ -25,4 +25,10 @@ namespace DearPy3D {
 		auto index = graphics.getCurrentImageIndex();
 		_buf[index]->update(graphics, _transforms);
 	}
+
+	void mvTransformUniform::cleanup(mvGraphics& graphics)
+	{
+		for (auto& item : _buf)
+			item->cleanup(graphics);
+	}
 }

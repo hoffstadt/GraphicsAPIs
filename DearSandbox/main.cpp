@@ -3,7 +3,6 @@
 #include "mvTexturedQuad.h"
 #include "mvCamera.h"
 #include "mvTimer.h"
-#include "mvImGuiManager.h"
 
 using namespace DearPy3D;
 
@@ -13,7 +12,6 @@ int main()
     int height = 1000;
     auto window = mvWindow("Dear Py3D", width, height);
     auto graphics = mvGraphics(window.getHandle());
-    auto imguiManager = mvImGuiManager(window.getHandle(), graphics);
 
     auto camera = mvCamera(graphics, width, height, glm::vec3{5.0f, 5.0f, -15.0f});
 
@@ -32,12 +30,21 @@ int main()
 
         if (window.isResized())
         {
-            
-            graphics.recreateSwapChain(window.getHandle());
+
+            int newwidth = 0, newheight = 0;
+            glfwGetFramebufferSize(window.getHandle(), &newwidth, &newheight);
+            while (newwidth == 0 || newheight == 0)
+            {
+                glfwGetFramebufferSize(window.getHandle(), &newwidth, &newheight);
+                glfwWaitEvents();
+            }
+            quad1->cleanup(graphics);
+            graphics.recreateSwapChain(newwidth, newheight);
             quad1.reset();
             quad1 = std::make_shared<mvTexturedQuad>(graphics, "../../Resources/brickwall.jpg");
             window.setResized(false);
-            imguiManager.resize(graphics);
+            camera.setWidth(newwidth);
+            camera.setHeight(newheight);
         }
 
         if (glfwGetKey(window.getHandle(), GLFW_KEY_W) == GLFW_PRESS) camera.translate(0.0f, 0.0f, dt);
@@ -64,10 +71,8 @@ int main()
         camera.bind(graphics);
         quad1->bind(graphics);
         quad1->draw(graphics);
-
-        imguiManager.beginFrame(graphics);
+        
         ImGui::ShowDemoWindow();
-        imguiManager.endFrame(graphics);
 
         graphics.end();
 
@@ -81,5 +86,8 @@ int main()
         //---------------------------------------------------------------------
         graphics.present();
     }
+
+    quad1->cleanup(graphics);
+    graphics.cleanup();
 
 }

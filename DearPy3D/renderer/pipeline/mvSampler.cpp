@@ -31,4 +31,9 @@ namespace DearPy3D {
             throw std::runtime_error("failed to create texture sampler!");
 	}
 
+    void mvSampler::cleanup(mvGraphics& graphics)
+    {
+        vkDestroySampler(graphics.getDevice(), _textureSampler, nullptr);
+    }
+
 }

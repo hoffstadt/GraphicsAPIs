@@ -6,6 +6,7 @@
 #include "mvIndexBuffer.h"
 #include "mvPipeline.h"
 #include "mvDescriptorSet.h"
+#include "mvDeletionQueue.h"
 
 namespace DearPy3D {
 
@@ -17,7 +18,9 @@ namespace DearPy3D {
 	public:
 
 		mvDrawable() = default;
-		virtual ~mvDrawable();
+		virtual ~mvDrawable() {}
+
+		void cleanup(mvGraphics& graphics);
 
 		virtual glm::mat4 getTransform() const = 0;
 
@@ -26,6 +29,7 @@ namespace DearPy3D {
 
 	protected:
 
+		mvDeletionQueue                               _deletionQueue;
 		std::shared_ptr<mvPipeline>                   _pipeline;
 		std::shared_ptr<mvDescriptorSetLayout>        _descriptorSetLayout;
 		std::vector<std::shared_ptr<mvDescriptorSet>> _descriptorSets;

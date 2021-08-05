@@ -204,6 +204,11 @@ namespace DearPy3D {
         vkDestroyShaderModule(graphics.getDevice(), _fragShader->getShaderModule(), nullptr);
         _vertexShader = nullptr;
         _fragShader = nullptr;
+
+        graphics.getDeletionQueue().pushDeletor([=, &graphics]() {
+            vkDestroyPipeline(graphics.getDevice(), _pipeline, nullptr);
+            vkDestroyPipelineLayout(graphics.getDevice(), _pipelineLayout, nullptr);
+            });
 	}
 
 }

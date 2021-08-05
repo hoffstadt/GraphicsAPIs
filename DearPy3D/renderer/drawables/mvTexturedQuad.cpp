@@ -10,7 +10,7 @@ namespace DearPy3D {
 	mvTexturedQuad::mvTexturedQuad(mvGraphics& graphics, const std::string& path)
 	{
 
-		_transformBuffer = std::make_unique<mvTransformUniform>(graphics);
+		_transformBuffer = std::make_shared<mvTransformUniform>(graphics);
 		_transformBuffer->_parent = this;
 
 		auto vlayout = mvVertexLayout();
@@ -51,6 +51,15 @@ namespace DearPy3D {
 		_pipeline->setDescriptorSetLayout(_descriptorSetLayout);
 		_pipeline->setDescriptorSets(_descriptorSets);
 		_pipeline->finalize(graphics);
+
+		_deletionQueue.pushDeletor([=, &graphics]() {
+			_sampler->cleanup(graphics);
+			_texture->cleanup(graphics);
+			_descriptorSetLayout->cleanup(graphics);
+			_indexBuffer->cleanup(graphics);
+			_vertexBuffer->cleanup(graphics);
+			_transformBuffer->cleanup(graphics);
+			});
 	}
 
 	glm::mat4 mvTexturedQuad::getTransform() const

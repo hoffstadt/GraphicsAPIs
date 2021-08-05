@@ -19,6 +19,9 @@ namespace DearPy3D {
 	public:
 
 		mvTexture(mvGraphics& graphics, const std::string& file);
+
+		void cleanup(mvGraphics& graphics);
+
 		VkImageView getImageView() { return _textureImageView; }
 
 	private:

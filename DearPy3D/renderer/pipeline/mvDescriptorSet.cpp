@@ -17,6 +17,11 @@ namespace DearPy3D {
 
 	}
 
+	void mvDescriptorSetLayout::cleanup(mvGraphics& graphics)
+	{
+		vkDestroyDescriptorSetLayout(graphics.getDevice(), _layout, nullptr);
+	}
+
 	void mvDescriptorSetLayout::finalize(mvGraphics& graphics)
 	{
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -33,4 +38,5 @@ namespace DearPy3D {
 		vkCmdBindDescriptorSets(graphics.getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipeline.getLayout(), 0, 1, &_descriptorSet, 0, nullptr);
 	}
+
 }

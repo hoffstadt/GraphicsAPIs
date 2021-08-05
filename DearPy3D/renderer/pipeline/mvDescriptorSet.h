@@ -29,6 +29,7 @@ namespace DearPy3D {
 		void append(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags);
 		void finalize(mvGraphics& graphics);
 		const VkDescriptorSetLayout* getLayout() const { return &_layout; }
+		void cleanup(mvGraphics& graphics);
 
 	private:
 

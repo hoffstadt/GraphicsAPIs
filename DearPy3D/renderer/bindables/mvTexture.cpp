@@ -43,4 +43,10 @@ namespace DearPy3D {
         _textureImageView = graphics.createImageView(_textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
+    void mvTexture::cleanup(mvGraphics& graphics)
+    {
+        vkDestroyImageView(graphics.getDevice(), _textureImageView, nullptr);
+        vkDestroyImage(graphics.getDevice(), _textureImage, nullptr);
+        vkFreeMemory(graphics.getDevice(), _textureImageMemory, nullptr);
+    }
 }

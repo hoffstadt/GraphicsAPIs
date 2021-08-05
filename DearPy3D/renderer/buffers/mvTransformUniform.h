@@ -32,6 +32,7 @@ namespace DearPy3D {
 		mvTransformUniform(mvGraphics& graphics);
 
 		void bind(mvGraphics& graphics);
+		void cleanup(mvGraphics& graphics);
 
 	private:
 

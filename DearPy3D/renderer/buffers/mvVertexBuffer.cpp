@@ -48,6 +48,11 @@ namespace DearPy3D {
         graphics.endSingleTimeCommands(copyCmd);
 
         allocator.destroyBuffer(stagingBuffer, stagingBufferAllocation);
+
+        //VkDebugUtilsObjectNameInfoEXT info = {};
+        //info.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+        //info.pObjectName = "vertex buffer man";
+        //vkSetDebugUtilsObjectNameEXT(graphics.getDevice(), &info);
 	}
 
     void mvVertexBuffer::bind(mvGraphics& graphics)
@@ -55,5 +60,12 @@ namespace DearPy3D {
         VkBuffer vertexBuffers[] = { _vertexBuffer };
         VkDeviceSize offsets[] = { 0 };
         vkCmdBindVertexBuffers(graphics.getCurrentCommandBuffer(), 0, 1, vertexBuffers, offsets);
+    }
+
+    void mvVertexBuffer::cleanup(mvGraphics& graphics)
+    {
+        auto allocator = mvAllocator();
+        vkDestroyBuffer(graphics.getDevice(), _vertexBuffer, nullptr);
+        allocator.free(_memoryAllocation);
     }
 }
