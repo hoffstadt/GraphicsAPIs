@@ -27,6 +27,7 @@ target_include_directories(dearpy3dsandbox
 		"../Dependencies/glm/"
 		"../Dependencies/stb/"
 		"../Dependencies/VulkanMemoryAllocator/"
+		"../Dependencies/imgui/"
 )
 
 target_link_directories(dearpy3dsandbox

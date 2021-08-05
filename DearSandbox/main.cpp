@@ -3,14 +3,16 @@
 #include "mvTexturedQuad.h"
 #include "mvCamera.h"
 #include "mvTimer.h"
+#include "mvImGuiManager.h"
 
 using namespace DearPy3D;
 
 int main() 
 {
 
-    auto window = mvWindow("Marvel Vulkan", 800, 600);
+    auto window = mvWindow("Dear Py3D", 800, 600);
     auto graphics = mvGraphics(window.getHandle());
+    auto imguiManager = mvImGuiManager(window.getHandle(), graphics);
 
     auto camera = mvCamera(graphics, 800, 600, glm::vec3{5.0f, 5.0f, -15.0f});
 
@@ -26,6 +28,8 @@ int main()
         const auto dt = timer.mark() * 1.0f;
 
         window.processEvents();
+
+
 
         if (glfwGetKey(window.getHandle(), GLFW_KEY_W) == GLFW_PRESS) camera.translate(0.0f, 0.0f, dt);
         if (glfwGetKey(window.getHandle(), GLFW_KEY_S) == GLFW_PRESS) camera.translate(0.0f, 0.0f, -dt);
@@ -47,9 +51,15 @@ int main()
         //---------------------------------------------------------------------
         
         graphics.begin();
+
         camera.bind(graphics);
         quad1->bind(graphics);
         quad1->draw(graphics);
+
+        imguiManager.beginFrame(graphics);
+        ImGui::ShowDemoWindow();
+        imguiManager.endFrame(graphics);
+
         graphics.end();
 
         //---------------------------------------------------------------------

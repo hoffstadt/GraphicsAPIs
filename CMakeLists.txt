@@ -11,6 +11,7 @@ add_subdirectory ("Dependencies/glfw")
 add_subdirectory ("Dependencies/glm")
 add_subdirectory ("DearPy3D")
 add_subdirectory ("DearSandbox")
+add_subdirectory ("ImGuiTesting")
 
 if(WIN32)	
 elseif(APPLE)

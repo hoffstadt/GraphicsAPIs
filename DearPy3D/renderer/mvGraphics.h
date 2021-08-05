@@ -43,9 +43,15 @@ namespace DearPy3D {
 
 		mvGraphics(GLFWwindow* window);
 
-		VkDevice         getDevice()         { return _device; }
-		VkPhysicalDevice getPhysicalDevice() { return _physicalDevice; }
-		VkInstance       getInstance()       { return _instance; }
+		VkDevice         getDevice()              { return _device; }
+		VkPhysicalDevice getPhysicalDevice()      { return _physicalDevice; }
+		VkInstance       getInstance()            { return _instance; }
+		VkDescriptorPool getDescriptorPool()      { return _descriptorPool; }
+		uint32_t         getMinImageCount()       { return _minImageCount; }
+		uint32_t         getGraphicsQueueFamily() { return _graphicsQueueFamily; }
+		VkQueue          getGraphicsQueue()       { return _graphicsQueue; }
+		VkRenderPass     getRenderPass()          { return _renderPass; }
+		VkCommandPool    getCommandPool()         { return _commandPool; }
 
 
 
@@ -113,7 +119,9 @@ namespace DearPy3D {
 		glm::mat4 _camera;
 		glm::mat4 _projection;
 
+		uint32_t                       _minImageCount = 0;
 		uint32_t                       _currentImageIndex = 0;
+		uint32_t                       _graphicsQueueFamily = 0;
 		VkImage                        _depthImage;
 		VkDeviceMemory                 _depthImageMemory;
 		VkImageView                    _depthImageView;

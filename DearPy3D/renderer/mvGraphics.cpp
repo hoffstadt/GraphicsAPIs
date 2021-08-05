@@ -136,7 +136,7 @@ namespace DearPy3D
         submitInfo.pCommandBuffers = &commandBuffer;
 
         vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(_graphicsQueue);
+        vkDeviceWaitIdle(_device);
 
         vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
     }
@@ -351,6 +351,8 @@ namespace DearPy3D
     {
         QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
 
+        _graphicsQueueFamily = indices.graphicsFamily.value();
+
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
@@ -403,7 +405,7 @@ namespace DearPy3D
         VkSurfaceFormatKHR surfaceFormat = swapChainSupport.formats[0];
         for (const auto& availableFormat : swapChainSupport.formats)
         {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            if (availableFormat.format == VK_FORMAT_R8G8B8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
                 surfaceFormat = availableFormat;
                 break;
@@ -414,7 +416,7 @@ namespace DearPy3D
         VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
         for (const auto& availablePresentMode : swapChainSupport.presentModes)
         {
-            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+            if (availablePresentMode == VK_PRESENT_MODE_FIFO_KHR)
             {
                 presentMode = availablePresentMode;
                 break;
@@ -441,15 +443,15 @@ namespace DearPy3D
             extent = actualExtent;
         }
 
-        uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-        if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
-            imageCount = swapChainSupport.capabilities.maxImageCount;
+        _minImageCount = swapChainSupport.capabilities.minImageCount + 1;
+        if (swapChainSupport.capabilities.maxImageCount > 0 && _minImageCount > swapChainSupport.capabilities.maxImageCount)
+            _minImageCount = swapChainSupport.capabilities.maxImageCount;
 
         {
             VkSwapchainCreateInfoKHR createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
             createInfo.surface = _surface;
-            createInfo.minImageCount = imageCount;
+            createInfo.minImageCount = _minImageCount;
             createInfo.imageFormat = surfaceFormat.format;
             createInfo.imageColorSpace = surfaceFormat.colorSpace;
             createInfo.imageExtent = extent;
@@ -479,9 +481,9 @@ namespace DearPy3D
                 throw std::runtime_error("failed to create swap chain!");
         }
 
-        vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
-        _swapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, _swapChainImages.data());
+        vkGetSwapchainImagesKHR(_device, _swapChain, &_minImageCount, nullptr);
+        _swapChainImages.resize(_minImageCount);
+        vkGetSwapchainImagesKHR(_device, _swapChain, &_minImageCount, _swapChainImages.data());
 
         _swapChainImageFormat = surfaceFormat.format;
         _swapChainExtent = extent;
