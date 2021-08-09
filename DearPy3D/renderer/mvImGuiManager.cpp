@@ -5,7 +5,7 @@
 
 namespace DearPy3D {
 
-	mvImGuiManager::mvImGuiManager(GLFWwindow* window, mvGraphics& graphics)
+	mvImGuiManager::mvImGuiManager(GLFWwindow* window)
 	{
 
         // Setup Dear ImGui context
@@ -20,25 +20,25 @@ namespace DearPy3D {
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForVulkan(window, true);
         ImGui_ImplVulkan_InitInfo init_info = {};
-        init_info.Instance = graphics.getInstance();
-        init_info.PhysicalDevice = graphics.getPhysicalDevice();
-        init_info.Device = graphics.getLogicalDevice();
-        init_info.QueueFamily = graphics.getLogicalDevice().getGraphicsQueueFamily();
-        init_info.Queue = graphics.getLogicalDevice().getGraphicsQueue();
+        init_info.Instance = mvGraphics::GetContext().getInstance();
+        init_info.PhysicalDevice = mvGraphics::GetContext().getPhysicalDevice();
+        init_info.Device = mvGraphics::GetContext().getLogicalDevice();
+        init_info.QueueFamily = mvGraphics::GetContext().getLogicalDevice().getGraphicsQueueFamily();
+        init_info.Queue = mvGraphics::GetContext().getLogicalDevice().getGraphicsQueue();
         init_info.PipelineCache = nullptr;
-        init_info.DescriptorPool = graphics.getDescriptorPool();
+        init_info.DescriptorPool = mvGraphics::GetContext().getDescriptorPool();
         init_info.Allocator = nullptr;
-        init_info.MinImageCount = graphics.getSwapChain().getMinImageCount();
-        init_info.ImageCount = graphics.getSwapChain().getMinImageCount();
+        init_info.MinImageCount = mvGraphics::GetContext().getSwapChain().getMinImageCount();
+        init_info.ImageCount = mvGraphics::GetContext().getSwapChain().getMinImageCount();
         init_info.CheckVkResultFn = nullptr;
-        ImGui_ImplVulkan_Init(&init_info, graphics.getSwapChain().getRenderPass());
+        ImGui_ImplVulkan_Init(&init_info, mvGraphics::GetContext().getSwapChain().getRenderPass());
 
         // Upload Fonts
         {
             // Use any command queue
-            VkCommandBuffer command_buffer = graphics.getLogicalDevice().beginSingleTimeCommands();
+            VkCommandBuffer command_buffer = mvGraphics::GetContext().getLogicalDevice().beginSingleTimeCommands();
             ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
-            graphics.getLogicalDevice().endSingleTimeCommands(command_buffer);
+            mvGraphics::GetContext().getLogicalDevice().endSingleTimeCommands(command_buffer);
             ImGui_ImplVulkan_DestroyFontUploadObjects();
         }
 
@@ -51,27 +51,27 @@ namespace DearPy3D {
         ImGui::DestroyContext();
 	}
 
-    void mvImGuiManager::resize(mvGraphics& graphics)
+    void mvImGuiManager::resize()
     {
-        vkDeviceWaitIdle(graphics.getLogicalDevice());
-        ImGui_ImplVulkan_SetMinImageCount(graphics.getSwapChain().getMinImageCount());
+        vkDeviceWaitIdle(mvGraphics::GetContext().getLogicalDevice());
+        ImGui_ImplVulkan_SetMinImageCount(mvGraphics::GetContext().getSwapChain().getMinImageCount());
     }
 
-	void mvImGuiManager::beginFrame(mvGraphics& graphics) const
+	void mvImGuiManager::beginFrame() const
 	{
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 	}
 
-	void mvImGuiManager::endFrame(mvGraphics& graphics) const
+	void mvImGuiManager::endFrame() const
 	{
         ImGui::Render();
 
         ImDrawData* main_draw_data = ImGui::GetDrawData();
 
         // Record dear imgui primitives into command buffer
-        ImGui_ImplVulkan_RenderDrawData(main_draw_data, graphics.getSwapChain().getCurrentCommandBuffer(graphics));
+        ImGui_ImplVulkan_RenderDrawData(main_draw_data, mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer());
 	}
 
 }

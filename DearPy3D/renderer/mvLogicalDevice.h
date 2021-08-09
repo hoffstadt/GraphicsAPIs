@@ -15,7 +15,7 @@ namespace DearPy3D {
 
 		// setup
 		void init(mvPhysicalDevice& physicalDevice);
-		void createCommandPool(mvGraphics& graphics, mvPhysicalDevice& physicalDevice);
+		void createCommandPool(mvPhysicalDevice& physicalDevice);
 
 		// resource utilities
 		void        createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);

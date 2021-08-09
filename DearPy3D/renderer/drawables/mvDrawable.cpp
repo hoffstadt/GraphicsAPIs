@@ -3,24 +3,24 @@
 
 namespace DearPy3D {
 
-	void mvDrawable::cleanup(mvGraphics& graphics)
+	void mvDrawable::cleanup()
 	{
-		vkDeviceWaitIdle(graphics.getLogicalDevice());
+		vkDeviceWaitIdle(mvGraphics::GetContext().getLogicalDevice());
 		_deletionQueue.flush();
 	}
 
-	void mvDrawable::bind(mvGraphics& graphics) const
+	void mvDrawable::bind() const
 	{
-		auto index = graphics.getSwapChain().getCurrentImageIndex();
-		_descriptorSets[index]->bind(graphics, *_pipeline);
-		_pipeline->bind(graphics);
-		_indexBuffer->bind(graphics);
-		_vertexBuffer->bind(graphics);
+		auto index = mvGraphics::GetContext().getSwapChain().getCurrentImageIndex();
+		_descriptorSets[index]->bind(*_pipeline);
+		_pipeline->bind();
+		_indexBuffer->bind();
+		_vertexBuffer->bind();
 	}
 
-	void mvDrawable::draw(mvGraphics& graphics) const
+	void mvDrawable::draw() const
 	{
-		graphics.getSwapChain().draw(graphics, _indexBuffer->getVertexCount());
+		mvGraphics::GetContext().getSwapChain().draw(_indexBuffer->getVertexCount());
 	}
 
 }

@@ -20,9 +20,9 @@ namespace DearPy3D {
 
 	public:
 
-		mvVertexBuffer(mvGraphics& graphics, const std::vector<float>& vbuf);
-		void cleanup(mvGraphics& graphics);
-		void bind(mvGraphics& graphics);
+		mvVertexBuffer(const std::vector<float>& vbuf);
+		void cleanup();
+		void bind();
 
 	private:
 

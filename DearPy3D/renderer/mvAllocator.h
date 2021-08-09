@@ -13,7 +13,7 @@ namespace DearPy3D {
 	public:
 
 		static VmaAllocator& GetVmaAllocator();
-		static void          Init(mvGraphics& graphics);
+		static void          Init();
 		static void          Shutdown();
 
 	public:

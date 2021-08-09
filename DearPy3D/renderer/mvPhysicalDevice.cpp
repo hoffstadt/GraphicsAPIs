@@ -5,16 +5,16 @@
 
 namespace DearPy3D {
 
-	void mvPhysicalDevice::init(mvGraphics& graphics)
+	void mvPhysicalDevice::init()
 	{
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(graphics.getInstance(), &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(mvGraphics::GetContext().getInstance(), &deviceCount, nullptr);
 
         if (deviceCount == 0)
             throw std::runtime_error("failed to find GPUs with Vulkan support!");
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(graphics.getInstance(), &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(mvGraphics::GetContext().getInstance(), &deviceCount, devices.data());
 
         for (const auto& device : devices)
         {

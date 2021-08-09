@@ -4,6 +4,7 @@
 #include "mvCube.h"
 #include "mvCamera.h"
 #include "mvTimer.h"
+#include "mvRenderer.h"
 
 using namespace DearPy3D;
 
@@ -12,12 +13,13 @@ int main()
     int width = 1000;
     int height = 1000;
     auto window = mvWindow("Dear Py3D", width, height);
-    auto graphics = mvGraphics(window.getHandle());
+    mvGraphics::Init(window.getHandle());
+    auto renderer = mvRenderer();
 
-    auto camera = mvCamera(graphics, width, height, glm::vec3{5.0f, 5.0f, -15.0f});
+    auto camera = mvCamera(width, height, glm::vec3{5.0f, 5.0f, -15.0f});
 
-    auto quad1 = std::make_shared<mvTexturedQuad>(graphics, "../../Resources/brickwall.jpg");
-    auto cube1 = std::make_shared<mvCube>(graphics, "../../Resources/brickwall.jpg");
+    auto quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
+    auto cube1 = std::make_shared<mvCube>("../../Resources/brickwall.jpg");
     cube1->setPosition(10, 10, 10);
 
     //---------------------------------------------------------------------
@@ -41,13 +43,13 @@ int main()
                 glfwGetFramebufferSize(window.getHandle(), &newwidth, &newheight);
                 glfwWaitEvents();
             }
-            quad1->cleanup(graphics);
-            cube1->cleanup(graphics);
-            graphics.recreateSwapChain(newwidth, newheight);
+            quad1->cleanup();
+            cube1->cleanup();
+            mvGraphics::GetContext().recreateSwapChain(newwidth, newheight);
             quad1.reset();
             cube1.reset();
-            quad1 = std::make_shared<mvTexturedQuad>(graphics, "../../Resources/brickwall.jpg");
-            cube1 = std::make_shared<mvCube>(graphics, "../../Resources/brickwall.jpg");
+            quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
+            cube1 = std::make_shared<mvCube>("../../Resources/brickwall.jpg");
             cube1->setPosition(10, 10, 10);
             window.setResized(false);
             camera.setWidth(newwidth);
@@ -67,36 +69,33 @@ int main()
         //---------------------------------------------------------------------
         // wait for fences and acquire next image
         //---------------------------------------------------------------------
-        graphics.getSwapChain().beginFrame(graphics);
+        renderer.beginFrame();
 
         //---------------------------------------------------------------------
         // record command buffers
         //---------------------------------------------------------------------
         
-        graphics.getSwapChain().begin(graphics);
+        mvGraphics::GetContext().getSwapChain().begin();
 
-        camera.bind(graphics);
-        quad1->bind(graphics);
-        quad1->draw(graphics);
+        camera.bind();
 
-        cube1->bind(graphics);
-        cube1->draw(graphics);
+        quad1->bind();
+        quad1->draw();
 
-        graphics.getSwapChain().end(graphics);
+        cube1->bind();
+        cube1->draw();
 
-        //---------------------------------------------------------------------
-        // submit command buffers
-        //---------------------------------------------------------------------
-        graphics.getSwapChain().endFrame(graphics);
+        mvGraphics::GetContext().getSwapChain().end();
 
         //---------------------------------------------------------------------
-        // present
+        // submit command buffers & present
         //---------------------------------------------------------------------
-        graphics.getSwapChain().present(graphics);
+        renderer.endFrame();
+
     }
 
-    cube1->cleanup(graphics);
-    quad1->cleanup(graphics);
-    graphics.cleanup();
+    cube1->cleanup();
+    quad1->cleanup();
+    mvGraphics::Shutdown();
 
 }

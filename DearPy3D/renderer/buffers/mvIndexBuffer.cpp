@@ -4,7 +4,7 @@
 
 namespace DearPy3D {
 
-	mvIndexBuffer::mvIndexBuffer(mvGraphics& graphics, const std::vector<uint16_t>& ibuf)
+	mvIndexBuffer::mvIndexBuffer(const std::vector<uint16_t>& ibuf)
 	{
         _indices = ibuf;
 
@@ -34,7 +34,7 @@ namespace DearPy3D {
 
         _memoryAllocation = allocator.allocateBuffer(indexBufferInfo, VMA_MEMORY_USAGE_GPU_ONLY, _indexBuffer);
 
-        VkCommandBuffer copyCmd = graphics.getLogicalDevice().beginSingleTimeCommands();
+        VkCommandBuffer copyCmd = mvGraphics::GetContext().getLogicalDevice().beginSingleTimeCommands();
 
         VkBufferCopy copyRegion = {};
         copyRegion.size = bufferSize;
@@ -45,7 +45,7 @@ namespace DearPy3D {
             1,
             &copyRegion);
 
-        graphics.getLogicalDevice().endSingleTimeCommands(copyCmd);
+        mvGraphics::GetContext().getLogicalDevice().endSingleTimeCommands(copyCmd);
 
         allocator.destroyBuffer(stagingBuffer, stagingBufferAllocation);
 	}
@@ -55,15 +55,15 @@ namespace DearPy3D {
         return _indices.size();
     }
 
-    void mvIndexBuffer::bind(mvGraphics& graphics)
+    void mvIndexBuffer::bind()
     {
-        vkCmdBindIndexBuffer(graphics.getSwapChain().getCurrentCommandBuffer(graphics), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     }
 
-    void mvIndexBuffer::cleanup(mvGraphics& graphics)
+    void mvIndexBuffer::cleanup()
     {
         auto allocator = mvAllocator();
-        vkDestroyBuffer(graphics.getLogicalDevice(), _indexBuffer, nullptr);
+        vkDestroyBuffer(mvGraphics::GetContext().getLogicalDevice(), _indexBuffer, nullptr);
         allocator.free(_memoryAllocation);
     }
 

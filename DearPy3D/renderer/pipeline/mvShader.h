@@ -18,7 +18,7 @@ namespace DearPy3D {
 
 	public:
 
-		mvShader(mvGraphics& graphics, const std::string& file);
+		mvShader(const std::string& file);
 
 		VkShaderModule getShaderModule() const;
 

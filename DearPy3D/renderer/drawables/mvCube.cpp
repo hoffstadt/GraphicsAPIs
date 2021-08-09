@@ -6,10 +6,10 @@
 
 namespace DearPy3D {
 
-	mvCube::mvCube(mvGraphics& graphics, const std::string& path)
+	mvCube::mvCube(const std::string& path)
 	{
 
-		_transformBuffer = std::make_shared<mvTransformUniform>(graphics);
+		_transformBuffer = std::make_shared<mvTransformUniform>();
 		_transformBuffer->_parent = this;
 
 		auto vlayout = mvVertexLayout();
@@ -77,38 +77,38 @@ namespace DearPy3D {
 			vertices[14 * indices[i + 2] + 5] = n[2];
 		}
 
-		_vertexBuffer = std::make_shared<mvVertexBuffer>(graphics, vertices);
-		_indexBuffer = std::make_shared<mvIndexBuffer>(graphics, indices);
-		_sampler = std::make_shared<mvSampler>(graphics);
-		_texture = std::make_shared<mvTexture>(graphics, path);
+		_vertexBuffer = std::make_shared<mvVertexBuffer>(vertices);
+		_indexBuffer = std::make_shared<mvIndexBuffer>(indices);
+		_sampler = std::make_shared<mvSampler>();
+		_texture = std::make_shared<mvTexture>(path);
 
 		_descriptorSetLayout = std::make_shared<mvDescriptorSetLayout>();
 		_descriptorSetLayout->append(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 		_descriptorSetLayout->append(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		_descriptorSetLayout->finalize(graphics);
+		_descriptorSetLayout->finalize();
 
 		for (int i = 0; i < 3; i++)
 		{
 			_descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
-			graphics.allocateDescriptorSet(&(*_descriptorSets.back()), *_descriptorSetLayout);
-			_descriptorSets.back()->update(graphics, *_transformBuffer->_buf[i], _texture->getImageView(), _sampler->getSampler());
+			mvGraphics::GetContext().allocateDescriptorSet(&(*_descriptorSets.back()), *_descriptorSetLayout);
+			_descriptorSets.back()->update(*_transformBuffer->_buf[i], _texture->getImageView(), _sampler->getSampler());
 		}
 
 		_pipeline = std::make_shared<mvPipeline>();
 		_pipeline->setVertexLayout(vlayout);
-		_pipeline->setVertexShader(graphics, "../../DearPy3D/shaders/vert.spv");
-		_pipeline->setFragmentShader(graphics, "../../DearPy3D/shaders/frag.spv");
+		_pipeline->setVertexShader("../../DearPy3D/shaders/vert.spv");
+		_pipeline->setFragmentShader("../../DearPy3D/shaders/frag.spv");
 		_pipeline->setDescriptorSetLayout(_descriptorSetLayout);
 		_pipeline->setDescriptorSets(_descriptorSets);
-		_pipeline->finalize(graphics);
+		_pipeline->finalize();
 
-		_deletionQueue.pushDeletor([=, &graphics]() {
-			_sampler->cleanup(graphics);
-			_texture->cleanup(graphics);
-			_descriptorSetLayout->cleanup(graphics);
-			_indexBuffer->cleanup(graphics);
-			_vertexBuffer->cleanup(graphics);
-			_transformBuffer->cleanup(graphics);
+		_deletionQueue.pushDeletor([=]() {
+			_sampler->cleanup();
+			_texture->cleanup();
+			_descriptorSetLayout->cleanup();
+			_indexBuffer->cleanup();
+			_vertexBuffer->cleanup();
+			_transformBuffer->cleanup();
 			});
 	}
 
@@ -134,14 +134,14 @@ namespace DearPy3D {
 		m_zangle = z;
 	}
 
-	void mvCube::bind(mvGraphics& graphics) const
+	void mvCube::bind() const
 	{
-		auto index = graphics.getSwapChain().getCurrentImageIndex();
-		_transformBuffer->bind(graphics);
-		_descriptorSets[index]->bind(graphics, *_pipeline);
-		_pipeline->bind(graphics);
-		_indexBuffer->bind(graphics);
-		_vertexBuffer->bind(graphics);
+		auto index = mvGraphics::GetContext().getSwapChain().getCurrentImageIndex();
+		_transformBuffer->bind();
+		_descriptorSets[index]->bind( *_pipeline);
+		_pipeline->bind();
+		_indexBuffer->bind();
+		_vertexBuffer->bind();
 	}
 
 }

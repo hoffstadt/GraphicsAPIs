@@ -17,9 +17,9 @@ namespace DearPy3D {
 
 	public:
 
-		mvCube(mvGraphics& graphics, const std::string& path);
+		mvCube(const std::string& path);
 
-		void bind(mvGraphics& graphics) const override;
+		void bind() const override;
 
 		glm::mat4 getTransform() const override;
 

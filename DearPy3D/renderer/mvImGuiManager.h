@@ -22,13 +22,13 @@ namespace DearPy3D {
 
 	public:
 
-		mvImGuiManager(GLFWwindow* window, mvGraphics& graphics);
+		mvImGuiManager(GLFWwindow* window);
 		~mvImGuiManager();
 
-		void resize(mvGraphics& graphics);
+		void resize();
 
-		void beginFrame(mvGraphics& graphics) const;
-		void endFrame(mvGraphics& graphics) const;
+		void beginFrame() const;
+		void endFrame() const;
 
 	};
 

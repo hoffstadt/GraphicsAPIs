@@ -16,7 +16,7 @@ namespace DearPy3D {
 		return mod;
 	}
 
-	mvCamera::mvCamera(mvGraphics& graphics, float width, float height, glm::vec3 homePos)
+	mvCamera::mvCamera(float width, float height, glm::vec3 homePos)
 		:
 		_pos(homePos),
 		_pitch(0.0f),
@@ -49,10 +49,10 @@ namespace DearPy3D {
 		return glm::perspective(glm::radians(45.0f), _width / _height, 0.1f, 400.0f);
 	}
 
-	void mvCamera::bind(mvGraphics& graphics)
+	void mvCamera::bind()
 	{
-		graphics.setCamera(getMatrix());
-		graphics.setProjection(getProjection());
+		mvGraphics::GetContext().setCamera(getMatrix());
+		mvGraphics::GetContext().setProjection(getProjection());
 	}
 
 	void mvCamera::rotate(float dx, float dy)

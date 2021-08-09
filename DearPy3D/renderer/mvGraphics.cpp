@@ -14,7 +14,25 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 namespace DearPy3D
 {
 
-    mvGraphics::mvGraphics(GLFWwindow* window)
+    void mvGraphics::Init(GLFWwindow* window)
+    {
+        auto& graphics = GetContext();
+        graphics.init(window);
+    }
+
+    void mvGraphics::Shutdown()
+    {
+        auto& graphics = GetContext();
+        graphics.cleanup();
+    }
+
+    mvGraphics& mvGraphics::GetContext()
+    {
+        static mvGraphics graphics = mvGraphics();
+        return graphics;
+    }
+
+    void mvGraphics::init(GLFWwindow* window)
     {
         int width = 0, height = 0;
         glfwGetFramebufferSize(window, &width, &height);
@@ -22,20 +40,20 @@ namespace DearPy3D
         // initialization
         createVulkanInstance();
         setupDebugMessenger();
-        _swapChain.createSurface(*this, window);
-        _physicalDevice.init(*this);
+        _swapChain.createSurface(window);
+        _physicalDevice.init();
         _logicalDevice.init(_physicalDevice);
-        mvAllocator::Init(*this);
-        _swapChain.init(*this, width, height);
-        _logicalDevice.createCommandPool(*this, _physicalDevice);
+        mvAllocator::Init();
+        _swapChain.init(width, height);
+        _logicalDevice.createCommandPool(_physicalDevice);
         createDescriptorPool();
 
         // asset initialization
-        _swapChain.createRenderPass(*this);
-        _swapChain.createDepthResources(*this);
-        _swapChain.createFrameBuffers(*this);
-        _swapChain.createSyncObjects(*this);
-        _swapChain.setupImGui(*this, window);
+        _swapChain.createRenderPass();
+        _swapChain.createDepthResources();
+        _swapChain.createFrameBuffers();
+        _swapChain.createSyncObjects();
+        _swapChain.setupImGui(window);
     }
 
     void mvGraphics::recreateSwapChain(float width, float height)
@@ -45,12 +63,12 @@ namespace DearPy3D
         _deletionQueue.flush();
 
         mvAllocator::Shutdown();
-        mvAllocator::Init(*this);
-        _swapChain.init(*this, width, height);
-        _logicalDevice.createCommandPool(*this, _physicalDevice);
-        _swapChain.createRenderPass(*this);
-        _swapChain.createDepthResources(*this);
-        _swapChain.createFrameBuffers(*this);
+        mvAllocator::Init();
+        _swapChain.init(width, height);
+        _logicalDevice.createCommandPool(_physicalDevice);
+        _swapChain.createRenderPass();
+        _swapChain.createDepthResources();
+        _swapChain.createFrameBuffers();
     }
 
     void mvGraphics::cleanup()
@@ -60,7 +78,7 @@ namespace DearPy3D
         mvAllocator::Shutdown();
         vkDestroyDescriptorPool(_logicalDevice, _descriptorPool, nullptr);
 
-        _swapChain.freeSyncObjects(*this);
+        _swapChain.freeSyncObjects();
 
         if (_enableValidationLayers)
         {
@@ -69,7 +87,7 @@ namespace DearPy3D
                 func(_instance, _debugMessenger, nullptr);
         }
 
-        _swapChain.freeSurface(*this);
+        _swapChain.freeSurface();
         vkDestroyDevice(_logicalDevice, nullptr);
         vkDestroyInstance(_instance, nullptr);
     }

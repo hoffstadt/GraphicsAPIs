@@ -17,25 +17,25 @@ namespace DearPy3D {
 
 	}
 
-	void mvDescriptorSetLayout::cleanup(mvGraphics& graphics)
+	void mvDescriptorSetLayout::cleanup()
 	{
-		vkDestroyDescriptorSetLayout(graphics.getLogicalDevice(), _layout, nullptr);
+		vkDestroyDescriptorSetLayout(mvGraphics::GetContext().getLogicalDevice(), _layout, nullptr);
 	}
 
-	void mvDescriptorSetLayout::finalize(mvGraphics& graphics)
+	void mvDescriptorSetLayout::finalize()
 	{
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = static_cast<uint32_t>(_bindings.size());
 		layoutInfo.pBindings = _bindings.data();
 
-		if (vkCreateDescriptorSetLayout(graphics.getLogicalDevice(), &layoutInfo, nullptr, &_layout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(mvGraphics::GetContext().getLogicalDevice(), &layoutInfo, nullptr, &_layout) != VK_SUCCESS)
 			throw std::runtime_error("failed to create descriptor set layout!");
 	}
 
-	void mvDescriptorSet::bind(mvGraphics& graphics, mvPipeline& pipeline)
+	void mvDescriptorSet::bind(mvPipeline& pipeline)
 	{
-		vkCmdBindDescriptorSets(graphics.getSwapChain().getCurrentCommandBuffer(graphics), VK_PIPELINE_BIND_POINT_GRAPHICS,
+		vkCmdBindDescriptorSets(mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipeline.getLayout(), 0, 1, &_descriptorSet, 0, nullptr);
 	}
 

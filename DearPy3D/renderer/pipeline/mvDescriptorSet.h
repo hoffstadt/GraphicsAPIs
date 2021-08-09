@@ -27,9 +27,9 @@ namespace DearPy3D {
 	public:
 
 		void append(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags);
-		void finalize(mvGraphics& graphics);
+		void finalize();
 		const VkDescriptorSetLayout* getLayout() const { return &_layout; }
-		void cleanup(mvGraphics& graphics);
+		void cleanup();
 
 	private:
 
@@ -49,10 +49,10 @@ namespace DearPy3D {
 
 	public:
 
-		void bind(mvGraphics& graphics, mvPipeline& pipeline);
+		void bind(mvPipeline& pipeline);
 
 		template<typename T>
-		void update(mvGraphics& graphics, mvBuffer<T>& buffer, VkImageView imageview, VkSampler sampler)
+		void update(mvBuffer<T>& buffer, VkImageView imageview, VkSampler sampler)
 		{
 
 			VkDescriptorBufferInfo bufferInfo{};
@@ -83,7 +83,7 @@ namespace DearPy3D {
 			descriptorWrites[1].descriptorCount = 1;
 			descriptorWrites[1].pImageInfo = &imageInfo;
 
-			vkUpdateDescriptorSets(graphics.getLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			vkUpdateDescriptorSets(mvGraphics::GetContext().getLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
 		}
 

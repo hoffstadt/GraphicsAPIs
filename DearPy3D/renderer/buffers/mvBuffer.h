@@ -16,7 +16,7 @@ namespace DearPy3D {
 
 	public:
 
-		mvBuffer(mvGraphics& graphics, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+		mvBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 		{
 
 			VkBufferCreateInfo bufferInfo{};
@@ -25,36 +25,36 @@ namespace DearPy3D {
 			bufferInfo.usage = usage;
 			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			if (vkCreateBuffer(graphics.getLogicalDevice(), &bufferInfo, nullptr, &_buffer) != VK_SUCCESS)
+			if (vkCreateBuffer(mvGraphics::GetContext().getLogicalDevice(), &bufferInfo, nullptr, &_buffer) != VK_SUCCESS)
 				throw std::runtime_error("failed to create buffer!");
 
 			VkMemoryRequirements memRequirements;
-			vkGetBufferMemoryRequirements(graphics.getLogicalDevice(), _buffer, &memRequirements);
+			vkGetBufferMemoryRequirements(mvGraphics::GetContext().getLogicalDevice(), _buffer, &memRequirements);
 
 			VkMemoryAllocateInfo allocInfo{};
 			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = graphics.getPhysicalDevice().findMemoryType(memRequirements.memoryTypeBits, properties);
+			allocInfo.memoryTypeIndex = mvGraphics::GetContext().getPhysicalDevice().findMemoryType(memRequirements.memoryTypeBits, properties);
 
-			if (vkAllocateMemory(graphics.getLogicalDevice(), &allocInfo, nullptr, &_bufferMemory) != VK_SUCCESS)
+			if (vkAllocateMemory(mvGraphics::GetContext().getLogicalDevice(), &allocInfo, nullptr, &_bufferMemory) != VK_SUCCESS)
 				throw std::runtime_error("failed to allocate buffer memory!");
 
-			vkBindBufferMemory(graphics.getLogicalDevice(), _buffer, _bufferMemory, 0);
+			vkBindBufferMemory(mvGraphics::GetContext().getLogicalDevice(), _buffer, _bufferMemory, 0);
 
 		}
 
-		void update(mvGraphics& graphics, const T& data)
+		void update(const T& data)
 		{
 			void* udata;
-			vkMapMemory(graphics.getLogicalDevice(), _bufferMemory, 0, sizeof(T), 0, &udata);
+			vkMapMemory(mvGraphics::GetContext().getLogicalDevice(), _bufferMemory, 0, sizeof(T), 0, &udata);
 			memcpy(udata, &data, sizeof(T));
-			vkUnmapMemory(graphics.getLogicalDevice(), _bufferMemory);
+			vkUnmapMemory(mvGraphics::GetContext().getLogicalDevice(), _bufferMemory);
 		}
 
-		void cleanup(mvGraphics& graphics)
+		void cleanup()
 		{
-			vkDestroyBuffer(graphics.getLogicalDevice(), _buffer, nullptr);
-			vkFreeMemory(graphics.getLogicalDevice(), _bufferMemory, nullptr);
+			vkDestroyBuffer(mvGraphics::GetContext().getLogicalDevice(), _buffer, nullptr);
+			vkFreeMemory(mvGraphics::GetContext().getLogicalDevice(), _bufferMemory, nullptr);
 		}
 
 		VkBuffer getBuffer() { return _buffer; }

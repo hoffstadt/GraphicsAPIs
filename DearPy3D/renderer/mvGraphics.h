@@ -29,8 +29,13 @@ namespace DearPy3D {
 
 	public:
 
-		mvGraphics(GLFWwindow* window);
+		static void        Init(GLFWwindow* window);
+		static void        Shutdown();
+		static mvGraphics& GetContext();
 
+	public:
+
+		void init(GLFWwindow* window);
 		void cleanup();
 		void recreateSwapChain(float width, float height);
 
@@ -50,6 +55,8 @@ namespace DearPy3D {
 		glm::mat4 getProjection() const { return _projection; }
 		
 	private:
+
+		mvGraphics() {};
 
 		// initialization
 		void createVulkanInstance();

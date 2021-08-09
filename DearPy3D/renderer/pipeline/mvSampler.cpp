@@ -4,10 +4,10 @@
 
 namespace DearPy3D {
 
-	mvSampler::mvSampler(mvGraphics& graphics)
+	mvSampler::mvSampler()
 	{
         VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(graphics.getPhysicalDevice(), &properties);
+        vkGetPhysicalDeviceProperties(mvGraphics::GetContext().getPhysicalDevice(), &properties);
 
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -27,13 +27,13 @@ namespace DearPy3D {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
-        if (vkCreateSampler(graphics.getLogicalDevice(), &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS)
+        if (vkCreateSampler(mvGraphics::GetContext().getLogicalDevice(), &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS)
             throw std::runtime_error("failed to create texture sampler!");
 	}
 
-    void mvSampler::cleanup(mvGraphics& graphics)
+    void mvSampler::cleanup()
     {
-        vkDestroySampler(graphics.getLogicalDevice(), _textureSampler, nullptr);
+        vkDestroySampler(mvGraphics::GetContext().getLogicalDevice(), _textureSampler, nullptr);
     }
 
 }

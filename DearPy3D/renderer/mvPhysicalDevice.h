@@ -21,7 +21,7 @@ namespace DearPy3D {
 
 	public:
 
-		void init(mvGraphics& graphics);
+		void init();
 
 		const std::vector<const char*>& getExtensions() const { return _deviceExtensions; }
 		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);

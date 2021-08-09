@@ -20,12 +20,12 @@ namespace DearPy3D {
 		mvDrawable() = default;
 		virtual ~mvDrawable() {}
 
-		void cleanup(mvGraphics& graphics);
+		void cleanup();
 
 		virtual glm::mat4 getTransform() const = 0;
 
-		virtual void bind(mvGraphics& graphics) const;
-		void draw(mvGraphics & graphics) const;
+		virtual void bind() const;
+		void draw() const;
 
 	protected:
 

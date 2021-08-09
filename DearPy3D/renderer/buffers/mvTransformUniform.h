@@ -30,10 +30,10 @@ namespace DearPy3D {
 
 	public:
 
-		mvTransformUniform(mvGraphics& graphics);
+		mvTransformUniform();
 
-		void bind(mvGraphics& graphics);
-		void cleanup(mvGraphics& graphics);
+		void bind();
+		void cleanup();
 
 	private:
 

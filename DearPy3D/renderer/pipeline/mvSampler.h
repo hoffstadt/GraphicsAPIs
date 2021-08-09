@@ -18,9 +18,8 @@ namespace DearPy3D {
 
 	public:
 
-		mvSampler(mvGraphics& graphics);
-		
-		void cleanup(mvGraphics& graphics);
+		mvSampler();
+		void cleanup();
 		VkSampler getSampler() { return _textureSampler; }
 
 	private:

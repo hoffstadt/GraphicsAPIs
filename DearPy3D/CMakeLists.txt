@@ -16,6 +16,7 @@ target_sources(dearpy3d
 		"utilities/mvImporter.cpp"
 
 		# renderer
+		"renderer/mvRenderer.cpp"
 		"renderer/mvDeletionQueue.cpp"
 		"renderer/mvAllocator.cpp"
 		"renderer/mvObjMaterial.cpp"

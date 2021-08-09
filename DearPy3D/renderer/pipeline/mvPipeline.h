@@ -21,14 +21,14 @@ namespace DearPy3D {
 
 	public:
 
-		void bind                   (mvGraphics& graphics);
-		void finalize               (mvGraphics& graphics);
+		void bind                   ();
+		void finalize               ();
 		void setDescriptorSets       (std::vector<std::shared_ptr<mvDescriptorSet>>);
 		void setDescriptorSetLayout (std::shared_ptr<mvDescriptorSetLayout>);
 		void setVertexLayout        (mvVertexLayout);
-		void setVertexShader        (mvGraphics& graphics, const std::string& file);
-		void setFragmentShader      (mvGraphics& graphics, const std::string& file);
-		void finish                 (mvGraphics&);
+		void setVertexShader        (const std::string& file);
+		void setFragmentShader      (const std::string& file);
+		void finish                 ();
 
 		VkPipelineLayout getLayout() { return _pipelineLayout; }
 

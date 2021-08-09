@@ -24,33 +24,35 @@ namespace DearPy3D {
 
 	public:
 
-		void resize(mvGraphics& graphics, float width, float height);
+		void resize(float width, float height);
 
 		// setup
-		void init(mvGraphics& graphics, float width, float height);
-		void createSurface(mvGraphics& graphics, GLFWwindow* window);
-		void setupImGui(mvGraphics& graphics, GLFWwindow* window);
-		void createRenderPass(mvGraphics& graphics);
+		void init(float width, float height);
+		void createSurface(GLFWwindow* window);
+		void setupImGui(GLFWwindow* window);
+		void createRenderPass();
 
-		void createFrameBuffers(mvGraphics& graphics);
-		void createDepthResources(mvGraphics& graphics);
-		void createSyncObjects(mvGraphics& graphics);
+		void createFrameBuffers();
+		void createDepthResources();
+		void createSyncObjects();
 
 		// cleanup
-		void freeSyncObjects(mvGraphics& graphics);
-		void freeSurface(mvGraphics& graphics);
+		void freeSyncObjects();
+		void freeSurface();
 		void freeImGui();
 
-		void beginFrame(mvGraphics& graphics);
-		void present(mvGraphics& graphics);
+		void beginFrame();
+		void present();
+		void endFrame();
+
 		uint32_t getCurrentImageIndex() const { return _currentImageIndex; }
-		void     begin(mvGraphics& graphics);
-		void     draw(mvGraphics& graphics, uint32_t vertexCount);
-		void     end(mvGraphics& graphics);
-		void     endFrame(mvGraphics& graphics);
+		void     begin();
+		void     draw(uint32_t vertexCount);
+		void     end();
+		
 
 		VkRenderPassBeginInfo getMainRenderPassInfo();
-		VkCommandBuffer       getCurrentCommandBuffer(mvGraphics& graphics);
+		VkCommandBuffer       getCurrentCommandBuffer();
 
 		uint32_t     getMinImageCount() { return _minImageCount; }
 		VkRenderPass getRenderPass() { return _renderPass; }

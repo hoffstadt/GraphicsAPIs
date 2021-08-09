@@ -58,7 +58,7 @@ namespace DearPy3D {
         vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
 	}
 
-    void mvLogicalDevice::createCommandPool(mvGraphics& graphics, mvPhysicalDevice& physicalDevice)
+    void mvLogicalDevice::createCommandPool(mvPhysicalDevice& physicalDevice)
     {
         mvPhysicalDevice::QueueFamilyIndices queueFamilyIndices = physicalDevice.findQueueFamilies(physicalDevice);
 
@@ -81,7 +81,7 @@ namespace DearPy3D {
         if (vkAllocateCommandBuffers(_device, &allocInfo, _commandBuffers.data()) != VK_SUCCESS)
             throw std::runtime_error("failed to allocate command buffers!");
 
-        graphics.getDeletionQueue().pushDeletor([=]() {vkDestroyCommandPool(_device, _commandPool, nullptr); });
+        mvGraphics::GetContext().getDeletionQueue().pushDeletor([=]() {vkDestroyCommandPool(_device, _commandPool, nullptr); });
     }
 
     VkCommandBuffer mvLogicalDevice::beginSingleTimeCommands()

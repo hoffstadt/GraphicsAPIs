@@ -9,14 +9,14 @@ namespace DearPy3D {
 		return allocator;
 	}
 
-	void mvAllocator::Init(mvGraphics& graphics)
+	void mvAllocator::Init()
 	{
 		// Initialize VulkanMemoryAllocator
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.vulkanApiVersion = 0;
-		allocatorInfo.physicalDevice = graphics.getPhysicalDevice();
-		allocatorInfo.device = graphics.getLogicalDevice();
-		allocatorInfo.instance = graphics.getInstance();
+		allocatorInfo.physicalDevice = mvGraphics::GetContext().getPhysicalDevice();
+		allocatorInfo.device = mvGraphics::GetContext().getLogicalDevice();
+		allocatorInfo.instance = mvGraphics::GetContext().getInstance();
 
 		vmaCreateAllocator(&allocatorInfo, &GetVmaAllocator());
 

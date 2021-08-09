@@ -11,7 +11,7 @@ namespace DearPy3D {
 
 	public:
 
-		mvCamera(mvGraphics& graphics, float width, float height, glm::vec3 homePos = { 0.0f,0.0f, 0.0f });
+		mvCamera(float width, float height, glm::vec3 homePos = { 0.0f,0.0f, 0.0f });
 
 		void rotate(float dx, float dy);
 		void translate(float dx, float dy, float dz);
@@ -21,7 +21,7 @@ namespace DearPy3D {
 		glm::mat4 getMatrix() const;
 		glm::mat4 getProjection() const;
 
-		void bind(mvGraphics& graphics);
+		void bind();
 
 	private:
 

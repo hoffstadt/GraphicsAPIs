@@ -19,9 +19,9 @@ namespace DearPy3D {
 
 	public:
 
-		mvIndexBuffer(mvGraphics& graphics, const std::vector<uint16_t>& ibuf);
-		void cleanup(mvGraphics& graphics);
-		void bind(mvGraphics& graphics);
+		mvIndexBuffer(const std::vector<uint16_t>& ibuf);
+		void cleanup();
+		void bind();
 		uint32_t getVertexCount();
 
 	private:
