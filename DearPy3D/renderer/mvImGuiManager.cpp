@@ -22,9 +22,9 @@ namespace DearPy3D {
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance = graphics.getInstance();
         init_info.PhysicalDevice = graphics.getPhysicalDevice();
-        init_info.Device = graphics.getDevice();
-        init_info.QueueFamily = graphics.getGraphicsQueueFamily();
-        init_info.Queue = graphics.getGraphicsQueue();
+        init_info.Device = graphics.getLogicalDevice();
+        init_info.QueueFamily = graphics.getLogicalDevice().getGraphicsQueueFamily();
+        init_info.Queue = graphics.getLogicalDevice().getGraphicsQueue();
         init_info.PipelineCache = nullptr;
         init_info.DescriptorPool = graphics.getDescriptorPool();
         init_info.Allocator = nullptr;
@@ -36,9 +36,9 @@ namespace DearPy3D {
         // Upload Fonts
         {
             // Use any command queue
-            VkCommandBuffer command_buffer = graphics.beginSingleTimeCommands();
+            VkCommandBuffer command_buffer = graphics.getLogicalDevice().beginSingleTimeCommands();
             ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
-            graphics.endSingleTimeCommands(command_buffer);
+            graphics.getLogicalDevice().endSingleTimeCommands(command_buffer);
             ImGui_ImplVulkan_DestroyFontUploadObjects();
         }
 
@@ -53,7 +53,7 @@ namespace DearPy3D {
 
     void mvImGuiManager::resize(mvGraphics& graphics)
     {
-        vkDeviceWaitIdle(graphics.getDevice());
+        vkDeviceWaitIdle(graphics.getLogicalDevice());
         ImGui_ImplVulkan_SetMinImageCount(graphics.getMinImageCount());
     }
 

@@ -27,13 +27,13 @@ namespace DearPy3D {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
-        if (vkCreateSampler(graphics.getDevice(), &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS)
+        if (vkCreateSampler(graphics.getLogicalDevice(), &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS)
             throw std::runtime_error("failed to create texture sampler!");
 	}
 
     void mvSampler::cleanup(mvGraphics& graphics)
     {
-        vkDestroySampler(graphics.getDevice(), _textureSampler, nullptr);
+        vkDestroySampler(graphics.getLogicalDevice(), _textureSampler, nullptr);
     }
 
 }

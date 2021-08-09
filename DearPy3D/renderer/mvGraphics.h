@@ -19,6 +19,7 @@
 #include "mvDeletionQueue.h"
 #include "mvImGuiManager.h"
 #include "mvPhysicalDevice.h"
+#include "mvLogicalDevice.h"
 
 namespace DearPy3D {
 
@@ -38,23 +39,19 @@ namespace DearPy3D {
 		void cleanup();
 		void recreateSwapChain(float width, float height);
 
-		mvPhysicalDevice& getPhysicalDevice()     { return _physicalDevice; }
-		VkDevice         getDevice()              { return _device; }
-		VkInstance       getInstance()            { return _instance; }
-		VkDescriptorPool getDescriptorPool()      { return _descriptorPool; }
-		uint32_t         getMinImageCount()       { return _minImageCount; }
-		uint32_t         getGraphicsQueueFamily() { return _graphicsQueueFamily; }
-		VkQueue          getGraphicsQueue()       { return _graphicsQueue; }
-		VkRenderPass     getRenderPass()          { return _renderPass; }
-		VkCommandPool    getCommandPool()         { return _commandPool; }
-		VkExtent2D       getSwapChainExtent()     { return _swapChainExtent; }
-		mvDeletionQueue& getDeletionQueue()       { return _deletionQueue; }
+		mvPhysicalDevice& getPhysicalDevice()      { return _physicalDevice; }
+		mvLogicalDevice&  getLogicalDevice()       { return _logicalDevice; }
+		VkInstance        getInstance()            { return _instance; }
+		VkDescriptorPool  getDescriptorPool()      { return _descriptorPool; }
+		uint32_t          getMinImageCount()       { return _minImageCount; }
+		VkRenderPass      getRenderPass()          { return _renderPass; }
+		VkExtent2D        getSwapChainExtent()     { return _swapChainExtent; }
+		mvDeletionQueue&  getDeletionQueue()       { return _deletionQueue; }
 
 		// command buffers
-		VkCommandBuffer       beginSingleTimeCommands();
-		void                  endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
 		VkRenderPassBeginInfo getMainRenderPassInfo();
-		VkCommandBuffer       getCurrentCommandBuffer() { return _commandBuffers[_currentImageIndex]; }
+		VkCommandBuffer       getCurrentCommandBuffer() { return _logicalDevice.getCommandBuffers()[_currentImageIndex]; }
 
 		// descriptor pool
 		void allocateDescriptorSet(mvDescriptorSet* descriptorSet, mvDescriptorSetLayout& layout);
@@ -90,14 +87,12 @@ namespace DearPy3D {
 		void createVulkanInstance();
 		void setupDebugMessenger();
 		void createSurface(GLFWwindow* window);
-		void createLogicalDevice();
 		void createSwapChain(float width, float height);
 		void createImageViews();
 		void createRenderPass();
 		void createFrameBuffers();
 		void createSyncObjects();
 		void createDepthResources();
-		void createCommandPool();
 		void createDescriptorPool();
 
 		// internal helpers
@@ -110,11 +105,11 @@ namespace DearPy3D {
 		glm::mat4 _projection;
 		std::unique_ptr<mvImGuiManager> _imgui = nullptr;
 
+		mvLogicalDevice                _logicalDevice;
 		mvPhysicalDevice               _physicalDevice;
 		mvDeletionQueue                _deletionQueue;
 		uint32_t                       _minImageCount = 0;
 		uint32_t                       _currentImageIndex = 0;
-		uint32_t                       _graphicsQueueFamily = 0;
 		VkImage                        _depthImage;
 		VkDeviceMemory                 _depthImageMemory;
 		VkImageView                    _depthImageView;
@@ -122,10 +117,6 @@ namespace DearPy3D {
 		VkInstance                     _instance;
 		VkDebugUtilsMessengerEXT       _debugMessenger;
 		VkSurfaceKHR                   _surface;
-		VkDevice                       _device;
-		VkCommandPool                  _commandPool;
-		VkQueue                        _graphicsQueue;
-		VkQueue                        _presentQueue;
 		VkSwapchainKHR                 _swapChain;
 		std::vector<VkImage>           _swapChainImages;
 		std::vector<VkImageView>       _swapChainImageViews;
@@ -138,10 +129,9 @@ namespace DearPy3D {
 		std::vector<VkFence>           _inFlightFences;
 		std::vector<VkFence>           _imagesInFlight;
 		size_t                         _currentFrame = 0;
-		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation"};
 		const int                      _max_frames_in_flight = 2;
-		std::vector<VkCommandBuffer>   _commandBuffers;
 		VkDescriptorPool               _descriptorPool;
+		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	};
 
 }

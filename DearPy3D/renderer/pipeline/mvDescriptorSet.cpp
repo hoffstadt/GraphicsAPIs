@@ -19,7 +19,7 @@ namespace DearPy3D {
 
 	void mvDescriptorSetLayout::cleanup(mvGraphics& graphics)
 	{
-		vkDestroyDescriptorSetLayout(graphics.getDevice(), _layout, nullptr);
+		vkDestroyDescriptorSetLayout(graphics.getLogicalDevice(), _layout, nullptr);
 	}
 
 	void mvDescriptorSetLayout::finalize(mvGraphics& graphics)
@@ -29,7 +29,7 @@ namespace DearPy3D {
 		layoutInfo.bindingCount = static_cast<uint32_t>(_bindings.size());
 		layoutInfo.pBindings = _bindings.data();
 
-		if (vkCreateDescriptorSetLayout(graphics.getDevice(), &layoutInfo, nullptr, &_layout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(graphics.getLogicalDevice(), &layoutInfo, nullptr, &_layout) != VK_SUCCESS)
 			throw std::runtime_error("failed to create descriptor set layout!");
 	}
 

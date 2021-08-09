@@ -37,8 +37,8 @@ namespace DearPy3D {
 
     void mvPipeline::finish(mvGraphics& graphics)
     {
-        vkDestroyPipeline(graphics.getDevice(), _pipeline, nullptr);
-        vkDestroyPipelineLayout(graphics.getDevice(), _pipelineLayout, nullptr);
+        vkDestroyPipeline(graphics.getLogicalDevice(), _pipeline, nullptr);
+        vkDestroyPipelineLayout(graphics.getLogicalDevice(), _pipelineLayout, nullptr);
     }
 
 	void mvPipeline::finalize(mvGraphics& graphics)
@@ -171,7 +171,7 @@ namespace DearPy3D {
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pSetLayouts = _descriptorSetLayout->getLayout();
 
-        if (vkCreatePipelineLayout(graphics.getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(graphics.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create pipeline layout!");
 
         //---------------------------------------------------------------------
@@ -196,18 +196,18 @@ namespace DearPy3D {
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineInfo.pDepthStencilState = &depthStencil;
 
-        if (vkCreateGraphicsPipelines(graphics.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(graphics.getLogicalDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline) != VK_SUCCESS)
             throw std::runtime_error("failed to create graphics pipeline!");
 
         // no longer need this
-        vkDestroyShaderModule(graphics.getDevice(), _vertexShader->getShaderModule(), nullptr);
-        vkDestroyShaderModule(graphics.getDevice(), _fragShader->getShaderModule(), nullptr);
+        vkDestroyShaderModule(graphics.getLogicalDevice(), _vertexShader->getShaderModule(), nullptr);
+        vkDestroyShaderModule(graphics.getLogicalDevice(), _fragShader->getShaderModule(), nullptr);
         _vertexShader = nullptr;
         _fragShader = nullptr;
 
         graphics.getDeletionQueue().pushDeletor([=, &graphics]() {
-            vkDestroyPipeline(graphics.getDevice(), _pipeline, nullptr);
-            vkDestroyPipelineLayout(graphics.getDevice(), _pipelineLayout, nullptr);
+            vkDestroyPipeline(graphics.getLogicalDevice(), _pipeline, nullptr);
+            vkDestroyPipelineLayout(graphics.getLogicalDevice(), _pipelineLayout, nullptr);
             });
 	}
 

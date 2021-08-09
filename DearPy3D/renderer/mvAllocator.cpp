@@ -15,7 +15,7 @@ namespace DearPy3D {
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.vulkanApiVersion = 0;
 		allocatorInfo.physicalDevice = graphics.getPhysicalDevice();
-		allocatorInfo.device = graphics.getDevice();
+		allocatorInfo.device = graphics.getLogicalDevice();
 		allocatorInfo.instance = graphics.getInstance();
 
 		vmaCreateAllocator(&allocatorInfo, &GetVmaAllocator());
