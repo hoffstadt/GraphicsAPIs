@@ -11,7 +11,7 @@ namespace DearPy3D {
 
 	void mvDrawable::bind(mvGraphics& graphics) const
 	{
-		auto index = graphics.getCurrentImageIndex();
+		auto index = graphics.getSwapChain().getCurrentImageIndex();
 		_descriptorSets[index]->bind(graphics, *_pipeline);
 		_pipeline->bind(graphics);
 		_indexBuffer->bind(graphics);
@@ -20,7 +20,7 @@ namespace DearPy3D {
 
 	void mvDrawable::draw(mvGraphics& graphics) const
 	{
-		graphics.draw(_indexBuffer->getVertexCount());
+		graphics.getSwapChain().draw(graphics, _indexBuffer->getVertexCount());
 	}
 
 }

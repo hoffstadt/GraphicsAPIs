@@ -34,7 +34,7 @@ namespace DearPy3D {
 			VkMemoryAllocateInfo allocInfo{};
 			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = graphics.findMemoryType(memRequirements.memoryTypeBits, properties);
+			allocInfo.memoryTypeIndex = graphics.getPhysicalDevice().findMemoryType(memRequirements.memoryTypeBits, properties);
 
 			if (vkAllocateMemory(graphics.getLogicalDevice(), &allocInfo, nullptr, &_bufferMemory) != VK_SUCCESS)
 				throw std::runtime_error("failed to allocate buffer memory!");

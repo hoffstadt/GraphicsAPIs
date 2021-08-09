@@ -67,13 +67,13 @@ int main()
         //---------------------------------------------------------------------
         // wait for fences and acquire next image
         //---------------------------------------------------------------------
-        graphics.beginFrame();
+        graphics.getSwapChain().beginFrame(graphics);
 
         //---------------------------------------------------------------------
         // record command buffers
         //---------------------------------------------------------------------
         
-        graphics.begin();
+        graphics.getSwapChain().begin(graphics);
 
         camera.bind(graphics);
         quad1->bind(graphics);
@@ -82,17 +82,17 @@ int main()
         cube1->bind(graphics);
         cube1->draw(graphics);
 
-        graphics.end();
+        graphics.getSwapChain().end(graphics);
 
         //---------------------------------------------------------------------
         // submit command buffers
         //---------------------------------------------------------------------
-        graphics.endFrame();
+        graphics.getSwapChain().endFrame(graphics);
 
         //---------------------------------------------------------------------
         // present
         //---------------------------------------------------------------------
-        graphics.present();
+        graphics.getSwapChain().present(graphics);
     }
 
     cube1->cleanup(graphics);

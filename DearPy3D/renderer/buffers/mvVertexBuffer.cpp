@@ -59,7 +59,7 @@ namespace DearPy3D {
     {
         VkBuffer vertexBuffers[] = { _vertexBuffer };
         VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(graphics.getCurrentCommandBuffer(), 0, 1, vertexBuffers, offsets);
+        vkCmdBindVertexBuffers(graphics.getSwapChain().getCurrentCommandBuffer(graphics), 0, 1, vertexBuffers, offsets);
     }
 
     void mvVertexBuffer::cleanup(mvGraphics& graphics)

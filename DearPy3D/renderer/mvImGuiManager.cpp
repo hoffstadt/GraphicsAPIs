@@ -28,10 +28,10 @@ namespace DearPy3D {
         init_info.PipelineCache = nullptr;
         init_info.DescriptorPool = graphics.getDescriptorPool();
         init_info.Allocator = nullptr;
-        init_info.MinImageCount = graphics.getMinImageCount();
-        init_info.ImageCount = graphics.getMinImageCount();
+        init_info.MinImageCount = graphics.getSwapChain().getMinImageCount();
+        init_info.ImageCount = graphics.getSwapChain().getMinImageCount();
         init_info.CheckVkResultFn = nullptr;
-        ImGui_ImplVulkan_Init(&init_info, graphics.getRenderPass());
+        ImGui_ImplVulkan_Init(&init_info, graphics.getSwapChain().getRenderPass());
 
         // Upload Fonts
         {
@@ -54,7 +54,7 @@ namespace DearPy3D {
     void mvImGuiManager::resize(mvGraphics& graphics)
     {
         vkDeviceWaitIdle(graphics.getLogicalDevice());
-        ImGui_ImplVulkan_SetMinImageCount(graphics.getMinImageCount());
+        ImGui_ImplVulkan_SetMinImageCount(graphics.getSwapChain().getMinImageCount());
     }
 
 	void mvImGuiManager::beginFrame(mvGraphics& graphics) const
@@ -71,7 +71,7 @@ namespace DearPy3D {
         ImDrawData* main_draw_data = ImGui::GetDrawData();
 
         // Record dear imgui primitives into command buffer
-        ImGui_ImplVulkan_RenderDrawData(main_draw_data, graphics.getCurrentCommandBuffer());
+        ImGui_ImplVulkan_RenderDrawData(main_draw_data, graphics.getSwapChain().getCurrentCommandBuffer(graphics));
 	}
 
 }

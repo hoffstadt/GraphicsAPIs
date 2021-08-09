@@ -22,7 +22,7 @@ namespace DearPy3D {
 		_transforms.modelView = modelView;
 		_transforms.modelViewProjection = modelViewProj;
 
-		auto index = graphics.getCurrentImageIndex();
+		auto index = graphics.getSwapChain().getCurrentImageIndex();
 		_buf[index]->update(graphics, _transforms);
 	}
 

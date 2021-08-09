@@ -136,7 +136,7 @@ namespace DearPy3D {
 
 	void mvCube::bind(mvGraphics& graphics) const
 	{
-		auto index = graphics.getCurrentImageIndex();
+		auto index = graphics.getSwapChain().getCurrentImageIndex();
 		_transformBuffer->bind(graphics);
 		_descriptorSets[index]->bind(graphics, *_pipeline);
 		_pipeline->bind(graphics);

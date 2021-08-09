@@ -57,7 +57,7 @@ namespace DearPy3D {
 
     void mvIndexBuffer::bind(mvGraphics& graphics)
     {
-        vkCmdBindIndexBuffer(graphics.getCurrentCommandBuffer(), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(graphics.getSwapChain().getCurrentCommandBuffer(graphics), _indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     }
 
     void mvIndexBuffer::cleanup(mvGraphics& graphics)

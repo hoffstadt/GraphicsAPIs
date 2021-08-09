@@ -32,7 +32,7 @@ namespace DearPy3D {
 
     void mvPipeline::bind(mvGraphics& graphics)
     {
-        vkCmdBindPipeline(graphics.getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
+        vkCmdBindPipeline(graphics.getSwapChain().getCurrentCommandBuffer(graphics), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
     }
 
     void mvPipeline::finish(mvGraphics& graphics)
@@ -85,14 +85,14 @@ namespace DearPy3D {
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = (float)graphics.getSwapChainExtent().width;
-        viewport.height = (float)graphics.getSwapChainExtent().height;
+        viewport.width = (float)graphics.getSwapChain().getSwapChainExtent().width;
+        viewport.height = (float)graphics.getSwapChain().getSwapChainExtent().height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
         VkRect2D scissor{};
         scissor.offset = { 0, 0 };
-        scissor.extent = graphics.getSwapChainExtent();
+        scissor.extent = graphics.getSwapChain().getSwapChainExtent();
 
         VkPipelineViewportStateCreateInfo viewportState{};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -191,7 +191,7 @@ namespace DearPy3D {
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.layout = _pipelineLayout;
-        pipelineInfo.renderPass = graphics.getMainRenderPassInfo().renderPass;
+        pipelineInfo.renderPass = graphics.getSwapChain().getMainRenderPassInfo().renderPass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineInfo.pDepthStencilState = &depthStencil;

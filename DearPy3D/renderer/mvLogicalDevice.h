@@ -13,8 +13,17 @@ namespace DearPy3D {
 
 	public:
 
+		// setup
 		void init(mvPhysicalDevice& physicalDevice);
 		void createCommandPool(mvGraphics& graphics, mvPhysicalDevice& physicalDevice);
+
+		// resource utilities
+		void        createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void        copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void        transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void        copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void        createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 		VkCommandBuffer beginSingleTimeCommands();
 		void            endSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -31,6 +40,7 @@ namespace DearPy3D {
 
 	private:
 
+		mvPhysicalDevice*              _physicalDevice = nullptr;
 		bool                           _enableValidationLayers = true;
 		VkDevice                       _device = VK_NULL_HANDLE;
 		VkQueue                        _graphicsQueue;

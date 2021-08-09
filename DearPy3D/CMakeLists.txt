@@ -24,6 +24,7 @@ target_sources(dearpy3d
 		"renderer/mvImGuiManager.cpp"
 		"renderer/mvPhysicalDevice.cpp"
 		"renderer/mvLogicalDevice.cpp"
+		"renderer/mvSwapChain.cpp"
 
 		# pipeline
 		"renderer/pipeline/mvPipeline.cpp"

@@ -25,6 +25,7 @@ namespace DearPy3D {
 
 		const std::vector<const char*>& getExtensions() const { return _deviceExtensions; }
 		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 		operator VkPhysicalDevice() { return _physicalDevice; }
 

@@ -35,7 +35,7 @@ namespace DearPy3D {
 
 	void mvDescriptorSet::bind(mvGraphics& graphics, mvPipeline& pipeline)
 	{
-		vkCmdBindDescriptorSets(graphics.getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+		vkCmdBindDescriptorSets(graphics.getSwapChain().getCurrentCommandBuffer(graphics), VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipeline.getLayout(), 0, 1, &_descriptorSet, 0, nullptr);
 	}
 
