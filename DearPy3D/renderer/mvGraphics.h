@@ -18,22 +18,12 @@
 #include "mvAllocator.h"
 #include "mvDeletionQueue.h"
 #include "mvImGuiManager.h"
+#include "mvPhysicalDevice.h"
 
 namespace DearPy3D {
 
 	class mvGraphics
 	{
-
-		struct QueueFamilyIndices {
-
-			std::optional<uint32_t> graphicsFamily;
-			std::optional<uint32_t> presentFamily;
-
-			bool isComplete()
-			{
-				return graphicsFamily.has_value() && presentFamily.has_value();
-			}
-		};
 
 		struct SwapChainSupportDetails {
 			VkSurfaceCapabilitiesKHR capabilities;
@@ -48,8 +38,8 @@ namespace DearPy3D {
 		void cleanup();
 		void recreateSwapChain(float width, float height);
 
+		mvPhysicalDevice& getPhysicalDevice()     { return _physicalDevice; }
 		VkDevice         getDevice()              { return _device; }
-		VkPhysicalDevice getPhysicalDevice()      { return _physicalDevice; }
 		VkInstance       getInstance()            { return _instance; }
 		VkDescriptorPool getDescriptorPool()      { return _descriptorPool; }
 		uint32_t         getMinImageCount()       { return _minImageCount; }
@@ -100,7 +90,6 @@ namespace DearPy3D {
 		void createVulkanInstance();
 		void setupDebugMessenger();
 		void createSurface(GLFWwindow* window);
-		void pickPhysicalDevice();
 		void createLogicalDevice();
 		void createSwapChain(float width, float height);
 		void createImageViews();
@@ -113,10 +102,7 @@ namespace DearPy3D {
 
 		// internal helpers
 		bool                    checkValidationLayerSupport();
-		bool                    isDeviceSuitable(VkPhysicalDevice device);		
-		bool                    checkDeviceExtensionSupport(VkPhysicalDevice device);
 		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-		QueueFamilyIndices      findQueueFamilies(VkPhysicalDevice device);
 		
 	private:
 
@@ -124,6 +110,7 @@ namespace DearPy3D {
 		glm::mat4 _projection;
 		std::unique_ptr<mvImGuiManager> _imgui = nullptr;
 
+		mvPhysicalDevice               _physicalDevice;
 		mvDeletionQueue                _deletionQueue;
 		uint32_t                       _minImageCount = 0;
 		uint32_t                       _currentImageIndex = 0;
@@ -135,7 +122,6 @@ namespace DearPy3D {
 		VkInstance                     _instance;
 		VkDebugUtilsMessengerEXT       _debugMessenger;
 		VkSurfaceKHR                   _surface;
-		VkPhysicalDevice               _physicalDevice = VK_NULL_HANDLE;
 		VkDevice                       _device;
 		VkCommandPool                  _commandPool;
 		VkQueue                        _graphicsQueue;
@@ -153,7 +139,6 @@ namespace DearPy3D {
 		std::vector<VkFence>           _imagesInFlight;
 		size_t                         _currentFrame = 0;
 		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation"};
-		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		const int                      _max_frames_in_flight = 2;
 		std::vector<VkCommandBuffer>   _commandBuffers;
 		VkDescriptorPool               _descriptorPool;

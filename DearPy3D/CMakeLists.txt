@@ -22,6 +22,7 @@ target_sources(dearpy3d
 		"renderer/mvGraphics.cpp"
 		"renderer/mvCamera.cpp"
 		"renderer/mvImGuiManager.cpp"
+		"renderer/mvPhysicalDevice.cpp"
 
 		# pipeline
 		"renderer/pipeline/mvPipeline.cpp"

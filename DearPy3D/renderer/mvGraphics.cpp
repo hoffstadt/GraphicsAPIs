@@ -23,7 +23,7 @@ namespace DearPy3D
         createVulkanInstance();
         setupDebugMessenger();
         createSurface(window);
-        pickPhysicalDevice();
+        _physicalDevice.init(*this);
         createLogicalDevice();
         mvAllocator::Init(*this);
         createSwapChain(width, height);
@@ -87,7 +87,7 @@ namespace DearPy3D
 
     void mvGraphics::createCommandPool()
     {
-        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(_physicalDevice);
+        mvPhysicalDevice::QueueFamilyIndices queueFamilyIndices = _physicalDevice.findQueueFamilies(_physicalDevice);
 
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -362,32 +362,9 @@ namespace DearPy3D
             throw std::runtime_error("failed to create window surface!");
     }
 
-    void mvGraphics::pickPhysicalDevice()
-    {
-        uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
-
-        if (deviceCount == 0)
-            throw std::runtime_error("failed to find GPUs with Vulkan support!");
-
-        std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
-
-        for (const auto& device : devices) {
-            if (isDeviceSuitable(device))
-            {
-                _physicalDevice = device;
-                break;
-            }
-        }
-
-        if (_physicalDevice == VK_NULL_HANDLE)
-            throw std::runtime_error("failed to find a suitable GPU!");
-    }
-
     void mvGraphics::createLogicalDevice()
     {
-        QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
+        mvPhysicalDevice::QueueFamilyIndices indices = _physicalDevice.findQueueFamilies(_physicalDevice);
 
         _graphicsQueueFamily = indices.graphicsFamily.value();
 
@@ -416,8 +393,8 @@ namespace DearPy3D
 
             createInfo.pEnabledFeatures = &deviceFeatures;
 
-            createInfo.enabledExtensionCount = static_cast<uint32_t>(_deviceExtensions.size());
-            createInfo.ppEnabledExtensionNames = _deviceExtensions.data();
+            createInfo.enabledExtensionCount = _physicalDevice.getExtensions().size();
+            createInfo.ppEnabledExtensionNames = _physicalDevice.getExtensions().data();
 
             if (_enableValidationLayers)
             {
@@ -493,7 +470,7 @@ namespace DearPy3D
             createInfo.imageArrayLayers = 1;
             createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-            QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
+            mvPhysicalDevice::QueueFamilyIndices indices = _physicalDevice.findQueueFamilies(_physicalDevice);
             uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
             if (indices.graphicsFamily != indices.presentFamily)
@@ -751,37 +728,6 @@ namespace DearPy3D
         return true;
     }
 
-    bool mvGraphics::isDeviceSuitable(VkPhysicalDevice device)
-    {
-        QueueFamilyIndices indices = findQueueFamilies(device);
-
-        bool extensionsSupported = checkDeviceExtensionSupport(device);
-
-        bool swapChainAdequate = false;
-        if (extensionsSupported) {
-            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
-            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-        }
-
-        return indices.isComplete() && extensionsSupported && swapChainAdequate;
-    }
-
-    bool mvGraphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
-        uint32_t extensionCount;
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-        std::set<std::string> requiredExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
-
-        for (const auto& extension : availableExtensions) {
-            requiredExtensions.erase(extension.extensionName);
-        }
-
-        return requiredExtensions.empty();
-    }
-
     mvGraphics::SwapChainSupportDetails mvGraphics::querySwapChainSupport(VkPhysicalDevice device)
     {
         SwapChainSupportDetails details;
@@ -790,6 +736,10 @@ namespace DearPy3D
 
         uint32_t formatCount;
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, _surface, &formatCount, nullptr);
+
+        // todo: put in appropriate spot
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, 0, _surface, &presentSupport);
 
         if (formatCount != 0) {
             details.formats.resize(formatCount);
@@ -805,38 +755,6 @@ namespace DearPy3D
         }
 
         return details;
-    }
-
-    mvGraphics::QueueFamilyIndices mvGraphics::findQueueFamilies(VkPhysicalDevice device)
-    {
-
-        QueueFamilyIndices indices;
-
-        uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-        int i = 0;
-        for (const auto& queueFamily : queueFamilies)
-        {
-            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                indices.graphicsFamily = i;
-
-            VkBool32 presentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _surface, &presentSupport);
-
-            if (presentSupport)
-                indices.presentFamily = i;
-
-            if (indices.isComplete())
-                break;
-
-            i++;
-        }
-
-        return indices;
     }
 
     std::uint32_t mvGraphics::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
