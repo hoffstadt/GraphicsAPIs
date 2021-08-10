@@ -51,7 +51,7 @@ int main()
             mvGraphics::GetContext().recreateSwapChain(newwidth, newheight);
             quad1.reset();
             cube1.reset();
-            quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
+            //quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
             cube1 = std::make_shared<mvCube>("../../Resources/brickwall.jpg");
             cube1->setPosition(10, 10, 10);
             window.setResized(false);

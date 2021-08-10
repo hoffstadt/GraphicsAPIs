@@ -22,12 +22,15 @@ namespace DearPy3D {
 		friend class mvCube;
 		friend class mvSolidSphere;
 
+	public:
+
 		struct Transforms
 		{
 			glm::mat4 model = glm::identity<glm::mat4>();
 			glm::mat4 modelView = glm::identity<glm::mat4>();
 			glm::mat4 modelViewProjection = glm::identity<glm::mat4>();
 		};
+
 
 	public:
 

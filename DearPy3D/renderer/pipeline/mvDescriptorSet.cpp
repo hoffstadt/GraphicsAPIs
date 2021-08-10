@@ -39,4 +39,9 @@ namespace DearPy3D {
 			pipeline.getLayout(), 0, 1, &_descriptorSet, 0, nullptr);
 	}
 
+	void mvDescriptorSet::update(std::vector<VkWriteDescriptorSet>& writeDescriptorSets)
+	{
+		vkUpdateDescriptorSets(mvGraphics::GetContext().getLogicalDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
+	}
+
 }
