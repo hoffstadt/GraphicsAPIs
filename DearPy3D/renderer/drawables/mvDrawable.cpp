@@ -7,13 +7,13 @@ namespace DearPy3D {
 	{
 		vkDeviceWaitIdle(mvGraphics::GetContext().getLogicalDevice());
 		_deletionQueue.flush();
+		_material = nullptr;
 	}
 
 	void mvDrawable::bind() const
 	{
-		auto index = mvGraphics::GetContext().getSwapChain().getCurrentImageIndex();
-		_descriptorSets[index]->bind(*_pipeline);
-		_pipeline->bind();
+		_material->setParent(this);
+		_material->bind();
 		_indexBuffer->bind();
 		_vertexBuffer->bind();
 	}

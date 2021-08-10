@@ -6,6 +6,7 @@
 #include "mvTimer.h"
 #include "mvRenderer.h"
 #include "mvPointLight.h"
+#include "mvMaterial.h"
 
 using namespace DearPy3D;
 
@@ -24,6 +25,11 @@ int main()
     auto quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
     auto cube1 = std::make_shared<mvCube>("../../Resources/brickwall.jpg");
     cube1->setPosition(10, 10, 10);
+
+    auto material1 = std::make_shared<mvMaterial>();
+    auto material2 = std::make_shared<mvMaterial>();
+    quad1->setMaterial(material1);
+    cube1->setMaterial(material2);
 
     //---------------------------------------------------------------------
     // main loop
@@ -46,14 +52,24 @@ int main()
                 glfwGetFramebufferSize(window.getHandle(), &newwidth, &newheight);
                 glfwWaitEvents();
             }
-            quad1->cleanup();
+
+            material1->cleanup();
+            material2->cleanup();
             cube1->cleanup();
+            quad1->cleanup();
             mvGraphics::GetContext().recreateSwapChain(newwidth, newheight);
             quad1.reset();
             cube1.reset();
-            //quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
+            material1.reset();
+            material2.reset();
+            quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
             cube1 = std::make_shared<mvCube>("../../Resources/brickwall.jpg");
             cube1->setPosition(10, 10, 10);
+
+            material1 = std::make_shared<mvMaterial>();
+            material2 = std::make_shared<mvMaterial>();
+            quad1->setMaterial(material1);
+            cube1->setMaterial(material2);
             window.setResized(false);
             camera.setWidth(newwidth);
             camera.setHeight(newheight);
@@ -83,11 +99,11 @@ int main()
         camera.bind();
         //pointlight.bind(camera.getMatrix());
 
-        quad1->bind();
-        quad1->draw();
-
         cube1->bind();
         cube1->draw();
+
+        quad1->bind();
+        quad1->draw();
 
         //pointlight.submit();
 
@@ -100,6 +116,8 @@ int main()
 
     }
 
+    material1->cleanup();
+    material2->cleanup();
     cube1->cleanup();
     quad1->cleanup();
     pointlight.cleanup();

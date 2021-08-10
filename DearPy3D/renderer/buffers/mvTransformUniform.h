@@ -21,6 +21,7 @@ namespace DearPy3D {
 		friend class mvTexturedQuad;
 		friend class mvCube;
 		friend class mvSolidSphere;
+		friend class mvMaterial;
 
 	public:
 
@@ -41,7 +42,7 @@ namespace DearPy3D {
 
 	private:
 
-		mvDrawable* _parent = nullptr;
+		const mvDrawable* _parent = nullptr;
 		std::vector<std::unique_ptr<mvBuffer<Transforms>>> _buf;
 		Transforms _transforms = {};
 

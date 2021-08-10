@@ -7,6 +7,7 @@
 #include "mvPipeline.h"
 #include "mvDescriptorSet.h"
 #include "mvDeletionQueue.h"
+#include "mvMaterial.h"
 
 namespace DearPy3D {
 
@@ -24,17 +25,16 @@ namespace DearPy3D {
 
 		virtual glm::mat4 getTransform() const = 0;
 
-		virtual void bind() const;
+		void bind() const;
 		void draw() const;
+		void setMaterial(std::shared_ptr<mvMaterial> material) { _material = material; }
 
 	protected:
 
-		mvDeletionQueue                               _deletionQueue;
-		std::shared_ptr<mvPipeline>                   _pipeline;
-		std::shared_ptr<mvDescriptorSetLayout>        _descriptorSetLayout;
-		std::vector<std::shared_ptr<mvDescriptorSet>> _descriptorSets;
-		std::shared_ptr<mvIndexBuffer>                _indexBuffer;
-		std::shared_ptr<mvVertexBuffer>               _vertexBuffer;
+		std::shared_ptr<mvMaterial>     _material;
+		mvDeletionQueue                 _deletionQueue;
+		std::shared_ptr<mvIndexBuffer>  _indexBuffer;
+		std::shared_ptr<mvVertexBuffer> _vertexBuffer;
 
 	};
 
