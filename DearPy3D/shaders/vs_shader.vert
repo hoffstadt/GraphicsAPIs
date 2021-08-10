@@ -30,5 +30,4 @@ void main()
     vec3 B = mat3(ubo.modelView)*inBitangent;
     vec3 N = mat3(ubo.modelView)*inNormal;
     tangentBasis = mat3(T, B, N);
-
 }
