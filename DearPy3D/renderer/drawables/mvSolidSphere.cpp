@@ -1,12 +1,13 @@
-#include "mvTexturedQuad.h"
+#include "mvSolidSphere.h"
 #include "mvGraphics.h"
 #include "mvTexture.h"
 #include "mvSampler.h"
+#include "Sphere.h"
 #include <chrono>
 
 namespace DearPy3D {
 
-	mvTexturedQuad::mvTexturedQuad(const std::string& path)
+	mvSolidSphere::mvSolidSphere()
 	{
 
 		_transformBuffer = std::make_shared<mvTransformUniform>();
@@ -19,43 +20,39 @@ namespace DearPy3D {
 		vlayout.append(ElementType::Bitangent);
 		vlayout.append(ElementType::Texture2D);
 
-		// initialize vertices
-		auto vertices = std::vector<float>
+		std::vector<float> vertices;
+		std::vector<uint16_t> indices;
+		std::vector<float> normals;
+		Sphere sphere(0.25f);
+
+		vertices = sphere.vertices;
+		indices = sphere.indices;
+		normals = sphere.normals;
+
+		std::vector<float> nverticies;
+		for (int i = 0; i < vertices.size(); i = i + 3)
 		{
-			-1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-			 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		};
+			nverticies.push_back(vertices[i]);
+			nverticies.push_back(vertices[i + 1]);
+			nverticies.push_back(vertices[i + 2]);
+			nverticies.push_back(normals[i]);
+			nverticies.push_back(normals[i + 1]);
+			nverticies.push_back(normals[i + 2]);
 
-		// initialize indexes
-		auto indices = std::vector<uint16_t>{0u, 2u, 1u, 0u, 1u, 3u};
-
-		for (size_t i = 0; i < indices.size(); i += 3)
-		{
-			auto v0 = vertices[14 * indices[i]];
-			auto v1 = vertices[14 * indices[i + 1]];
-			auto v2 = vertices[14 * indices[i + 2]];
-			const auto p0 = glm::vec3{ v0, vertices[14 * indices[i] + 1], vertices[14 * indices[i] + 2] };
-			const auto p1 = glm::vec3{ v1, vertices[14 * indices[i + 1] + 1], vertices[14 * indices[i + 1] + 2] };
-			const auto p2 = glm::vec3{ v2, vertices[14 * indices[i + 2] + 1], vertices[14 * indices[i + 2] + 2] };
-
-			const auto n = glm::normalize(glm::cross(p1 - p0, p2 - p0));
-			vertices[14 * indices[i] + 3] = n[0];
-			vertices[14 * indices[i] + 4] = n[1];
-			vertices[14 * indices[i] + 5] = n[2];
-			vertices[14 * indices[i + 1] + 3] = n[0];
-			vertices[14 * indices[i + 1] + 4] = n[1];
-			vertices[14 * indices[i + 1] + 5] = n[2];
-			vertices[14 * indices[i + 2] + 3] = n[0];
-			vertices[14 * indices[i + 2] + 4] = n[1];
-			vertices[14 * indices[i + 2] + 5] = n[2];
+			nverticies.push_back(0.0f);
+			nverticies.push_back(0.0f);
+			nverticies.push_back(0.0f);
+			nverticies.push_back(0.0f);
+			nverticies.push_back(0.0f);
+			nverticies.push_back(0.0f);
+			nverticies.push_back(0.0f);
+			nverticies.push_back(0.0f);
 		}
 
-		_vertexBuffer = std::make_shared<mvVertexBuffer>(vertices);
+		_vertexBuffer = std::make_shared<mvVertexBuffer>(nverticies);
 		_indexBuffer = std::make_shared<mvIndexBuffer>(indices);
 		_sampler = std::make_shared<mvSampler>();
-		_texture = std::make_shared<mvTexture>(path);
+		_texture = std::make_shared<mvTexture>("../../Resources/brickwall.jpg");
 
 		_descriptorSetLayout = std::make_shared<mvDescriptorSetLayout>();
 		_descriptorSetLayout->append(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
@@ -73,7 +70,7 @@ namespace DearPy3D {
 		_pipeline = std::make_shared<mvPipeline>();
 		_pipeline->setVertexLayout(vlayout);
 		_pipeline->setVertexShader("../../DearPy3D/shaders/vert.spv");
-		_pipeline->setFragmentShader("../../DearPy3D/shaders/frag.spv");
+		_pipeline->setFragmentShader("../../DearPy3D/shaders/frag_solid.spv");
 		_pipeline->setDescriptorSetLayout(_descriptorSetLayout);
 		_pipeline->setDescriptorSets(_descriptorSets);
 		_pipeline->finalize();
@@ -88,7 +85,7 @@ namespace DearPy3D {
 			});
 	}
 
-	glm::mat4 mvTexturedQuad::getTransform() const
+	glm::mat4 mvSolidSphere::getTransform() const
 	{
 		return glm::translate(glm::vec3{ m_x, m_y, m_z }) *
 			glm::rotate(m_xangle, glm::vec3{ 1.0f, 0.0f, 0.0f }) *
@@ -96,21 +93,21 @@ namespace DearPy3D {
 			glm::rotate(m_zangle, glm::vec3{ 0.0f, 0.0f, 1.0f });
 	}
 
-	void mvTexturedQuad::setPosition(float x, float y, float z)
+	void mvSolidSphere::setPosition(float x, float y, float z)
 	{
 		m_x = x;
 		m_y = y;
 		m_z = z;
 	}
 
-	void mvTexturedQuad::setRotation(float x, float y, float z)
+	void mvSolidSphere::setRotation(float x, float y, float z)
 	{
 		m_xangle = x;
 		m_yangle = y;
 		m_zangle = z;
 	}
 
-	void mvTexturedQuad::bind() const
+	void mvSolidSphere::bind() const
 	{
 		auto index = mvGraphics::GetContext().getSwapChain().getCurrentImageIndex();
 		_transformBuffer->bind();

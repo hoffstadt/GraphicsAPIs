@@ -30,7 +30,5 @@ layout(binding = 2) uniform mvPointLight
 
 void main() 
 {
-    vec4 color = texture(texSampler, texCoord);
-    if (color.w < 1) { discard; }
-    outColor = color;
+    outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

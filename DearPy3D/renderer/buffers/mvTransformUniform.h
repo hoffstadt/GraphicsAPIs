@@ -20,6 +20,7 @@ namespace DearPy3D {
 	{
 		friend class mvTexturedQuad;
 		friend class mvCube;
+		friend class mvSolidSphere;
 
 		struct Transforms
 		{

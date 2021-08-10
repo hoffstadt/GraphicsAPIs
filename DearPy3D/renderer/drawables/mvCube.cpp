@@ -85,6 +85,7 @@ namespace DearPy3D {
 		_descriptorSetLayout = std::make_shared<mvDescriptorSetLayout>();
 		_descriptorSetLayout->append(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 		_descriptorSetLayout->append(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+		_descriptorSetLayout->append(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
 		_descriptorSetLayout->finalize();
 
 		for (int i = 0; i < 3; i++)

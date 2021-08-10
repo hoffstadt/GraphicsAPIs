@@ -5,6 +5,7 @@
 #include "mvCamera.h"
 #include "mvTimer.h"
 #include "mvRenderer.h"
+#include "mvPointLight.h"
 
 using namespace DearPy3D;
 
@@ -15,6 +16,8 @@ int main()
     auto window = mvWindow("Dear Py3D", width, height);
     mvGraphics::Init(window.getHandle());
     auto renderer = mvRenderer();
+
+    auto pointlight = mvPointLight(glm::vec3{ 3.0f, 3.0f, 0.0f });
 
     auto camera = mvCamera(width, height, glm::vec3{5.0f, 5.0f, -15.0f});
 
@@ -78,12 +81,15 @@ int main()
         mvGraphics::GetContext().getSwapChain().begin();
 
         camera.bind();
+        pointlight.bind(camera.getMatrix());
 
         quad1->bind();
         quad1->draw();
 
         cube1->bind();
         cube1->draw();
+
+        pointlight.submit();
 
         mvGraphics::GetContext().getSwapChain().end();
 
@@ -96,6 +102,7 @@ int main()
 
     cube1->cleanup();
     quad1->cleanup();
+    pointlight.cleanup();
     mvGraphics::Shutdown();
 
 }

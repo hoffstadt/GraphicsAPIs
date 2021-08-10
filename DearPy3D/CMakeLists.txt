@@ -12,11 +12,16 @@ target_sources(dearpy3d
 		"core/mvWindow.cpp"
 		"core/mvTimer.cpp"
 
+		# geometry
+		"geometry/Sphere.cpp"
+
 		# utilities
 		"utilities/mvImporter.cpp"
 
 		# renderer
 		"renderer/mvRenderer.cpp"
+		"renderer/mvScene.cpp"
+		"renderer/mvPointLight.cpp"
 		"renderer/mvDeletionQueue.cpp"
 		"renderer/mvAllocator.cpp"
 		"renderer/mvObjMaterial.cpp"
@@ -46,6 +51,7 @@ target_sources(dearpy3d
 		"renderer/drawables/mvDrawable.cpp"
 		"renderer/drawables/mvTexturedQuad.cpp"
 		"renderer/drawables/mvCube.cpp"
+		"renderer/drawables/mvSolidSphere.cpp"
 
 		# Vulkan Memory Allocator
 		"../Dependencies/VulkanMemoryAllocator/vk_mem_alloc.cpp"
@@ -66,6 +72,7 @@ target_include_directories(dearpy3d
 	PRIVATE
 
 		"core/"
+		"geometry/"
 		"utilities/"
 		"renderer/"
 		"renderer/drawables/"
