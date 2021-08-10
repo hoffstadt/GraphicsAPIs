@@ -57,14 +57,13 @@ namespace DearPy3D {
 		_descriptorSetLayout = std::make_shared<mvDescriptorSetLayout>();
 		_descriptorSetLayout->append(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 		_descriptorSetLayout->append(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		_descriptorSetLayout->append(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
+		//_descriptorSetLayout->append(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
 		_descriptorSetLayout->finalize();
 
 		for (int i = 0; i < 3; i++)
 		{
 			_descriptorSets.push_back(std::make_shared<mvDescriptorSet>());
 			mvGraphics::GetContext().allocateDescriptorSet(&(*_descriptorSets.back()), *_descriptorSetLayout);
-			_descriptorSets.back()->update(*_transformBuffer->_buf[i], _texture->getImageView(), _sampler->getSampler());
 		}
 
 		_pipeline = std::make_shared<mvPipeline>();
@@ -112,6 +111,7 @@ namespace DearPy3D {
 		auto index = mvGraphics::GetContext().getSwapChain().getCurrentImageIndex();
 		_transformBuffer->bind();
 		_descriptorSets[index]->bind(*_pipeline);
+		_descriptorSets[index]->update(*_transformBuffer->_buf[index], _texture->getImageView(), _sampler->getSampler());
 		_pipeline->bind();
 		_indexBuffer->bind();
 		_vertexBuffer->bind();

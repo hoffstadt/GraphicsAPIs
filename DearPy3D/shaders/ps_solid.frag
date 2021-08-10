@@ -11,22 +11,22 @@ layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
 
-layout(binding = 2) uniform mvPointLight 
-{
-    vec3 viewLightPos;
-    //-------------------------- ( 16 bytes )
-    
-    vec3 diffuseColor;
-    float diffuseIntensity;
-    //-------------------------- ( 16 bytes )
-    
-    float attConst;
-    float attLin;
-    float attQuad;
-    //-------------------------- ( 16 bytes )
-    
-    //-------------------------- ( 4*16 = 64 bytes )
-} pointlight;
+//layout(binding = 2) uniform mvPointLight 
+//{
+//    vec3 viewLightPos;
+//    //-------------------------- ( 16 bytes )
+//    
+//    vec3 diffuseColor;
+//    float diffuseIntensity;
+//    //-------------------------- ( 16 bytes )
+//    
+//    float attConst;
+//    float attLin;
+//    float attQuad;
+//    //-------------------------- ( 16 bytes )
+//    
+//    //-------------------------- ( 4*16 = 64 bytes )
+//} pointlight;
 
 void main() 
 {

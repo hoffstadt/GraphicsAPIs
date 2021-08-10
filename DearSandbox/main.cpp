@@ -81,7 +81,7 @@ int main()
         mvGraphics::GetContext().getSwapChain().begin();
 
         camera.bind();
-        pointlight.bind(camera.getMatrix());
+        //pointlight.bind(camera.getMatrix());
 
         quad1->bind();
         quad1->draw();
@@ -89,7 +89,7 @@ int main()
         cube1->bind();
         cube1->draw();
 
-        pointlight.submit();
+        //pointlight.submit();
 
         mvGraphics::GetContext().getSwapChain().end();
 
