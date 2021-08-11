@@ -97,8 +97,8 @@ int main()
 
         renderer.setCamera(camera);
 
-        renderer.renderDrawable(*cube1, *material);
-        renderer.renderDrawable(*quad1, *material);
+        renderer.renderDrawable(*cube1, material->getPipeline());
+        renderer.renderDrawable(*quad1, material->getPipeline());
 
         imgui.endFrame();
         renderer.endPass(currentCommandBuffer);

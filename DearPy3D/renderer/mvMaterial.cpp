@@ -35,21 +35,26 @@ namespace DearPy3D {
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 
-		if (vkCreateDescriptorSetLayout(mvGraphics::GetContext().getLogicalDevice(), &layoutInfo, nullptr, &_descriptorSetLayout) != VK_SUCCESS)
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+		descriptorSetLayouts.resize(1);
+
+		std::vector<VkDescriptorSet> descriptorSets;
+
+		if (vkCreateDescriptorSetLayout(mvGraphics::GetContext().getLogicalDevice(), &layoutInfo, nullptr, &descriptorSetLayouts.back()) != VK_SUCCESS)
 			throw std::runtime_error("failed to create descriptor set layout!");
 
 		//-----------------------------------------------------------------------------
 		// allocate descriptor sets
 		//-----------------------------------------------------------------------------
-		_descriptorSets.resize(3);
-		std::vector<VkDescriptorSetLayout> layouts(3, _descriptorSetLayout);
+		descriptorSets.resize(3);
+		std::vector<VkDescriptorSetLayout> layouts(3, descriptorSetLayouts[0]);
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = mvGraphics::GetContext().getDescriptorPool();
 		allocInfo.descriptorSetCount = 3;
 		allocInfo.pSetLayouts = layouts.data();
 
-		if (vkAllocateDescriptorSets(mvGraphics::GetContext().getLogicalDevice(), &allocInfo, _descriptorSets.data()) != VK_SUCCESS)
+		if (vkAllocateDescriptorSets(mvGraphics::GetContext().getLogicalDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS)
 			throw std::runtime_error("failed to allocate descriptor sets!");
 
 		//-----------------------------------------------------------------------------
@@ -65,7 +70,7 @@ namespace DearPy3D {
 			imageInfo.sampler = _sampler->getSampler();
 
 			descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[i].dstSet = _descriptorSets[i];
+			descriptorWrites[i].dstSet = descriptorSets[i];
 			descriptorWrites[i].dstBinding = 0;
 			descriptorWrites[i].dstArrayElement = 0;
 			descriptorWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -79,14 +84,13 @@ namespace DearPy3D {
 		_pipeline->setVertexLayout(vlayout);
 		_pipeline->setVertexShader("../../DearPy3D/shaders/vs_shader.vert.spv");
 		_pipeline->setFragmentShader("../../DearPy3D/shaders/ps_shader.frag.spv");
-		_pipeline->setDescriptorSetLayout(_descriptorSetLayout);
-		_pipeline->setDescriptorSets(_descriptorSets);
+		_pipeline->setDescriptorSetLayouts(descriptorSetLayouts);
+		_pipeline->setDescriptorSets(descriptorSets);
 		_pipeline->finalize();
 
 		_deletionQueue.pushDeletor([=]() {
 			_sampler->cleanup();
 			_texture->cleanup();
-			vkDestroyDescriptorSetLayout(mvGraphics::GetContext().getLogicalDevice(), _descriptorSetLayout, nullptr);
 			});
 	}
 
@@ -94,16 +98,6 @@ namespace DearPy3D {
 	{
 		vkDeviceWaitIdle(mvGraphics::GetContext().getLogicalDevice());
 		_deletionQueue.flush();
-	}
-
-	void mvMaterial::bind()
-	{
-		auto index = mvGraphics::GetContext().getSwapChain().getCurrentImageIndex();
-
-		vkCmdBindDescriptorSets(mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, 
-			_pipeline->getLayout(), 0, 1, _descriptorSets.data(), 0, nullptr);
-
-		_pipeline->bind();
 	}
 
 }

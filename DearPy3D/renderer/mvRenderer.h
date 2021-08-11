@@ -10,7 +10,7 @@ namespace DearPy3D {
 	//---------------------------------------------------------------------
 	class mvGraphics;
 	class mvDrawable;
-	class mvMaterial;
+	class mvPipeline;
 	class mvCamera;
 
 	//---------------------------------------------------------------------
@@ -36,7 +36,7 @@ namespace DearPy3D {
 
 		void setCamera(mvCamera& camera);
 
-		void renderDrawable(mvDrawable& drawable, mvMaterial& material);
+		void renderDrawable(mvDrawable& drawable, mvPipeline& pipeline);
 
 	private:
 

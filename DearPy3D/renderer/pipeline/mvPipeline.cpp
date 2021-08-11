@@ -19,9 +19,9 @@ namespace DearPy3D {
 		_fragShader = std::make_unique<mvShader>(file);
 	}
 
-    void mvPipeline::setDescriptorSetLayout(VkDescriptorSetLayout layout)
+    void mvPipeline::setDescriptorSetLayouts(std::vector<VkDescriptorSetLayout> layouts)
     {
-        _descriptorSetLayout = layout;
+        _descriptorSetLayouts = layouts;
     }
 
     void mvPipeline::setDescriptorSets(std::vector<VkDescriptorSet> descriptorSets)
@@ -31,6 +31,9 @@ namespace DearPy3D {
 
     void mvPipeline::bind()
     {
+        vkCmdBindDescriptorSets(mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+            _pipelineLayout, 0, 1, _descriptorSets.data(), 0, nullptr);
+
         vkCmdBindPipeline(mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
     }
 
@@ -55,7 +58,7 @@ namespace DearPy3D {
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
         vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
@@ -172,10 +175,10 @@ namespace DearPy3D {
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.setLayoutCount = _descriptorSetLayouts.size();
         pipelineLayoutInfo.pPushConstantRanges = &push_constant;
         pipelineLayoutInfo.pushConstantRangeCount = 1;
-        pipelineLayoutInfo.pSetLayouts = &_descriptorSetLayout;
+        pipelineLayoutInfo.pSetLayouts = _descriptorSetLayouts.data();
 
         if (vkCreatePipelineLayout(mvGraphics::GetContext().getLogicalDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create pipeline layout!");
@@ -214,6 +217,10 @@ namespace DearPy3D {
         mvGraphics::GetContext().getDeletionQueue().pushDeletor([=]() {
             vkDestroyPipeline(mvGraphics::GetContext().getLogicalDevice(), _pipeline, nullptr);
             vkDestroyPipelineLayout(mvGraphics::GetContext().getLogicalDevice(), _pipelineLayout, nullptr);
+            for(auto descriptorSetLayout : _descriptorSetLayouts)
+                vkDestroyDescriptorSetLayout(mvGraphics::GetContext().getLogicalDevice(), descriptorSetLayout, nullptr);
+            _descriptorSetLayouts.clear();
+            _descriptorSets.clear();
             });
 	}
 

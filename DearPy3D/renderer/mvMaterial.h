@@ -17,18 +17,15 @@ namespace DearPy3D {
 
 		mvMaterial();
 
-		void bind();
 		void cleanup();
 		mvPipeline& getPipeline() const { return *_pipeline; }
 
 	private:
 
-		mvDeletionQueue              _deletionQueue;
-		std::shared_ptr<mvPipeline>  _pipeline;
-		VkDescriptorSetLayout        _descriptorSetLayout;
-		std::vector<VkDescriptorSet> _descriptorSets;
-		std::shared_ptr<mvTexture>   _texture;
-		std::shared_ptr<mvSampler>   _sampler;
+		mvDeletionQueue                    _deletionQueue;
+		std::shared_ptr<mvPipeline>        _pipeline;
+		std::shared_ptr<mvTexture>         _texture;
+		std::shared_ptr<mvSampler>         _sampler;
 	};
 
 }

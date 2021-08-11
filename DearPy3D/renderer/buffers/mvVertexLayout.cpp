@@ -69,17 +69,11 @@ namespace DearPy3D {
 	std::vector<VkVertexInputBindingDescription> mvVertexLayout::getBindingDescriptions() const
 	{
 		std::vector<VkVertexInputBindingDescription> descriptions;
-
-		for (const auto& element : _elements)
-		{
-			VkVertexInputBindingDescription description{};
-			description.binding = 0;
-			description.stride = _stride;
-			description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-			descriptions.push_back(description);
-		}
-
+		VkVertexInputBindingDescription description{};
+		description.binding = 0;
+		description.stride = _stride;
+		description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		descriptions.push_back(description);
 		return descriptions;
 	}
 

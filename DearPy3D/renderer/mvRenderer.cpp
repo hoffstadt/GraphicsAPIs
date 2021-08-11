@@ -52,10 +52,10 @@ namespace DearPy3D {
 			throw std::runtime_error("failed to record command buffer!");
 	}
 
-	void mvRenderer::renderDrawable(mvDrawable& drawable, mvMaterial& material)
+	void mvRenderer::renderDrawable(mvDrawable& drawable, mvPipeline& pipeline)
 	{
 		drawable.bind();
-		material.bind();
+		pipeline.bind();
 
 		_transforms.model = drawable.getTransform();
 		_transforms.modelView = _camera * _transforms.model;
@@ -63,7 +63,7 @@ namespace DearPy3D {
 
 		vkCmdPushConstants(
 			mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(),
-			material.getPipeline().getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(mvRenderer::Transforms),&_transforms);
+			pipeline.getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(mvRenderer::Transforms),&_transforms);
 
 		mvGraphics::GetContext().getSwapChain().draw(drawable.getVertexCount());
 	}
