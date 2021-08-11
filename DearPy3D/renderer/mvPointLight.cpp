@@ -33,7 +33,7 @@ namespace DearPy3D {
 	void mvPointLight::submit()
 	{
 		_mesh.bind();
-		_mesh.draw();
+		//_mesh.draw();
 	}
 
 	void mvPointLight::cleanup()

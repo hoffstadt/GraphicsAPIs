@@ -49,12 +49,6 @@ namespace DearPy3D {
 		return glm::perspective(glm::radians(45.0f), _width / _height, 0.1f, 400.0f);
 	}
 
-	void mvCamera::bind()
-	{
-		mvGraphics::GetContext().setCamera(getMatrix());
-		mvGraphics::GetContext().setProjection(getProjection());
-	}
-
 	void mvCamera::rotate(float dx, float dy)
 	{
 		_yaw = wrap_angle(_yaw + dx * s_rotationSpeed);

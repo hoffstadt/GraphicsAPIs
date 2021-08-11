@@ -7,8 +7,6 @@ namespace DearPy3D {
 
 	mvMaterial::mvMaterial()
 	{
-		_transformBuffer = std::make_shared<mvTransformUniform>();
-
 		auto vlayout = mvVertexLayout();
 		vlayout.append(ElementType::Position3D);
 		vlayout.append(ElementType::Normal);
@@ -70,21 +68,8 @@ namespace DearPy3D {
 	void mvMaterial::bind()
 	{
 		auto index = mvGraphics::GetContext().getSwapChain().getCurrentImageIndex();
-		_transformBuffer->bind();
 		_descriptorSets[index]->bind(*_pipeline);
 		_pipeline->bind();
-		vkCmdPushConstants(
-			mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(),
-			_pipeline->getLayout(),
-			VK_SHADER_STAGE_VERTEX_BIT,
-			0,
-			sizeof(mvTransformUniform::Transforms),
-			&_transformBuffer->getTransforms());
-	}
-
-	void mvMaterial::setParent(const mvDrawable* parent)
-	{
-		_transformBuffer->_parent = parent;
 	}
 
 }

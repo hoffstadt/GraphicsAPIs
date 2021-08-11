@@ -21,8 +21,6 @@ namespace DearPy3D {
 		glm::mat4 getMatrix() const;
 		glm::mat4 getProjection() const;
 
-		void bind();
-
 	private:
 
 		glm::vec3 _pos;

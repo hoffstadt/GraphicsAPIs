@@ -21,7 +21,6 @@ target_sources(dearpy3d
 		# renderer
 		"renderer/mvMaterial.cpp"
 		"renderer/mvRenderer.cpp"
-		"renderer/mvScene.cpp"
 		"renderer/mvPointLight.cpp"
 		"renderer/mvDeletionQueue.cpp"
 		"renderer/mvAllocator.cpp"
@@ -40,7 +39,6 @@ target_sources(dearpy3d
 		"renderer/pipeline/mvDescriptorSet.cpp"
 		
 		# buffers
-		"renderer/buffers/mvTransformUniform.cpp"
 		"renderer/buffers/mvVertexBuffer.cpp"
 		"renderer/buffers/mvIndexBuffer.cpp"
 		"renderer/buffers/mvVertexLayout.cpp"

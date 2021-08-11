@@ -26,12 +26,10 @@ namespace DearPy3D {
 		virtual glm::mat4 getTransform() const = 0;
 
 		void bind() const;
-		void draw() const;
-		void setMaterial(std::shared_ptr<mvMaterial> material) { _material = material; }
+		uint32_t getVertexCount() const;
 
 	protected:
 
-		std::shared_ptr<mvMaterial>     _material;
 		mvDeletionQueue                 _deletionQueue;
 		std::shared_ptr<mvIndexBuffer>  _indexBuffer;
 		std::shared_ptr<mvVertexBuffer> _vertexBuffer;

@@ -27,8 +27,6 @@ int main()
     cube1->setPosition(10, 10, 10);
 
     auto material1 = std::make_shared<mvMaterial>();
-    quad1->setMaterial(material1);
-    cube1->setMaterial(material1);
 
     //---------------------------------------------------------------------
     // main loop
@@ -64,8 +62,6 @@ int main()
             cube1->setPosition(10, 10, 10);
 
             material1 = std::make_shared<mvMaterial>();
-            quad1->setMaterial(material1);
-            cube1->setMaterial(material1);
             window.setResized(false);
             camera.setWidth(newwidth);
             camera.setHeight(newheight);
@@ -92,14 +88,11 @@ int main()
         
         mvGraphics::GetContext().getSwapChain().begin();
 
-        camera.bind();
+        renderer.setCamera(camera);
         //pointlight.bind(camera.getMatrix());
 
-        cube1->bind();
-        cube1->draw();
-
-        quad1->bind();
-        quad1->draw();
+        renderer.renderDrawable(*cube1, *material1);
+        renderer.renderDrawable(*quad1, *material1);
 
         //pointlight.submit();
 

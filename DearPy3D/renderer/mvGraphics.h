@@ -48,11 +48,6 @@ namespace DearPy3D {
 
 		// descriptor pool
 		void allocateDescriptorSet(mvDescriptorSet* descriptorSet, mvDescriptorSetLayout& layout);
-
-		void setCamera(glm::mat4 camera) { _camera = camera; }
-		void setProjection(glm::mat4 projection) { _projection = projection; }
-		glm::mat4 getCamera() const { return _camera; }
-		glm::mat4 getProjection() const { return _projection; }
 		
 	private:
 
@@ -66,11 +61,7 @@ namespace DearPy3D {
 		// internal helpers
 		bool checkValidationLayerSupport();
 		
-		
 	private:
-
-		glm::mat4 _camera;
-		glm::mat4 _projection;
 
 		mvLogicalDevice                _logicalDevice;
 		mvPhysicalDevice               _physicalDevice;

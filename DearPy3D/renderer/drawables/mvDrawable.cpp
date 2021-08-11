@@ -7,20 +7,17 @@ namespace DearPy3D {
 	{
 		vkDeviceWaitIdle(mvGraphics::GetContext().getLogicalDevice());
 		_deletionQueue.flush();
-		_material = nullptr;
 	}
 
 	void mvDrawable::bind() const
 	{
-		_material->setParent(this);
-		_material->bind();
 		_indexBuffer->bind();
 		_vertexBuffer->bind();
 	}
 
-	void mvDrawable::draw() const
+	uint32_t mvDrawable::getVertexCount() const
 	{
-		mvGraphics::GetContext().getSwapChain().draw(_indexBuffer->getVertexCount());
+		return _indexBuffer->getVertexCount();
 	}
 
 }
