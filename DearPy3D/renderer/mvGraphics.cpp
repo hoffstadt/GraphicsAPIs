@@ -53,7 +53,6 @@ namespace DearPy3D
         _swapChain.createDepthResources();
         _swapChain.createFrameBuffers();
         _swapChain.createSyncObjects();
-        _swapChain.setupImGui(window);
     }
 
     void mvGraphics::recreateSwapChain(float width, float height)
@@ -73,7 +72,6 @@ namespace DearPy3D
 
     void mvGraphics::cleanup()
     {
-        _swapChain.freeImGui();
         _deletionQueue.flush();
         mvAllocator::Shutdown();
         vkDestroyDescriptorPool(_logicalDevice, _descriptorPool, nullptr);

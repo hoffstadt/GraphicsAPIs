@@ -26,7 +26,7 @@ namespace DearPy3D {
 		double getDeltaY() { return _deltaY; }
 		double getLastX() { return _lastX; }
 		double getLastY() { return _lastY; }
-		bool isResized() { return _resized; }
+		bool isResized() { bool orig = _resized; _resized = false; return orig; }
 		void setResized(bool value) { _resized = value; }
 
 	private:

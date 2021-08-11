@@ -105,11 +105,6 @@ namespace DearPy3D {
 			throw std::runtime_error("failed to create window surface!");
 	}
 
-    void mvSwapChain::setupImGui(GLFWwindow* window)
-    {
-        _imgui = std::make_unique<mvImGuiManager>(window);
-    }
-
     void mvSwapChain::resize(float width, float height)
     {
 
@@ -118,12 +113,6 @@ namespace DearPy3D {
         createRenderPass();
         createDepthResources();
         createFrameBuffers();
-        _imgui->resize();
-    }
-
-    void mvSwapChain::freeImGui()
-    {
-        _imgui.reset();
     }
 
     void mvSwapChain::createSyncObjects()
@@ -182,44 +171,6 @@ namespace DearPy3D {
         vkQueuePresentKHR(mvGraphics::GetContext().getLogicalDevice().getPresentQueue(), &presentInfo);
 
         _currentFrame = (_currentFrame + 1) % _max_frames_in_flight;
-    }
-
-    void mvSwapChain::begin()
-    {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-        if (vkBeginCommandBuffer(mvGraphics::GetContext().getLogicalDevice().getCommandBuffers()[_currentImageIndex], &beginInfo) != VK_SUCCESS)
-            throw std::runtime_error("failed to begin recording command buffer!");
-
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = _renderPass;
-        renderPassInfo.framebuffer = _swapChainFramebuffers[_currentImageIndex];
-        renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = _swapChainExtent;
-
-        std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-        clearValues[1].depthStencil = { 1.0f, 0 };
-
-        renderPassInfo.clearValueCount = 2;
-        renderPassInfo.pClearValues = clearValues.data();
-
-        vkCmdBeginRenderPass(mvGraphics::GetContext().getLogicalDevice().getCommandBuffers()[_currentImageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        _imgui->beginFrame();
-    }
-
-    void mvSwapChain::end()
-    {
-        _imgui->endFrame();
-
-        vkCmdEndRenderPass(mvGraphics::GetContext().getLogicalDevice().getCommandBuffers()[_currentImageIndex]);
-
-        if (vkEndCommandBuffer(mvGraphics::GetContext().getLogicalDevice().getCommandBuffers()[_currentImageIndex]) != VK_SUCCESS)
-            throw std::runtime_error("failed to record command buffer!");
     }
 
     void mvSwapChain::draw(uint32_t vertexCount)

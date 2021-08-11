@@ -6,8 +6,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "mvImGuiManager.h"
-
 namespace DearPy3D {
 
 	class mvGraphics;
@@ -29,7 +27,6 @@ namespace DearPy3D {
 		// setup
 		void init(float width, float height);
 		void createSurface(GLFWwindow* window);
-		void setupImGui(GLFWwindow* window);
 		void createRenderPass();
 
 		void createFrameBuffers();
@@ -39,18 +36,14 @@ namespace DearPy3D {
 		// cleanup
 		void freeSyncObjects();
 		void freeSurface();
-		void freeImGui();
 
 		void beginFrame();
 		void present();
 		void endFrame();
 
 		uint32_t getCurrentImageIndex() const { return _currentImageIndex; }
-		void     begin();
 		void     draw(uint32_t vertexCount);
-		void     end();
 		
-
 		VkRenderPassBeginInfo getMainRenderPassInfo();
 		VkCommandBuffer       getCurrentCommandBuffer();
 
@@ -66,7 +59,6 @@ namespace DearPy3D {
 
 	private:
 
-		std::unique_ptr<mvImGuiManager> _imgui = nullptr;
 		VkFormat                   _swapChainImageFormat;
 		VkSwapchainKHR             _swapChain;
 		std::vector<VkImage>       _swapChainImages;

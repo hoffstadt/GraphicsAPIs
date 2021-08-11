@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vulkan/vulkan.h>
 #include "mvMath.h"
 
 namespace DearPy3D {
@@ -29,6 +30,9 @@ namespace DearPy3D {
 
 		void beginFrame();
 		void endFrame();
+
+		void beginPass(VkCommandBuffer commandBuffer, VkRenderPass renderPass);
+		void endPass(VkCommandBuffer commandBuffer);
 
 		void setCamera(mvCamera& camera);
 

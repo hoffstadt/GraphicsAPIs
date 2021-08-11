@@ -44,7 +44,7 @@ namespace DearPy3D {
 
 	}
 
-	mvImGuiManager::~mvImGuiManager()
+	void mvImGuiManager::cleanup()
 	{
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();

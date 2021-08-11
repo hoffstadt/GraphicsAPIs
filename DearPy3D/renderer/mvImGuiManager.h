@@ -23,10 +23,9 @@ namespace DearPy3D {
 	public:
 
 		mvImGuiManager(GLFWwindow* window);
-		~mvImGuiManager();
-
+		
+		void cleanup();
 		void resize();
-
 		void beginFrame() const;
 		void endFrame() const;
 
