@@ -43,10 +43,14 @@ namespace DearPy3D {
             //swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         }
 
-        return extensionsSupported && swapChainAdequate;
+        VkPhysicalDeviceProperties properties{};
+        vkGetPhysicalDeviceProperties(device, &properties);
+
+        return extensionsSupported && swapChainAdequate && properties.limits.maxPushConstantsSize >= 256;
     }
 
-    bool mvPhysicalDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool mvPhysicalDevice::checkDeviceExtensionSupport(VkPhysicalDevice device)
+    {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 

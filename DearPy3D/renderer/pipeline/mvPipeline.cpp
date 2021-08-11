@@ -160,6 +160,12 @@ namespace DearPy3D {
         // Create Pipeline layout
         //---------------------------------------------------------------------
 
+        //setup push constants
+        VkPushConstantRange push_constant;
+        push_constant.offset = 0;
+        push_constant.size = 192;
+        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
         VkPipelineMultisampleStateCreateInfo multisampling{};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisampling.sampleShadingEnable = VK_FALSE;
@@ -168,7 +174,8 @@ namespace DearPy3D {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pushConstantRangeCount = 0;
+        pipelineLayoutInfo.pPushConstantRanges = &push_constant;
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pSetLayouts = _descriptorSetLayout->getLayout();
 
         if (vkCreatePipelineLayout(mvGraphics::GetContext().getLogicalDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)

@@ -35,15 +35,13 @@ namespace DearPy3D {
 
 	public:
 
-		mvTransformUniform();
-
 		void bind();
-		void cleanup();
+
+		const Transforms& getTransforms() const { return _transforms; }
 
 	private:
 
 		const mvDrawable* _parent = nullptr;
-		std::vector<std::unique_ptr<mvBuffer<Transforms>>> _buf;
 		Transforms _transforms = {};
 
 	};

@@ -9,7 +9,7 @@ layout(location = 4) in mat3 inTangentBasis;
 
 layout(location = 0) out vec4 outColor;
 
-layout(binding = 1) uniform sampler2D texSampler;
+layout(binding = 0) uniform sampler2D texSampler;
 
 //layout(binding = 2) uniform mvPointLight 
 //{
