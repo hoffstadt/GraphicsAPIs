@@ -62,8 +62,8 @@ namespace DearPy3D {
 
 		_pipeline = std::make_shared<mvPipeline>();
 		_pipeline->setVertexLayout(vlayout);
-		_pipeline->setVertexShader("../../DearPy3D/shaders/vert.spv");
-		_pipeline->setFragmentShader("../../DearPy3D/shaders/frag.spv");
+		_pipeline->setVertexShader("../../DearPy3D/shaders/vs_shader.vert.spv");
+		_pipeline->setFragmentShader("../../DearPy3D/shaders/ps_shader.frag.spv");
 		_pipeline->setDescriptorSetLayout(_descriptorSetLayout);
 		_pipeline->setDescriptorSets(_descriptorSets);
 		_pipeline->finalize();

@@ -18,7 +18,7 @@ int main()
     mvGraphics::Init(window.getHandle());
     auto renderer = mvRenderer();
 
-    auto pointlight = mvPointLight(glm::vec3{ 3.0f, 3.0f, 0.0f });
+    //auto pointlight = mvPointLight(glm::vec3{ 3.0f, 3.0f, 0.0f });
 
     auto camera = mvCamera(width, height, glm::vec3{5.0f, 5.0f, -15.0f});
 
@@ -27,9 +27,8 @@ int main()
     cube1->setPosition(10, 10, 10);
 
     auto material1 = std::make_shared<mvMaterial>();
-    auto material2 = std::make_shared<mvMaterial>();
     quad1->setMaterial(material1);
-    cube1->setMaterial(material2);
+    cube1->setMaterial(material1);
 
     //---------------------------------------------------------------------
     // main loop
@@ -54,22 +53,19 @@ int main()
             }
 
             material1->cleanup();
-            material2->cleanup();
             cube1->cleanup();
             quad1->cleanup();
             mvGraphics::GetContext().recreateSwapChain(newwidth, newheight);
             quad1.reset();
             cube1.reset();
             material1.reset();
-            material2.reset();
             quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
             cube1 = std::make_shared<mvCube>("../../Resources/brickwall.jpg");
             cube1->setPosition(10, 10, 10);
 
             material1 = std::make_shared<mvMaterial>();
-            material2 = std::make_shared<mvMaterial>();
             quad1->setMaterial(material1);
-            cube1->setMaterial(material2);
+            cube1->setMaterial(material1);
             window.setResized(false);
             camera.setWidth(newwidth);
             camera.setHeight(newheight);
@@ -117,10 +113,9 @@ int main()
     }
 
     material1->cleanup();
-    material2->cleanup();
     cube1->cleanup();
     quad1->cleanup();
-    pointlight.cleanup();
+    //pointlight.cleanup();
     mvGraphics::Shutdown();
 
 }
