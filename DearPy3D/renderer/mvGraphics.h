@@ -46,9 +46,6 @@ namespace DearPy3D {
 		VkDescriptorPool  getDescriptorPool()      { return _descriptorPool; }
 		mvDeletionQueue&  getDeletionQueue()       { return _deletionQueue; }
 
-		// descriptor pool
-		void allocateDescriptorSet(mvDescriptorSet* descriptorSet, mvDescriptorSetLayout& layout);
-		
 	private:
 
 		mvGraphics() {};

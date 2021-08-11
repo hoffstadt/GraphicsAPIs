@@ -5,7 +5,6 @@
 #include "mvVertexBuffer.h"
 #include "mvIndexBuffer.h"
 #include "mvPipeline.h"
-#include "mvDescriptorSet.h"
 #include "mvDeletionQueue.h"
 #include "mvMaterial.h"
 

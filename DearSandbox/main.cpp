@@ -26,7 +26,7 @@ int main()
     auto cube1 = std::make_shared<mvCube>("../../Resources/brickwall.jpg");
     cube1->setPosition(10, 10, 10);
 
-    auto material1 = std::make_shared<mvMaterial>();
+    auto material = std::make_shared<mvMaterial>();
 
     //---------------------------------------------------------------------
     // main loop
@@ -50,21 +50,20 @@ int main()
                 glfwWaitEvents();
             }
 
-            material1->cleanup();
+            material->cleanup();
             cube1->cleanup();
             quad1->cleanup();
             mvGraphics::GetContext().recreateSwapChain(newwidth, newheight);
             quad1.reset();
             cube1.reset();
-            material1.reset();
+            material.reset();
             quad1 = std::make_shared<mvTexturedQuad>("../../Resources/brickwall.jpg");
             cube1 = std::make_shared<mvCube>("../../Resources/brickwall.jpg");
             cube1->setPosition(10, 10, 10);
 
-            material1 = std::make_shared<mvMaterial>();
+            material = std::make_shared<mvMaterial>();
             window.setResized(false);
-            camera.setWidth(newwidth);
-            camera.setHeight(newheight);
+            camera.updateProjection(newwidth, newheight);
         }
 
         if (glfwGetKey(window.getHandle(), GLFW_KEY_W) == GLFW_PRESS) camera.translate(0.0f, 0.0f, dt);
@@ -91,8 +90,8 @@ int main()
         renderer.setCamera(camera);
         //pointlight.bind(camera.getMatrix());
 
-        renderer.renderDrawable(*cube1, *material1);
-        renderer.renderDrawable(*quad1, *material1);
+        renderer.renderDrawable(*cube1, *material);
+        renderer.renderDrawable(*quad1, *material);
 
         //pointlight.submit();
 
@@ -105,7 +104,7 @@ int main()
 
     }
 
-    material1->cleanup();
+    material->cleanup();
     cube1->cleanup();
     quad1->cleanup();
     //pointlight.cleanup();

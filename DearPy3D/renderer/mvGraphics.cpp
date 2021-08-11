@@ -216,19 +216,6 @@ namespace DearPy3D
 
         return true;
     }
-
-    void mvGraphics::allocateDescriptorSet(mvDescriptorSet* descriptorSet, mvDescriptorSetLayout& layout)
-    {
-        std::vector<VkDescriptorSetLayout> layouts(1, layout._layout);
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = _descriptorPool;
-        allocInfo.descriptorSetCount = 1;
-        allocInfo.pSetLayouts = layouts.data();
-
-        if (vkAllocateDescriptorSets(_logicalDevice, &allocInfo, &descriptorSet->_descriptorSet) != VK_SUCCESS)
-            throw std::runtime_error("failed to allocate descriptor sets!");
-    }
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {

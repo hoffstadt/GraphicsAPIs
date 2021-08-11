@@ -1,7 +1,6 @@
 #include "mvPipeline.h"
 #include <stdexcept>
 #include "mvGraphics.h"
-#include "mvDescriptorSet.h"
 
 namespace DearPy3D {
 
@@ -20,12 +19,12 @@ namespace DearPy3D {
 		_fragShader = std::make_unique<mvShader>(file);
 	}
 
-    void mvPipeline::setDescriptorSetLayout(std::shared_ptr<mvDescriptorSetLayout> layout)
+    void mvPipeline::setDescriptorSetLayout(VkDescriptorSetLayout layout)
     {
         _descriptorSetLayout = layout;
     }
 
-    void mvPipeline::setDescriptorSets(std::vector<std::shared_ptr<mvDescriptorSet>> descriptorSets)
+    void mvPipeline::setDescriptorSets(std::vector<VkDescriptorSet> descriptorSets)
     {
         _descriptorSets = descriptorSets;
     }
@@ -176,7 +175,7 @@ namespace DearPy3D {
         pipelineLayoutInfo.setLayoutCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &push_constant;
         pipelineLayoutInfo.pushConstantRangeCount = 1;
-        pipelineLayoutInfo.pSetLayouts = _descriptorSetLayout->getLayout();
+        pipelineLayoutInfo.pSetLayouts = &_descriptorSetLayout;
 
         if (vkCreatePipelineLayout(mvGraphics::GetContext().getLogicalDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create pipeline layout!");

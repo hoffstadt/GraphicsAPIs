@@ -70,4 +70,10 @@ namespace DearPy3D {
 		};
 	}
 
+	void mvCamera::updateProjection(float width, float height)
+	{
+		_width = width;
+		_height = height;
+	}
+
 }

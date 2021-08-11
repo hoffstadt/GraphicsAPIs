@@ -36,7 +36,6 @@ target_sources(dearpy3d
 		"renderer/pipeline/mvPipeline.cpp"
 		"renderer/pipeline/mvShader.cpp"
 		"renderer/pipeline/mvSampler.cpp"
-		"renderer/pipeline/mvDescriptorSet.cpp"
 		
 		# buffers
 		"renderer/buffers/mvVertexBuffer.cpp"
