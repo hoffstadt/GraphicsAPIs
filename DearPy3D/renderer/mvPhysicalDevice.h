@@ -26,6 +26,7 @@ namespace DearPy3D {
 		const std::vector<const char*>& getExtensions() const { return _deviceExtensions; }
 		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		VkPhysicalDeviceProperties getProperties() { return _properties; }
 
 		operator VkPhysicalDevice() { return _physicalDevice; }
 
@@ -38,6 +39,7 @@ namespace DearPy3D {
 
 		VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
 		const std::vector<const char*> _deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		VkPhysicalDeviceProperties _properties;
 
 	};
 

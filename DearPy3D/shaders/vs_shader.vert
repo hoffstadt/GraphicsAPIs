@@ -19,6 +19,29 @@ layout(location = 2) out vec3 worldNormal;
 layout(location = 3) out vec2 texCoord;
 layout(location = 4) out mat3 tangentBasis;
 
+layout(set = 0, binding = 1) uniform mvPhongMaterial
+{
+    vec3 materialColor;
+    //-------------------------- ( 16 bytes )
+    
+    vec3 specularColor;
+    float specularGloss;
+    //-------------------------- ( 16 bytes )
+   
+    
+    float normalMapWeight;
+    bool useTextureMap;
+    bool useNormalMap;
+    bool useSpecularMap;
+    //-------------------------- ( 16 bytes )
+    
+    
+    bool useGlossAlpha;
+    bool hasAlpha;
+    //-------------------------- ( 16 bytes )
+    //-------------------------- ( 4 * 16 = 64 bytes )
+};
+
 void main() 
 {
     gl_Position = PushConstants.modelViewProj * vec4(inPosition, 1.0);

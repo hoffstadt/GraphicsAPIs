@@ -2,6 +2,8 @@
 
 project ("DearPy3D")
 
+set(MV_NO_SHADERS ${MV_NO_SHADERS})
+
 # various settings for third party libs
 set(GLFW_BUILD_DOCS OFF)
 set(BUILD_SHARED_LIBS OFF)

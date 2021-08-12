@@ -29,10 +29,12 @@ namespace DearPy3D {
         _descriptorSets = descriptorSets;
     }
 
-    void mvPipeline::bind()
+    void mvPipeline::bind(uint32_t index)
     {
+
+        uint32_t uniform_offset = index * 256;
         vkCmdBindDescriptorSets(mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-            _pipelineLayout, 0, 1, _descriptorSets.data(), 0, nullptr);
+            _pipelineLayout, 0, 1, _descriptorSets.data(), 1, &uniform_offset);
 
         vkCmdBindPipeline(mvGraphics::GetContext().getSwapChain().getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
     }

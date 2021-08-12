@@ -1,6 +1,7 @@
 #include "mvPhysicalDevice.h"
 #include <set>
 #include <stdexcept>
+#include <iostream>
 #include "mvGraphics.h"
 
 namespace DearPy3D {
@@ -43,10 +44,11 @@ namespace DearPy3D {
             //swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         }
 
-        VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(device, &properties);
+        vkGetPhysicalDeviceProperties(device, &_properties);
 
-        return extensionsSupported && swapChainAdequate && properties.limits.maxPushConstantsSize >= 256;
+        std::cout << "The GPU has a minimum buffer alignment of " << _properties.limits.minUniformBufferOffsetAlignment << std::endl;
+
+        return extensionsSupported && swapChainAdequate && _properties.limits.maxPushConstantsSize >= 256;
     }
 
     bool mvPhysicalDevice::checkDeviceExtensionSupport(VkPhysicalDevice device)

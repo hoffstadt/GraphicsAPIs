@@ -20,7 +20,7 @@ namespace DearPy3D {
 
 	public:
 
-		void bind                   ();
+		void bind                   (uint32_t index);
 		void finalize               ();
 		void setDescriptorSets      (std::vector<VkDescriptorSet>);
 		void setDescriptorSetLayouts(std::vector<VkDescriptorSetLayout>);

@@ -31,6 +31,6 @@ jobs:
       run: |
         mkdir cmake-build-debug
         cd cmake-build-debug
-        cmake ..
+        cmake .. -DMV_NO_SHADERS=True
         cd ..
         cmake --build cmake-build-debug --config Debug

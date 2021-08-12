@@ -29,6 +29,11 @@ int main()
 
     auto material = std::make_shared<mvMaterial>();
 
+    auto mat1 = mvMaterialBuffer::mvMaterialData{};
+    auto mat2 = mvMaterialBuffer::mvMaterialData{};
+    mat1.materialColor = glm::vec4{ 1.0f, 1.0f, 0.0f, 1.0f };
+    mat2.materialColor = glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
+
     //---------------------------------------------------------------------
     // main loop
     //---------------------------------------------------------------------
@@ -97,8 +102,11 @@ int main()
 
         renderer.setCamera(camera);
 
-        renderer.renderDrawable(*cube1, material->getPipeline());
-        renderer.renderDrawable(*quad1, material->getPipeline());
+        material->bind(0, mat1);
+        renderer.renderDrawable(*cube1, material->getPipeline(), 0);
+
+        material->bind(1, mat2);
+        renderer.renderDrawable(*quad1, material->getPipeline(), 1);
 
         imgui.endFrame();
         renderer.endPass(currentCommandBuffer);

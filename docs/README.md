@@ -1,4 +1,4 @@
-## Dear Py3D
+## Dear Py3D (not ready)
 
 [![build status](https://github.com/hoffstadt/DearPy3D/workflows/Windows%20Builds/badge.svg?branch=master)](https://github.com/hoffstadt/DearPy3D/actions?workflow=Windows%20Builds)
 

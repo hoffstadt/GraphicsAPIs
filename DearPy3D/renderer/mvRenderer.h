@@ -36,7 +36,7 @@ namespace DearPy3D {
 
 		void setCamera(mvCamera& camera);
 
-		void renderDrawable(mvDrawable& drawable, mvPipeline& pipeline);
+		void renderDrawable(mvDrawable& drawable, mvPipeline& pipeline, uint32_t index);
 
 	private:
 

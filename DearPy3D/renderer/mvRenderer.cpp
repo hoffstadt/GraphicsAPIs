@@ -52,10 +52,10 @@ namespace DearPy3D {
 			throw std::runtime_error("failed to record command buffer!");
 	}
 
-	void mvRenderer::renderDrawable(mvDrawable& drawable, mvPipeline& pipeline)
+	void mvRenderer::renderDrawable(mvDrawable& drawable, mvPipeline& pipeline, uint32_t index)
 	{
 		drawable.bind();
-		pipeline.bind();
+		pipeline.bind(index);
 
 		_transforms.model = drawable.getTransform();
 		_transforms.modelView = _camera * _transforms.model;

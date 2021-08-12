@@ -26,9 +26,12 @@ add_executable (dearpy3dsandbox)
 
 set_property(TARGET dearpy3dsandbox PROPERTY CXX_STANDARD 17)
 
-add_shader(ps_shader.frag)
-add_shader(ps_solid.frag)
-add_shader(vs_shader.vert)
+if(MV_NO_SHADERS)
+else()
+	add_shader(ps_shader.frag)
+	add_shader(ps_solid.frag)
+	add_shader(vs_shader.vert)
+endif()
 
 target_sources(dearpy3dsandbox
 

@@ -41,6 +41,7 @@ target_sources(dearpy3d
 		"renderer/buffers/mvVertexBuffer.cpp"
 		"renderer/buffers/mvIndexBuffer.cpp"
 		"renderer/buffers/mvVertexLayout.cpp"
+		"renderer/buffers/mvMaterialBuffer.cpp"
 
 		# bindables
 		"renderer/bindables/mvTexture.cpp"

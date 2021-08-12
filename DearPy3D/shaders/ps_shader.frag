@@ -28,6 +28,29 @@ layout(set = 0, binding = 0) uniform sampler2D texSampler;
 //    //-------------------------- ( 4*16 = 64 bytes )
 //} pointlight;
 
+layout(set = 0, binding = 1) uniform mvPhongMaterial
+{
+    vec3 materialColor;
+    //-------------------------- ( 16 bytes )
+    
+    vec3 specularColor;
+    float specularGloss;
+    //-------------------------- ( 16 bytes )
+   
+    
+    float normalMapWeight;
+    bool useTextureMap;
+    bool useNormalMap;
+    bool useSpecularMap;
+    //-------------------------- ( 16 bytes )
+    
+    
+    bool useGlossAlpha;
+    bool hasAlpha;
+    //-------------------------- ( 16 bytes )
+    //-------------------------- ( 4 * 16 = 64 bytes )
+};
+
 float Attenuate(float attConst, float attLin, float attQuad, in float distFragToL)
 {
     return 1.0 / (attConst + attLin * distFragToL + attQuad * (distFragToL * distFragToL));
@@ -77,5 +100,6 @@ void main()
 //         
 //    outColor = clamp((vec4(diffuse, 1.0) + vec4(0.04, 0.04, 0.04, 1.0)) * materialColor + vec4(specularReflected, 1.0), 0.0, 1.0);   
 //
-      outColor = texture(texSampler, inTexCoord);
+      //outColor = texture(texSampler, inTexCoord);
+      outColor = vec4(materialColor, 1.0);
 }

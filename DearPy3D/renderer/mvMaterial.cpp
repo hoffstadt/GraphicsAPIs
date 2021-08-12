@@ -8,6 +8,9 @@ namespace DearPy3D {
 
 	mvMaterial::mvMaterial()
 	{
+
+		_materialBuffer = std::make_shared<mvMaterialBuffer>();
+
 		auto vlayout = mvVertexLayout();
 		vlayout.append(ElementType::Position3D);
 		vlayout.append(ElementType::Normal);
@@ -22,13 +25,19 @@ namespace DearPy3D {
 		// create descriptor set layout
 		//-----------------------------------------------------------------------------
 		std::vector<VkDescriptorSetLayoutBinding> bindings;
-		bindings.resize(1);
+		bindings.resize(2);
 
 		bindings[0].binding = 0u;
 		bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		bindings[0].descriptorCount = 1;
 		bindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		bindings[0].pImmutableSamplers = nullptr;
+
+		bindings[1].binding = 1u;
+		bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		bindings[1].descriptorCount = 1;
+		bindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		bindings[1].pImmutableSamplers = nullptr;
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -76,6 +85,19 @@ namespace DearPy3D {
 			descriptorWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			descriptorWrites[i].descriptorCount = 1;
 			descriptorWrites[i].pImageInfo = &imageInfo;
+
+			VkDescriptorBufferInfo materialInfo;
+			materialInfo.buffer = _materialBuffer->_buffer[i];
+			materialInfo.offset = 0;
+			materialInfo.range = sizeof(mvMaterialBuffer::mvMaterialData);
+
+			descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[i].dstSet = descriptorSets[i];
+			descriptorWrites[i].dstBinding = 1;
+			descriptorWrites[i].dstArrayElement = 0;
+			descriptorWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			descriptorWrites[i].descriptorCount = 1;
+			descriptorWrites[i].pBufferInfo = &materialInfo;
 		}
 
 		vkUpdateDescriptorSets(mvGraphics::GetContext().getLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
@@ -91,7 +113,13 @@ namespace DearPy3D {
 		_deletionQueue.pushDeletor([=]() {
 			_sampler->cleanup();
 			_texture->cleanup();
+			_materialBuffer->cleanup();
 			});
+	}
+
+	void mvMaterial::bind(uint32_t index, mvMaterialBuffer::mvMaterialData data)
+	{
+		_materialBuffer->bind(data, index);
 	}
 
 	void mvMaterial::cleanup()
