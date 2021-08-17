@@ -30,6 +30,18 @@ namespace DearPy3D {
             throw std::runtime_error("failed to find a suitable GPU!");
 	}
 
+    size_t mvPhysicalDevice::getRequiredUniformBufferSize(size_t size)
+    {
+        // Calculate required alignment based on minimum device offset alignment
+        size_t minUboAlignment = _properties.limits.minUniformBufferOffsetAlignment;
+        size_t alignedSize = size;
+
+        if (minUboAlignment > 0)
+            alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
+
+        return alignedSize;
+    }
+
     bool mvPhysicalDevice::isDeviceSuitable(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices = findQueueFamilies(device);

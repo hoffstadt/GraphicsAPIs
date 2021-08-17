@@ -13,7 +13,7 @@ namespace DearPy3D {
 		{
 			VkBufferCreateInfo bufferInfo{};
 			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.size = 2 * sizeof(mvMaterialData);
+			bufferInfo.size = 2 * mvGraphics::GetContext().getPhysicalDevice().getRequiredUniformBufferSize(sizeof(mvMaterialData));
 			bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -38,9 +38,10 @@ namespace DearPy3D {
 
 	void mvMaterialBuffer::bind(mvMaterialData data, uint32_t index)
 	{
+		size_t offset_size = mvGraphics::GetContext().getPhysicalDevice().getRequiredUniformBufferSize(sizeof(mvMaterialData));
 		auto cindex = mvGraphics::GetContext().getSwapChain().getCurrentImageIndex();
 		void* udata;
-		vkMapMemory(mvGraphics::GetContext().getLogicalDevice(), _bufferMemory[cindex], sizeof(mvMaterialData)*index, sizeof(mvMaterialData), 0, &udata);
+		vkMapMemory(mvGraphics::GetContext().getLogicalDevice(), _bufferMemory[cindex], offset_size *index, offset_size, 0, &udata);
 		memcpy(udata, &data, sizeof(mvMaterialData));
 		vkUnmapMemory(mvGraphics::GetContext().getLogicalDevice(), _bufferMemory[cindex]);
 	}

@@ -27,6 +27,7 @@ namespace DearPy3D {
 		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 		std::uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		VkPhysicalDeviceProperties getProperties() { return _properties; }
+		size_t getRequiredUniformBufferSize(size_t size);
 
 		operator VkPhysicalDevice() { return _physicalDevice; }
 
